@@ -117,7 +117,7 @@
     <form class="line" id="form" autocomplete="off">
       <label class="sr" for="word">Describe a scene, like “a man walks, then runs” or “a cat chases a bird”</label>
       <span class="prompt" aria-hidden="true">›</span>
-      <input id="word" name="word" type="text" maxlength="90" spellcheck="false" autocapitalize="off" placeholder="a cat chases a bird…">
+      <input id="word" name="word" type="text" maxlength="90" spellcheck="false" autocapitalize="off" placeholder="a man walks, then runs…">
       <span class="hint">enter ↵</span>
     </form>
     <div class="rows">
@@ -159,7 +159,10 @@
   }
 
   // A stick figure facing right. Angles are measured from straight down; positive swings forward.
+  // rot/dy tip the whole figure over (used for lying down), so every pose can blend into every other.
   function figure(c, P) {
+    c.save();
+    if (P.rot || P.dy) { c.translate(0, P.dy || 0); c.translate(50, 50); c.rotate(P.rot || 0); c.translate(-50, -50); }
     const x = P.x ?? 50, y = P.y ?? 54, L = P.lean || 0, ux = S(L), uy = -C(L);
     const sx = x + ux * 25, sy = y + uy * 25;
     circle(c, x + ux * 40 + (P.headX || 0), y + uy * 40 + (P.headY || 0), 8.5);
@@ -171,6 +174,18 @@
     };
     for (const [a1, a2] of P.legs) limb(x, y, a1, 20, a2, 19, 8, 7, true);
     for (const [a1, a2] of P.arms) limb(sx, sy, a1, 14, a2, 13, 7, 6, false);
+    c.restore();
+  }
+
+  // Blend two poses: every number (and every joint angle) moves part of the way from a to b.
+  const POSE_DEFAULTS = { x: 50, y: 54 };
+  function lerpPose(a, b, k) {
+    const out = {};
+    for (const key of new Set([...Object.keys(a), ...Object.keys(b)])) {
+      const va = a[key] ?? POSE_DEFAULTS[key] ?? 0, vb = b[key] ?? POSE_DEFAULTS[key] ?? 0;
+      out[key] = Array.isArray(va) ? va.map((row, i) => row.map((v, j) => v + (vb[i][j] - v) * k)) : va + (vb - va) * k;
+    }
+    return out;
   }
 
   function flyingBird(c, w) {
@@ -207,24 +222,31 @@
     hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.moveTo(6, -11); c.quadraticCurveTo(1, 0, 6, 11); c.stroke(); });
   }
 
-  function catSide(c, t, freq, swing, stretch, lift) {
-    const p = t * TAU * freq;
-    c.translate(0, -Math.abs(S(p)) * lift);
+  function catSide(c, p, P) {
+    c.save();
+    c.translate(0, -Math.abs(S(p)) * P.lift);
     c.lineWidth = 6; c.beginPath(); c.moveTo(28, 54);
     c.bezierCurveTo(18, 50, 14 + S(p) * 3, 34, 20 + S(p) * 6, 24); c.stroke();
-    ellipse(c, 48, 56, 22 * stretch, 10);
+    ellipse(c, 48, 56, 22 * P.stretch, 10);
     line(c, 64, 50, 72, 46, 10);
     circle(c, 74, 44, 10);
     poly(c, [66, 39, 67, 26, 75, 35]); poly(c, [75, 35, 83, 26, 83, 39]);
     hole(c, () => circle(c, 78, 43, 2.3));
     const leg = (bx, ph) => {
-      const a = S(ph) * swing, b = a - Math.max(0, C(ph)) * 0.9;
+      const a = S(ph) * P.swing, b = a - Math.max(0, C(ph)) * 0.9;
       const kx = bx + S(a) * 12, ky = 60 + C(a) * 12;
       line(c, bx, 60, kx, ky, 6); line(c, kx, ky, kx + S(b) * 12, ky + C(b) * 12, 5);
     };
-    const front = 48 + 15 * stretch, back = 48 - 15 * stretch;
+    const front = 48 + 15 * P.stretch, back = 48 - 15 * P.stretch;
     leg(front, p + PI); leg(back, p); leg(front, p); leg(back, p + PI);
+    c.restore();
   }
+
+  // Rigs: shapes whose actions share a skeleton, so switching action blends the pose instead of cutting.
+  const RIGS = {
+    figure: (c, P) => figure(c, P),
+    cat: (c, P, phase) => catSide(c, phase, P),
+  };
 
   function heartPath(c) {
     c.beginPath(); c.moveTo(0, 32);
@@ -252,54 +274,43 @@
     man: {
       size: 1, name: "figure", default: "stand",
       verbs: { stand: "stand", walk: "walk", run: "run", jump: "jump", dance: "dance", wave: "wave", sit: "sit", sleep: "sleep", chase: "run", flee: "run" },
+      // pose(p, t): p is the actor's running gait phase (shared across actions so strides carry over), t is seconds in this action.
       actions: {
-        stand: { verb: "stands", label: "standing", draw(c, t) {
-          figure(c, { y: 54 + S(t * 1.6) * 0.6, headY: S(t * 1.6) * 0.6, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[0.45, 0.3], [-0.42, -0.28]] });
-        }},
-        walk: { verb: "walks", label: "walking", speed: 16, draw(c, t) {
-          const p = t * TAU * 1.1;
+        stand: { verb: "stands", label: "standing", rig: "figure", pose: (p, t) => (
+          { y: 54 + S(t * 1.6) * 0.6, headY: S(t * 1.6) * 0.6, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[0.45, 0.3], [-0.42, -0.28]] }) },
+        walk: { verb: "walks", label: "walking", speed: 16, freq: 1.1, rig: "figure", pose: p => {
           const leg = ph => { const a = S(ph) * 0.55; return [a, a - 0.1 - Math.max(0, C(ph)) * 0.9]; };
           const arm = ph => { const a = -S(ph) * 0.6; return [a, a + 0.6]; };
-          figure(c, { y: 54 - Math.abs(S(p)) * 2.5, legs: [leg(p), leg(p + PI)], arms: [arm(p), arm(p + PI)] });
+          return { y: 54 - Math.abs(S(p)) * 2.5, legs: [leg(p), leg(p + PI)], arms: [arm(p), arm(p + PI)] };
         }},
-        run: { verb: "runs", label: "running", speed: 42, draw(c, t) {
-          const p = t * TAU * 1.6;
+        run: { verb: "runs", label: "running", speed: 42, freq: 1.6, rig: "figure", pose: p => {
           const leg = ph => { const a = S(ph) * 0.85 + 0.15; return [a, a - 0.3 - Math.max(0, C(ph)) * 1.6]; };
           const arm = ph => { const a = -S(ph) * 0.9 + 0.2; return [a, a + 1.6]; };
-          speedLines(c, t, 22, [34, 50, 66]);
-          figure(c, { x: 54, y: 55 - Math.abs(S(p)) * 5, lean: 0.3, legs: [leg(p), leg(p + PI)], arms: [arm(p), arm(p + PI)] });
-        }},
-        jump: { verb: "jumps", label: "jumping", draw(c, t) {
+          return { x: 54, y: 55 - Math.abs(S(p)) * 5, lean: 0.3, legs: [leg(p), leg(p + PI)], arms: [arm(p), arm(p + PI)] };
+        }, extra(c, t, w) { if (w > 0.5) speedLines(c, t, 22, [34, 50, 66]); } },
+        jump: { verb: "jumps", label: "jumping", speed: 18, rig: "figure", pose: (p, t) => {
           const ph = (t % 1.3) / 1.3;
           const h = ph > 0.3 && ph < 0.85 ? S((ph - 0.3) / 0.55 * PI) : 0;
           const cr = ph < 0.3 ? S(ph / 0.3 * PI) : ph >= 0.85 ? S((ph - 0.85) / 0.15 * PI) * 0.8 : 0;
-          const th = 0.1 + cr * 0.8 + h * 0.8, sh = -0.1 - cr * 0.4 - h * 0.9;
-          const arm = -0.1 - cr * 0.9 + h * 2.7;
-          const w = (1 - h) * 10 + 5; c.fillRect(50 - w, 95, w * 2, 3.5);
-          figure(c, { y: 56 + cr * 9 - h * 26, lean: cr * 0.35, legs: [[th, sh], [th - 0.12, sh - 0.1]], arms: [[arm, arm + 0.3], [arm - 0.2, arm + 0.1]] });
-        }},
-        dance: { verb: "dances", label: "dancing", draw(c, t) {
-          const p = t * TAU * 1.0, s = S(p), s2 = S(p * 2);
-          figure(c, {
+          const th = 0.1 + cr * 0.8 + h * 0.8, sh = -0.1 - cr * 0.4 - h * 0.9, arm = -0.1 - cr * 0.9 + h * 2.7;
+          return { y: 56 + cr * 9 - h * 26, lean: cr * 0.35, legs: [[th, sh], [th - 0.12, sh - 0.1]], arms: [[arm, arm + 0.3], [arm - 0.2, arm + 0.1]] };
+        }, extra(c, t) { const ph = (t % 1.3) / 1.3, h = ph > 0.3 && ph < 0.85 ? S((ph - 0.3) / 0.55 * PI) : 0, w = (1 - h) * 10 + 5; c.fillRect(50 - w, 95, w * 2, 3.5); } },
+        dance: { verb: "dances", label: "dancing", rig: "figure", pose: (p, t) => {
+          const q = t * TAU * 1.0, s = S(q), s2 = S(q * 2);
+          return {
             x: 50 + s * 4, y: 56 - Math.abs(s2) * 3, lean: s * 0.12,
-            legs: [[0.35 + s * 0.25, 0.35 + s * 0.25 - 0.35 * Math.abs(C(p))], [-0.35 + s * 0.25, -0.55 + s * 0.25]],
-            arms: [[2.5 + s2 * 0.4, 2.9 + 0.4 * S(p * 2 + 1)], [-2.5 + s2 * 0.4, -2.9 - 0.4 * S(p * 2 + 1)]],
-          });
+            legs: [[0.35 + s * 0.25, 0.35 + s * 0.25 - 0.35 * Math.abs(C(q))], [-0.35 + s * 0.25, -0.55 + s * 0.25]],
+            arms: [[2.5 + s2 * 0.4, 2.9 + 0.4 * S(q * 2 + 1)], [-2.5 + s2 * 0.4, -2.9 - 0.4 * S(q * 2 + 1)]],
+          };
         }},
-        wave: { verb: "waves", label: "waving", draw(c, t) {
-          figure(c, { x: 46, y: 54 + S(t * 1.6) * 0.6, headX: 1, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[-0.42, -0.28], [1.55, 2.6 + S(t * TAU * 2.2) * 0.6]] });
-        }},
-        sit: { verb: "sits", label: "sitting", draw(c, t) {
-          c.fillRect(28, 73, 28, 5); line(c, 32, 76, 32, 96, 4); line(c, 52, 76, 52, 96, 4);
-          figure(c, { x: 44, y: 72 + S(t * 1.6) * 0.5, lean: -0.05, headY: S(t * 1.2) * 0.8, legs: [[1.5, 0.05], [1.42, 0.12]], arms: [[0.6, 1.3], [0.5, 1.2]] });
-        }},
-        sleep: { verb: "sleeps", label: "sleeping", draw(c, t) {
-          ellipse(c, 12, 94, 9, 3.5);
-          c.save(); c.translate(0, 40); c.translate(50, 50); c.rotate(-PI / 2); c.translate(-50, -50);
-          figure(c, { y: 54 + S(t * 1.4) * 0.8, legs: [[0, 0], [0.05, 0.05]], arms: [[0.1, 0.1]] });
-          c.restore();
-          zzz(c, t, 22, 72);
-        }},
+        wave: { verb: "waves", label: "waving", rig: "figure", pose: (p, t) => (
+          { x: 46, y: 54 + S(t * 1.6) * 0.6, headX: 1, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[-0.42, -0.28], [1.55, 2.6 + S(t * TAU * 2.2) * 0.6]] }) },
+        sit: { verb: "sits", label: "sitting", rig: "figure", pose: (p, t) => (
+          { x: 44, y: 72 + S(t * 1.6) * 0.5, lean: -0.05, headY: S(t * 1.2) * 0.8, legs: [[1.5, 0.05], [1.42, 0.12]], arms: [[0.6, 1.3], [0.5, 1.2]] }),
+          extra(c, t, w) { if (w > 0.5) { c.fillRect(28, 73, 28, 5); line(c, 32, 76, 32, 96, 4); line(c, 52, 76, 52, 96, 4); } } },
+        sleep: { verb: "sleeps", label: "sleeping", rig: "figure", pose: (p, t) => (
+          { y: 54 + S(t * 1.4) * 0.8, rot: -PI / 2, dy: 40, legs: [[0, 0], [0.05, 0.05]], arms: [[0.1, 0.1], [0.05, 0.05]] }),
+          extra(c, t, w) { if (w > 0.6) { ellipse(c, 12, 94, 9, 3.5); zzz(c, t, 22, 72); } } },
       },
     },
     bird: {
@@ -382,8 +393,9 @@
           hole(c, () => { c.fillRect(21, 77, 5, 2.8); c.fillRect(30, 77, 5, 2.8); });
           zzz(c, t, 34, 56);
         }},
-        walk: { verb: "walks", label: "walking", speed: 13, draw(c, t) { catSide(c, t, 1.1, 0.45, 1, 1.5); } },
-        run: { verb: "runs", label: "running", speed: 42, draw(c, t) { speedLines(c, t, 16, [40, 54, 68]); catSide(c, t, 2.2, 0.85, 1.12, 5); } },
+        walk: { verb: "walks", label: "walking", speed: 13, freq: 1.1, rig: "cat", pose: () => ({ swing: 0.45, stretch: 1, lift: 1.5 }) },
+        run: { verb: "runs", label: "running", speed: 42, freq: 2.2, rig: "cat", pose: () => ({ swing: 0.85, stretch: 1.12, lift: 5 }),
+          extra(c, t, w) { if (w > 0.5) speedLines(c, t, 16, [40, 54, 68]); } },
       },
     },
     tree: {
@@ -587,6 +599,7 @@
     for (const cl of clauses) {
       const words = cl.split(/[^\p{L}]+/u).filter(Boolean);
       const step = { acts: {}, chase: null };
+      const known = new Set(order);
       let pending = [], lastVerb = null, transitive = null, withNext = false;
       const meet = (key, w) => {
         if (order.includes(key)) return true;
@@ -628,7 +641,7 @@
         lastSubjects = [...subs]; pending = []; lastVerb = { verb: v, word: w };
         transitive = TRANSITIVE.has(v) ? subs : null;
       }
-      for (const n of pending) if (!step.acts[n]) assign(n, null, null);
+      for (const n of pending) if (!step.acts[n] && !known.has(n)) assign(n, null, null);
       if (pending.length) lastSubjects = [...pending];
       if (Object.keys(step.acts).length) steps.push(step);
     }
@@ -652,14 +665,17 @@
   const STAGE_W = 200, GROUND = 97;          // stage units; actors stand on GROUND
   const LIMIT_R = 150, LIMIT_L = 40;         // movers stay between these; past LIMIT_R the ground scrolls instead
   const STEP_SECONDS = 3.6, HOLD_SECONDS = 1.6;
+  const BLEND_SECONDS = 0.8;                 // how long one action takes to turn into the next
   const GAP_EVERY = 34, GAP = 5;             // ground texture: a 2-cell gap every 34 units
   const stage = document.getElementById("stage");
   const ctx = stage.getContext("2d");
-  const layers = Array.from({ length: MAX_ACTORS }, () => {
+  const makeLayer = () => {
     const cv = document.createElement("canvas");
     cv.width = COLS * SX; cv.height = ROWS * SY;
     return { cv, c: cv.getContext("2d", { willReadFrequently: true }), cov: new Float32Array(COLS * ROWS) };
-  });
+  };
+  const layers = Array.from({ length: MAX_ACTORS }, makeLayer);
+  const ghosts = Array.from({ length: MAX_ACTORS }, makeLayer);   // the outgoing action, while it dissolves into the new one
   const UNIT = layers[0].cv.width / STAGE_W;   // mask pixels per stage unit (same on both axes)
 
   let W = 0, H = 0, fs = 10, cellW = 6, ox = 0, oy = 0;
@@ -705,12 +721,23 @@
   }
   const actOf = A => SHAPES[A.key].actions[A.action];
 
-  // Start (or restart) the scene. carry=true keeps actors that were already on stage where they are.
-  function startScene(now, carry) {
-    const prev = carry && rt ? rt.actors : {};
-    rt = { actors: {}, step: -1, stepStart: now, ground: rt ? rt.ground : 0, chase: null, prev };
-    enterStep(0, now);
-    rt.prev = {};
+  const tOf = (start, now) => reduceMotion ? 0.35 : (now - start) / 1000;
+  const blendOf = (A, now) => !A.prev || reduceMotion ? 1 : smooth((now - A.transStart) / 1000 / BLEND_SECONDS);
+  const sameRig = (a, b) => !!a.rig && a.rig === b.rig;
+
+  // Change what an actor is doing without cutting: remember the old action and blend out of it.
+  function setAction(A, action, now) {
+    if (A.action === action) return;
+    A.prev = { action: A.action, start: A.actionStart };
+    A.transStart = now;
+    A.action = action; A.actionStart = now;
+  }
+
+  // Everyone's action at step i: the latest thing each actor was told to do at or before it.
+  function actsAt(i) {
+    const eff = {};
+    for (let j = 0; j <= i; j++) Object.assign(eff, scene.steps[j].acts);
+    return eff;
   }
 
   function enterStep(i, now) {
@@ -718,15 +745,12 @@
     const st = scene.steps[i];
     rt.chase = st.chase;
     const fresh = [];
-    for (const [key, a] of Object.entries(st.acts)) {
+    for (const [key, a] of Object.entries(actsAt(i))) {
       let A = rt.actors[key];
       if (!A) {
-        const old = rt.prev[key];
-        A = rt.actors[key] = old ? { key, sx: old.sx, born: old.born, action: null } : { key, sx: 0, born: now, action: null };
-        if (!old) fresh.push(A);
-      }
-      if (A.action !== a.action) A.actionStart = now;
-      A.action = a.action;
+        A = rt.actors[key] = { key, sx: 0, born: now, action: a.action, actionStart: now, prev: null, phase: 0, vel: SHAPES[key].actions[a.action].speed || 0 };
+        fresh.push(A);
+      } else setAction(A, a.action, now);
       A.letters = lettersOf(scene.nounWords[key] + a.word);
     }
     // place newcomers so they don't land on top of anyone
@@ -753,32 +777,96 @@
     renderStatus(); renderChips();
   }
 
+  // A new reading of the sentence. Keep everyone already on stage and pick up at the first step that changed.
+  function applyScene(next, now) {
+    const old = scene;
+    scene = next;
+    if (!rt) { rt = { actors: {}, step: 0, stepStart: now, ground: 0, chase: null }; enterStep(0, now); return; }
+    for (const k of Object.keys(rt.actors)) if (!next.order.includes(k)) delete rt.actors[k];
+    const n = next.steps.length, sig = st => JSON.stringify(st);
+    let i = 0;
+    if (old) while (i < n && i < old.steps.length && sig(old.steps[i]) === sig(next.steps[i])) i++;
+    if (i >= n) i = Math.min(rt.step, n - 1);
+    enterStep(i, now);
+  }
+
   function update(now, dt) {
     if (!rt) return;
-    if (scene.steps.length > 1) {
-      const el = (now - rt.stepStart) / 1000;
-      if (rt.step < scene.steps.length - 1) { if (el > STEP_SECONDS) enterStep(rt.step + 1, now); }
-      else if (el > STEP_SECONDS + HOLD_SECONDS) { startScene(now, false); return; }
+    const n = scene.steps.length;
+    if (n > 1 && (now - rt.stepStart) / 1000 > (rt.step === n - 1 ? STEP_SECONDS + HOLD_SECONDS : STEP_SECONDS)) {
+      enterStep((rt.step + 1) % n, now);       // loop back to the start, blending as usual
     }
     if (reduceMotion) return;
     const list = Object.values(rt.actors);
     for (const A of list) {
-      let v = actOf(A).speed || 0;
+      const act = actOf(A), k = blendOf(A, now);
+      // gait phase: cadence eases from the old action's to the new one's, so strides speed up rather than restart
+      const prev = A.prev && k < 1 ? SHAPES[A.key].actions[A.prev.action] : null;
+      const freq = prev && sameRig(prev, act) ? (prev.freq || 0) + ((act.freq || 0) - (prev.freq || 0)) * k : act.freq || 0;
+      A.phase += dt * TAU * freq;
+      let v = act.speed || 0;
       if (rt.chase && A.key === rt.chase.from && rt.actors[rt.chase.to] && v > 0) {
         const T = rt.actors[rt.chase.to], vt = actOf(T).speed || 0;
         v = T.sx - A.sx > 72 ? Math.max(v, vt * 1.3 + 6) : vt;   // close the gap, then keep pace
       }
-      A.v = v;
+      A.vel += (v - A.vel) * (1 - Math.exp(-dt * 2.2));          // momentum: speed up and slow down gradually
     }
     // Movers walk across the screen until LIMIT_R; past that, the world (ground and anything standing still) scrolls instead.
     let shift = 0;
-    for (const A of list) if (A.v > 0 && !SHAPES[A.key].sky) shift = Math.max(shift, A.sx + A.v * dt - LIMIT_R);
+    for (const A of list) if (A.vel > 0.5 && !SHAPES[A.key].sky) shift = Math.max(shift, A.sx + A.vel * dt - LIMIT_R);
     for (const A of list) {
       if (SHAPES[A.key].sky) continue;
-      if (A.v > 0) A.sx = Math.max(LIMIT_L, A.sx + A.v * dt - shift);
+      if (A.vel > 0.5) A.sx = Math.max(LIMIT_L, A.sx + A.vel * dt - shift);
       else { A.sx -= shift; if (A.sx < -45) A.sx += STAGE_W + 90; }
     }
     rt.ground += shift;
+  }
+
+  // ---------- drawing one actor ----------
+  function placeActor(c, A, act) {
+    const sh = SHAPES[A.key], sc = actorScale(A.key);
+    if (sh.sky) c.translate(A.sx - 50 * sc, 2);
+    else c.translate(A.sx - 50 * sc, GROUND * (1 - sc) - (act.lift ? act.lift * (1 - sc) + (scene.order.length > 1 ? 20 : 0) : 0));
+    c.scale(sc, sc);
+  }
+  // The current action. If the previous one shares a skeleton, blend the two poses.
+  function drawActor(c, A, now) {
+    const act = actOf(A), t = tOf(A.actionStart, now), k = blendOf(A, now);
+    const prev = A.prev && k < 1 ? SHAPES[A.key].actions[A.prev.action] : null;
+    placeActor(c, A, act);
+    if (!act.rig) { act.draw(c, t); return; }
+    let P = act.pose(A.phase, t);
+    if (prev && sameRig(prev, act)) {
+      const tp = tOf(A.prev.start, now);
+      P = lerpPose(prev.pose(A.phase, tp), P, k);
+      if (prev.extra) prev.extra(c, tp, 1 - k);
+      if (act.extra) act.extra(c, t, k);
+    } else if (act.extra) act.extra(c, t, 1);
+    RIGS[act.rig](c, P, A.phase);
+  }
+  // The outgoing action, drawn on its own so its letters can dissolve into the new shape.
+  const needsGhost = (A, now) => !!A.prev && blendOf(A, now) < 1 && !sameRig(SHAPES[A.key].actions[A.prev.action], actOf(A));
+  function drawGhost(c, A, now) {
+    const act = SHAPES[A.key].actions[A.prev.action], t = tOf(A.prev.start, now);
+    placeActor(c, A, act);
+    if (!act.rig) { act.draw(c, t); return; }
+    if (act.extra) act.extra(c, t, 1);
+    RIGS[act.rig](c, act.pose(A.phase, t), A.phase);
+  }
+  function coverage(L) {
+    const data = L.c.getImageData(0, 0, L.cv.width, L.cv.height).data, w = L.cv.width;
+    for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
+      let sum = 0;
+      for (let y = 0; y < SY; y += 2) for (let x = 0; x < SX; x += 2) sum += data[((r * SY + y) * w + col * SX + x) * 4 + 3];
+      L.cov[r * COLS + col] = sum / (255 * (SY / 2) * (SX / 2));
+    }
+  }
+  function beginLayer(L) {
+    const { c } = L;
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, L.cv.width, L.cv.height);
+    c.setTransform(UNIT, 0, 0, UNIT, 0, 0);
+    c.fillStyle = "#000"; c.strokeStyle = "#000"; c.lineCap = "round"; c.lineJoin = "round";
   }
 
   // ---------- status and chips ----------
@@ -791,7 +879,10 @@
     return Object.entries(st.acts).map(([k, a]) => `${scene.nounWords[k]} ${SHAPES[k].actions[a.action].label}`).join(", ");
   }
   function renderStatus() {
-    if (!scene) { statusEl.innerHTML = `No drawing for <b>${esc(text)}</b> yet, so it spells itself out`; return; }
+    if (!scene) {
+      statusEl.innerHTML = text ? `No drawing for <b>${esc(text)}</b> yet, so it spells itself out` : "Type a thing and what it does. It moves as soon as it recognises a word.";
+      return;
+    }
     let html;
     if (scene.steps.length === 1) html = `<b>${esc(text)}</b> → ${esc(describe(scene.steps[0]))}`;
     else html = scene.steps.map((st, i) => i === rt.step ? `<b class="now">${esc(describe(st))}</b>` : esc(describe(st))).join(" → ");
@@ -814,21 +905,38 @@
       b.addEventListener("click", () => {
         // With a verb already typed, an action chains on; otherwise it becomes the first action.
         const v = scene.hasVerb ? `${input.value.trim().replace(/[,\s]+$/, "")}, then ${act.verb}` : `${articleFor(noun)}${noun} ${act.verb}`;
-        input.value = v; commit(v);
+        input.value = v; live(v, true);
       });
       verbsEl.appendChild(b);
     }
   }
 
-  function commit(raw) {
-    const next = raw.trim().replace(/\s+/g, " ");
-    if (!lettersOf(next) || next === text) return;
-    text = next;
+  // Words that are still being typed: "ca" could become "cat" or "catch", so wait before acting on them.
+  const KNOWN = [...Object.keys(LOOKUP), ...Object.keys(VERBS), "then", "with"];
+  const meaning = w => nounOf(w) ? "n:" + nounOf(w) : VERBS[w] ? "v:" + VERBS[w] : w === "then" || w === "with" ? w : null;
+  function settled(raw) {
+    const m = raw.match(/(\p{L}+)$/u);
+    if (!m) return raw;
+    const w = m[1].toLowerCase(), mw = meaning(w);
+    return KNOWN.some(k => k.length > w.length && k.startsWith(w) && meaning(k) !== mw) ? raw.slice(0, -m[1].length) : raw;
+  }
+
+  // Called on every keystroke. Nothing restarts: the scene only changes where the meaning changed.
+  let lastSig = null;
+  function live(raw, final) {
+    text = raw.trim().replace(/\s+/g, " ");
     const now = performance.now();
-    scene = buildScene(text);
-    if (scene) { fallback = null; startScene(now, true); }
-    else { rt = null; fallback = { letters: lettersOf(text), born: now }; renderStatus(); renderChips(); }
-    try { history.replaceState(null, "", "#" + text.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "")); } catch (e) {}
+    const next = buildScene(final ? text : settled(raw).trim());
+    const sig = next ? JSON.stringify([next.steps, next.order, next.nounWords]) : "";
+    if (next && sig !== lastSig) { fallback = null; applyScene(next, now); }
+    else if (!next) {
+      rt = null; scene = null;
+      if (lettersOf(text)) { if (!fallback) fallback = { born: now }; fallback.letters = lettersOf(text); }
+      else fallback = null;
+      renderStatus(); renderChips();
+    } else renderStatus();
+    lastSig = sig;
+    if (final) try { history.replaceState(null, "", text ? "#" + text.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "") : location.pathname); } catch (e) {}
   }
 
   // ---------- frame ----------
@@ -839,37 +947,22 @@
     readColors(now);
     update(now, dt);
 
-    // 1. draw each actor's silhouette into its own mask layer
+    // 1. draw each actor's silhouette into its own mask layer, and 2. measure how much of each cell it covers.
+    //    While an action dissolves into one with a different skeleton, mix the old silhouette's coverage in.
     const actors = rt ? scene.order.map(k => rt.actors[k]).filter(Boolean) : [];
     const nLayers = rt ? actors.length : fallback ? 1 : 0;
     for (let i = 0; i < nLayers; i++) {
-      const { c } = layers[i];
-      c.setTransform(1, 0, 0, 1, 0, 0);
-      c.clearRect(0, 0, layers[i].cv.width, layers[i].cv.height);
-      c.setTransform(UNIT, 0, 0, UNIT, 0, 0);
-      c.fillStyle = "#000"; c.strokeStyle = "#000"; c.lineCap = "round"; c.lineJoin = "round";
-      c.save();
-      if (rt) {
-        const A = actors[i], sh = SHAPES[A.key], act = actOf(A), sc = actorScale(A.key);
-        const t = reduceMotion ? 0.35 : (now - A.actionStart) / 1000;
-        if (sh.sky) c.translate(A.sx - 50 * sc, 2);
-        else c.translate(A.sx - 50 * sc, GROUND * (1 - sc) - (act.lift ? act.lift * (1 - sc) + (scene.order.length > 1 ? 20 : 0) : 0));
-        c.scale(sc, sc);
-        act.draw(c, t);
-      } else {
-        drawWord(c, reduceMotion ? 0.35 : (now - startT) / 1000, text.length <= 14 ? text : fallback.letters.slice(0, 14));
-      }
-      c.restore();
-    }
-
-    // 2. measure how much of each cell each layer covers
-    for (let i = 0; i < nLayers; i++) {
-      const { cv, c, cov } = layers[i];
-      const data = c.getImageData(0, 0, cv.width, cv.height).data;
-      for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
-        let sum = 0;
-        for (let y = 0; y < SY; y += 2) for (let x = 0; x < SX; x += 2) sum += data[((r * SY + y) * cv.width + col * SX + x) * 4 + 3];
-        cov[r * COLS + col] = sum / (255 * (SY / 2) * (SX / 2));
+      const L = layers[i];
+      beginLayer(L);
+      L.c.save();
+      if (rt) drawActor(L.c, actors[i], now);
+      else drawWord(L.c, tOf(startT, now), text.length <= 14 ? text : fallback.letters.slice(0, 14));
+      L.c.restore();
+      coverage(L);
+      if (rt && needsGhost(actors[i], now)) {
+        const G = ghosts[i], k = blendOf(actors[i], now);
+        beginLayer(G); G.c.save(); drawGhost(G.c, actors[i], now); G.c.restore(); coverage(G);
+        for (let j = 0; j < L.cov.length; j++) L.cov[j] = L.cov[j] * k + G.cov[j] * (1 - k);
       }
     }
 
@@ -921,28 +1014,28 @@
 
   // ---------- input ----------
   let timer = 0;
-  input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => commit(input.value), 700); });
-  document.getElementById("form").addEventListener("submit", e => { e.preventDefault(); clearTimeout(timer); commit(input.value); });
+  input.addEventListener("input", () => { live(input.value, false); clearTimeout(timer); timer = setTimeout(() => live(input.value, true), 450); });
+  document.getElementById("form").addEventListener("submit", e => { e.preventDefault(); clearTimeout(timer); live(input.value, true); });
   document.addEventListener("keydown", e => {
     if (document.activeElement !== input && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && document.activeElement.tagName !== "BUTTON") input.focus();
   });
   for (const key of Object.keys(SHAPES)) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = key; b.dataset.key = key; b.setAttribute("aria-pressed", "false");
-    b.addEventListener("click", () => { const v = `${articleFor(key)}${key}`; input.value = v; commit(v); });
+    b.addEventListener("click", () => { const v = `${articleFor(key)}${key}`; input.value = v; live(v, true); });
     chipsEl.appendChild(b);
   }
-  for (const ex of ["a man walks, then runs", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man jumps, then dances, then sleeps"]) {
+  for (const ex of ["a man walks, then runs, then jumps", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man jumps, then dances, then sleeps"]) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = ex;
-    b.addEventListener("click", () => { input.value = ex; commit(ex); });
+    b.addEventListener("click", () => { input.value = ex; live(ex, true); });
     examplesEl.appendChild(b);
   }
 
   addEventListener("resize", layout);
-  const first = location.hash.slice(1).replace(/-/g, " ").toLowerCase() || "a man walks, then runs";
+  const first = location.hash.slice(1).replace(/-/g, " ").toLowerCase() || "a man walks, then runs, then jumps";
   input.value = first;
-  const go = () => { layout(); commit(first); requestAnimationFrame(frame); };
+  const go = () => { layout(); live(first, true); requestAnimationFrame(frame); };
   (document.fonts && document.fonts.load ? Promise.all([document.fonts.load('400 16px "JetBrains Mono"'), document.fonts.load('700 16px "JetBrains Mono"')]).catch(() => {}) : Promise.resolve()).then(go);
 })();
 </script>

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body style="margin:0">
+<title>Letterforms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Major+Mono+Display&display=swap">
+<style>
+  /* Layout: one full-screen stage; the object sits in a 40×24 type grid above a typewriter-style input line. */
+  :root {
+    --bg: #ECEEF1;
+    --ink: #14171C;
+    --ink-soft: #5A6170;
+    --grid: #D2D6DD;
+    --line: #C6CBD4;
+    --accent: #2F45C9;
+    --font-display: "Major Mono Display", "JetBrains Mono", ui-monospace, monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1013; --ink: #ECE9E2; --ink-soft: #8C93A3; --grid: #22262E; --line: #2C313B; --accent: #98A6FF;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1013; --ink: #ECE9E2; --ink-soft: #8C93A3; --grid: #22262E; --line: #2C313B; --accent: #98A6FF;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    overflow: hidden;
+  }
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .top {
+    position: fixed; left: 0; right: 0;
+    top: env(safe-area-inset-top, 0px);
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    padding: 18px 20px;
+    pointer-events: none;
+  }
+  .brand { font-family: var(--font-display); font-size: 18px; letter-spacing: 0.02em; }
+  .spec { font-size: 11px; color: var(--ink-soft); letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+
+  .dock {
+    position: fixed; left: 0; right: 0;
+    bottom: 0;
+    padding: 0 16px calc(28px + env(safe-area-inset-bottom, 0px));
+    display: flex; justify-content: center;
+  }
+  .dock-inner { width: 100%; max-width: 560px; display: grid; gap: 12px; }
+  .status { font-size: 12px; color: var(--ink-soft); min-height: 1.4em; }
+  .status b { color: var(--ink); font-weight: 700; }
+
+  form.line {
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1.5px solid var(--line);
+    padding-bottom: 8px;
+  }
+  form.line:focus-within { border-bottom-color: var(--accent); }
+  .prompt { color: var(--accent); font-size: 20px; font-weight: 700; }
+  #word {
+    flex: 1; min-width: 0;
+    background: transparent; border: 0; outline: 0;
+    color: var(--ink); caret-color: var(--accent);
+    font: 400 20px/1.3 var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+  #word::placeholder { color: var(--ink-soft); opacity: 0.7; }
+  .hint { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .chips button {
+    background: none; border: 0; padding: 2px 0; cursor: pointer;
+    font: 400 13px var(--font-mono); color: var(--ink-soft);
+    border-bottom: 1px dashed transparent;
+  }
+  .chips button:hover { color: var(--ink); border-bottom-color: var(--line); }
+  .chips button[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .chips button:focus-visible, #word:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  @media (max-width: 480px) {
+    .hint { display: none; }
+    #word, .prompt { font-size: 18px; }
+  }
+</style>
+
+<canvas id="stage" aria-hidden="true"></canvas>
+
+<header class="top">
+  <div class="brand">letterforms</div>
+  <div class="spec" id="spec">40 × 24 cells</div>
+</header>
+
+<div class="dock">
+  <div class="dock-inner">
+    <div class="status" id="status" aria-live="polite"></div>
+    <form class="line" id="form" autocomplete="off">
+      <label class="sr" for="word">Type a thing to draw with its letters</label>
+      <span class="prompt" aria-hidden="true">›</span>
+      <input id="word" name="word" type="text" maxlength="24" spellcheck="false" autocapitalize="off" placeholder="type a thing…">
+      <span class="hint">enter ↵</span>
+    </form>
+    <div class="chips" id="chips" role="group" aria-label="Things it knows how to draw"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const COLS = 40, ROWS = 24;          // type grid the object is set in
+  const SX = 6, SY = 10;               // mask pixels per cell (matches 0.6 monospace aspect)
+  const BOX = 0.24;                    // object height as a share of the screen
+  const TAU = Math.PI * 2, S = Math.sin, C = Math.cos;
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- drawing helpers (100×100 unit space) ----------
+  const line = (c, x1, y1, x2, y2, w) => { c.lineWidth = w; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); };
+  const circle = (c, x, y, r) => { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); };
+  const ellipse = (c, x, y, rx, ry, rot = 0) => { c.beginPath(); c.ellipse(x, y, rx, ry, rot, 0, TAU); c.fill(); };
+  const poly = (c, p) => { c.beginPath(); c.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) c.lineTo(p[i], p[i + 1]); c.closePath(); c.fill(); };
+  const hole = (c, fn) => { c.save(); c.globalCompositeOperation = "destination-out"; fn(); c.restore(); };
+
+  // ---------- the objects and their actions ----------
+  const SHAPES = {
+    man: { label: "a walking figure", draw(c, t) {
+      const p = t * TAU * 1.1;
+      c.translate(0, -Math.abs(S(p)) * 2.5);
+      circle(c, 52, 15, 8.5);
+      line(c, 50, 26, 49, 54, 10);
+      const leg = ph => {
+        const a = S(ph) * 0.55, kx = 49 + S(a) * 20, ky = 54 + C(a) * 20;
+        const b = a - 0.1 - Math.max(0, C(ph)) * 0.9, fx = kx + S(b) * 19, fy = ky + C(b) * 19;
+        line(c, 49, 54, kx, ky, 8); line(c, kx, ky, fx, fy, 7); line(c, fx, fy, fx + 6, fy, 6);
+      };
+      const arm = ph => {
+        const a = -S(ph) * 0.6, ex = 50 + S(a) * 14, ey = 29 + C(a) * 14, b = a + 0.6;
+        line(c, 50, 29, ex, ey, 7); line(c, ex, ey, ex + S(b) * 13, ey + C(b) * 13, 6);
+      };
+      arm(p + Math.PI); leg(p + Math.PI); leg(p); arm(p);
+    }},
+    bird: { label: "a bird, flapping", draw(c, t) {
+      const w = S(t * TAU * 2);
+      c.translate(0, -w * 3 + S(t * TAU * 0.3) * 4);
+      poly(c, [32, 54, 12, 45, 15, 63]);
+      ellipse(c, 48, 55, 20, 11, -0.15);
+      circle(c, 68, 46, 8.5);
+      poly(c, [75, 42, 88, 47, 75, 51]);
+      hole(c, () => circle(c, 70, 44, 2.3));
+      c.beginPath(); c.moveTo(38, 52);
+      c.quadraticCurveTo(34, 52 - w * 20, 28, 52 - w * 38);
+      c.lineTo(46, 52 - w * 26);
+      c.quadraticCurveTo(55, 52 - w * 12, 58, 52);
+      c.closePath(); c.fill();
+    }},
+    fish: { label: "a fish, swimming", draw(c, t) {
+      const sw = S(t * TAU * 1.4);
+      c.translate(S(t * TAU * 0.25) * 8, S(t * TAU * 0.5) * 3);
+      for (let i = 0; i < 3; i++) {
+        const ph = (t * 0.5 + i / 3) % 1;
+        circle(c, 80 + ph * 4 + S(ph * 10) * 2, 44 - ph * 40, 1.8 + ph * 2.2);
+      }
+      c.translate(48, 52); c.scale(1.2, 1.2); c.rotate(sw * 0.05);
+      ellipse(c, 0, 0, 26, 14);
+      c.save(); c.translate(-22, 0); c.rotate(sw * 0.45); poly(c, [0, 0, -18, -15, -13, 0, -18, 15]); c.restore();
+      poly(c, [-4, -12, 6, -23, 12, -10]);
+      poly(c, [0, 10, 8, 19, 10, 9]);
+      hole(c, () => circle(c, 15, -3, 2.8));
+      hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.moveTo(6, -11); c.quadraticCurveTo(1, 0, 6, 11); c.stroke(); });
+    }},
+    cat: { label: "a cat, swishing its tail", draw(c, t) {
+      const a = S(t * TAU * 0.6);
+      c.lineWidth = 7; c.beginPath(); c.moveTo(60, 88);
+      c.bezierCurveTo(84, 92, 86 + a * 6, 70, 76 + a * 14, 52 + Math.abs(a) * 4); c.stroke();
+      ellipse(c, 46, 72, 20, 21);
+      ellipse(c, 39, 92, 6, 4); ellipse(c, 53, 92, 6, 4);
+      c.save(); c.translate(46, 50); c.rotate(S(t * TAU * 0.25) * 0.08); c.translate(-46, -50);
+      circle(c, 46, 38, 14);
+      poly(c, [34, 31, 33, 13, 44, 26]);
+      poly(c, [48, 26, 59, 13, 58, 31]);
+      const blink = (t % 3.6) < 0.18;
+      hole(c, () => {
+        if (blink) { c.fillRect(37, 37, 7, 2.8); c.fillRect(48, 37, 7, 2.8); }
+        else { ellipse(c, 40.5, 38, 2.6, 3.6); ellipse(c, 51.5, 38, 2.6, 3.6); }
+      });
+      c.restore();
+    }},
+    tree: { label: "a tree in the wind", draw(c, t) {
+      const s = S(t * TAU * 0.35);
+      c.beginPath(); c.moveTo(43, 96); c.lineTo(57, 96); c.lineTo(53.5, 62);
+      c.quadraticCurveTo(51 + s, 52, 50 + s * 2, 46); c.lineTo(46.5, 62); c.closePath(); c.fill();
+      const blobs = [[50, 48, 13], [36, 40, 13], [64, 40, 13], [50, 30, 17], [41, 20, 12], [59, 20, 12]];
+      for (const [x, y, r] of blobs) { const k = (72 - y) / 52; circle(c, x + s * 6 * k, y + S(t * TAU * 0.7 + x) * 0.8, r); }
+      for (let i = 0; i < 3; i++) {
+        const ph = (t * 0.18 + i / 3) % 1;
+        circle(c, 30 + i * 18 + S(ph * 9 + i) * 6 + ph * 12, 56 + ph * 38, 2.8);
+      }
+    }},
+    heart: { label: "a beating heart", draw(c, t) {
+      const ph = t % 1.1;
+      const beat = Math.exp(-ph * 9) + (ph > 0.22 ? Math.exp(-(ph - 0.22) * 9) * 0.7 : 0);
+      const s = 1 + beat * 0.14;
+      c.translate(50, 54); c.scale(s, s);
+      c.beginPath(); c.moveTo(0, 32);
+      c.bezierCurveTo(-46, 4, -30, -36, 0, -14);
+      c.bezierCurveTo(30, -36, 46, 4, 0, 32); c.fill();
+    }},
+    sun: { label: "a turning sun", draw(c, t) {
+      circle(c, 50, 50, 17);
+      for (let i = 0; i < 12; i++) {
+        const a = t * 0.5 + i * TAU / 12, L = 8 + (i % 2 ? 0 : 5) + S(t * 3 + i) * 2;
+        line(c, 50 + C(a) * 24, 50 + S(a) * 24, 50 + C(a) * (26 + L), 50 + S(a) * (26 + L), 5.5);
+      }
+      hole(c, () => {
+        ellipse(c, 44, 46, 2.6, 3.4); ellipse(c, 56, 46, 2.6, 3.4);
+        c.lineWidth = 2.8; c.beginPath(); c.arc(50, 51, 7, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke();
+      });
+    }},
+    snake: { label: "a slithering snake", draw(c, t) {
+      const n = 36; let hy = 0;
+      for (let i = 0; i <= n; i++) {
+        const u = i / n, x = 8 + u * 72, y = 60 + S(u * 10 + t * 5) * 11 * (1 - u * 0.65);
+        circle(c, x, y, 2.2 + u * 4.5); hy = y;
+      }
+      ellipse(c, 84, hy, 9, 6.5);
+      if ((t % 1.8) < 0.35) { line(c, 92, hy, 99, hy, 2.6); }
+      hole(c, () => circle(c, 86, hy - 2, 2.2));
+    }},
+    ball: { label: "a bouncing ball", draw(c, t) {
+      const ph = (t % 1) / 1, h = 4 * ph * (1 - ph), r = 16, ground = 90;
+      const sq = h < 0.1 ? (0.1 - h) / 0.1 : 0, sx = 1 + sq * 0.35, sy = 1 - sq * 0.3;
+      const y = ground - r * sy - h * 52;
+      ellipse(c, 50, y, r * sx, r * sy);
+      hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.ellipse(50, y, r * sx, r * sy * 0.35, 0, 0, TAU); c.stroke(); });
+      const w = (1 - h) * 14 + 4; c.fillRect(50 - w, ground + 2, w * 2, 4.5);
+    }},
+    flower: { label: "a flower, swaying", draw(c, t) {
+      const s = S(t * TAU * 0.3) * 5, hx = 50 + s, hy = 30;
+      c.lineWidth = 5; c.beginPath(); c.moveTo(50, 97); c.quadraticCurveTo(50 - s, 66, hx, hy + 8); c.stroke();
+      ellipse(c, 42 - s * 0.3, 74, 10, 4.5, -0.5);
+      ellipse(c, 58 - s * 0.5, 62, 10, 4.5, 0.5);
+      for (let i = 0; i < 6; i++) { const a = t * 0.6 + i * TAU / 6; ellipse(c, hx + C(a) * 12, hy + S(a) * 12, 10, 6, a); }
+      hole(c, () => circle(c, hx, hy, 7));
+      circle(c, hx, hy, 4.2);
+    }},
+  };
+
+  // Words that map onto each object.
+  const ALIASES = {
+    man: ["man", "woman", "person", "human", "boy", "girl", "me", "you", "people", "walk", "walker", "guy", "lady"],
+    bird: ["bird", "crow", "pigeon", "sparrow", "dove", "robin", "fly", "seagull", "gull"],
+    fish: ["fish", "goldfish", "salmon", "swim", "carp", "tuna"],
+    cat: ["cat", "kitty", "kitten", "meow"],
+    tree: ["tree", "forest", "oak", "pine", "wood"],
+    heart: ["heart", "love", "beat"],
+    sun: ["sun", "sunshine", "summer", "day"],
+    snake: ["snake", "serpent", "python", "cobra"],
+    ball: ["ball", "bounce", "football", "basketball"],
+    flower: ["flower", "rose", "tulip", "daisy", "bloom"],
+  };
+  const LOOKUP = {};
+  for (const [k, list] of Object.entries(ALIASES)) for (const w of list) LOOKUP[w] = k;
+
+  function resolve(text) {
+    const words = text.toLowerCase().split(/[^\p{L}]+/u).filter(Boolean);
+    for (const w of words) {
+      if (LOOKUP[w]) return LOOKUP[w];
+      if (w.endsWith("s") && LOOKUP[w.slice(0, -1)]) return LOOKUP[w.slice(0, -1)];
+    }
+    return null;
+  }
+
+  // Fallback: spell the word itself, in its own letters, with a wave.
+  function drawWord(c, t, word) {
+    c.font = '700 100px "JetBrains Mono", monospace';
+    const w100 = c.measureText(word).width || 1;
+    const fs = Math.min(40, 96 / (w100 / 100));
+    c.font = `700 ${fs}px "JetBrains Mono", monospace`;
+    c.textBaseline = "middle";
+    // Cells are taller than wide, so stretch the type vertically to give each glyph enough rows.
+    c.translate(0, 50); c.scale(1, 2.4); c.translate(0, -50);
+    const cw = c.measureText(word).width / word.length, x0 = 50 - (cw * word.length) / 2;
+    [...word].forEach((ch, i) => c.fillText(ch, x0 + i * cw, 50 + S(t * 3 - i * 0.7) * 3));
+  }
+
+  // ---------- canvases ----------
+  const stage = document.getElementById("stage");
+  const ctx = stage.getContext("2d");
+  const mask = document.createElement("canvas");
+  mask.width = COLS * SX; mask.height = ROWS * SY;
+  const mctx = mask.getContext("2d", { willReadFrequently: true });
+
+  let W = 0, H = 0, fs = 10, cellW = 6, ox = 0, oy = 0;
+  function layout() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    stage.width = Math.round(W * dpr); stage.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    let boxH = Math.max(150, H * BOX);
+    fs = boxH / ROWS;
+    ctx.font = `400 ${fs}px "JetBrains Mono", monospace`;
+    cellW = ctx.measureText("M").width || fs * 0.6;
+    const maxW = W - 32;
+    if (cellW * COLS > maxW) { const k = maxW / (cellW * COLS); fs *= k; cellW *= k; }
+    ox = Math.round((W - cellW * COLS) / 2);
+    oy = Math.round(H * 0.42 - (fs * ROWS) / 2);
+    oy = Math.max(64, oy);
+  }
+
+  // ---------- colors from tokens ----------
+  let colors = {}, colorsAt = -1;
+  function readColors(now) {
+    if (now - colorsAt < 500) return;
+    const cs = getComputedStyle(document.documentElement);
+    colors = { ink: cs.getPropertyValue("--ink").trim(), soft: cs.getPropertyValue("--ink-soft").trim(), grid: cs.getPropertyValue("--grid").trim(), accent: cs.getPropertyValue("--accent").trim() };
+    colorsAt = now;
+  }
+
+  // ---------- state ----------
+  const statusEl = document.getElementById("status");
+  const input = document.getElementById("word");
+  const chipsEl = document.getElementById("chips");
+  const specEl = document.getElementById("spec");
+  let current = { text: "", letters: "", shape: null, born: 0 };
+  const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+
+  function commit(raw) {
+    const text = raw.trim();
+    const letters = [...text].filter(ch => /\p{L}/u.test(ch)).join("").toLowerCase();
+    if (!letters) return;
+    if (letters === current.letters && text === current.text) return;
+    const shape = resolve(text);
+    current = { text, letters, shape, born: performance.now() };
+    for (const b of chipsEl.children) b.setAttribute("aria-pressed", String(b.dataset.key === shape));
+    const lettersList = [...new Set(letters)].join(", ");
+    statusEl.innerHTML = shape
+      ? `<b>${escapeHtml(text)}</b> → ${SHAPES[shape].label}, set in ${escapeHtml(lettersList)}`
+      : `No drawing for <b>${escapeHtml(text)}</b> yet, so it spells itself out`;
+    try { history.replaceState(null, "", "#" + letters.replace(/[^a-z]/g, "")); } catch (e) {}
+  }
+  const escapeHtml = s => s.replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+
+  // ---------- frame ----------
+  const cov = new Float32Array(COLS * ROWS);
+  const start = performance.now();
+  function frame(now) {
+    readColors(now);
+    const t = reduceMotion ? 0.35 : (now - start) / 1000;
+
+    // 1. draw the object's silhouette into the small mask canvas
+    mctx.setTransform(1, 0, 0, 1, 0, 0);
+    mctx.clearRect(0, 0, mask.width, mask.height);
+    mctx.setTransform(mask.width / 100, 0, 0, mask.height / 100, 0, 0);
+    mctx.fillStyle = "#000"; mctx.strokeStyle = "#000"; mctx.lineCap = "round"; mctx.lineJoin = "round";
+    if (current.letters) {
+      mctx.save();
+      if (current.shape) SHAPES[current.shape].draw(mctx, t);
+      else drawWord(mctx, t, current.text.length <= 12 ? current.text : current.letters.slice(0, 12));
+      mctx.restore();
+    }
+
+    // 2. measure how much of each cell is covered
+    const data = mctx.getImageData(0, 0, mask.width, mask.height).data;
+    for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
+      let sum = 0;
+      for (let y = 0; y < SY; y += 2) for (let x = 0; x < SX; x += 2) sum += data[((r * SY + y) * mask.width + col * SX + x) * 4 + 3];
+      cov[r * COLS + col] = sum / (255 * (SY / 2) * (SX / 2));
+    }
+
+    // 3. set the letters: each horizontal run spells the word from its start
+    ctx.clearRect(0, 0, W, H);
+    ctx.textBaseline = "top";
+    const age = (now - current.born) / 1000;
+    const flying = !reduceMotion && age < 1.6;
+    const rect = input.getBoundingClientRect();
+    const fromX = rect.left + 24, fromY = rect.top;
+    const word = current.letters;
+    const heavy = [], light = [], dots = [];
+    let count = 0;
+    for (let r = 0; r < ROWS; r++) {
+      let k = 0;
+      for (let col = 0; col < COLS; col++) {
+        const v = cov[r * COLS + col];
+        let x = ox + col * cellW, y = oy + r * fs;
+        if (v < 0.3 || !word) { k = 0; dots.push(x, y); continue; }
+        const ch = word[k % word.length]; k++; count++;
+        if (flying) {
+          const id = r * COLS + col, d = hash(id) * 0.6, q = Math.min(1, Math.max(0, (age - d) / 0.9));
+          const e = 1 - Math.pow(1 - q, 3);
+          const sx = fromX + (hash(id + 7) - 0.5) * 120, sy = fromY + (hash(id + 3) - 0.5) * 30;
+          x = sx + (x - sx) * e; y = sy + (y - sy) * e;
+        }
+        (v >= 0.72 ? heavy : light).push(x, y, ch);
+      }
+    }
+
+    ctx.font = `400 ${fs}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = colors.grid;
+    for (let i = 0; i < dots.length; i += 2) ctx.fillText("·", dots[i], dots[i + 1]);
+    ctx.fillStyle = colors.soft;
+    for (let i = 0; i < light.length; i += 3) ctx.fillText(light[i + 2], light[i], light[i + 1]);
+    ctx.font = `700 ${fs}px "JetBrains Mono", monospace`;
+    ctx.fillStyle = colors.ink;
+    for (let i = 0; i < heavy.length; i += 3) ctx.fillText(heavy[i + 2].toUpperCase(), heavy[i], heavy[i + 1]);
+
+    specEl.textContent = `${COLS} × ${ROWS} cells · ${count} letters`;
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- input ----------
+  let timer = 0;
+  input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => commit(input.value), 550); });
+  document.getElementById("form").addEventListener("submit", e => { e.preventDefault(); clearTimeout(timer); commit(input.value); });
+  document.addEventListener("keydown", e => {
+    if (document.activeElement !== input && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && document.activeElement.tagName !== "BUTTON") input.focus();
+  });
+  for (const key of Object.keys(SHAPES)) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = key; b.dataset.key = key; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => { input.value = key; commit(key); });
+    chipsEl.appendChild(b);
+  }
+
+  addEventListener("resize", layout);
+  const first = (location.hash.slice(1) || "man").toLowerCase();
+  input.value = first;
+  const go = () => { layout(); commit(first); requestAnimationFrame(frame); };
+  (document.fonts && document.fonts.load ? Promise.all([document.fonts.load('400 16px "JetBrains Mono"'), document.fonts.load('700 16px "JetBrains Mono"')]).catch(() => {}) : Promise.resolve()).then(go);
+})();
+</script>
+</body>
+</html>

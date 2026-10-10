@@ -273,7 +273,11 @@
   const SHAPES = {
     man: {
       size: 1, name: "figure", default: "stand",
-      verbs: { stand: "stand", walk: "walk", run: "run", jump: "jump", dance: "dance", wave: "wave", sit: "sit", sleep: "sleep", chase: "run", flee: "run" },
+      verbs: {
+        stand: "stand", stop: "stand", walk: "walk", run: "run", jump: "jump", dance: "dance", wave: "wave", sit: "sit", sleep: "sleep",
+        chase: "run", flee: "run", crouch: "crouch", fall: "fall", kick: "kick", clap: "clap", point: "point", stretch: "stretch",
+        think: "think", laugh: "laugh", look: "look", slither: "crawl",
+      },
       // pose(p, t): p is the actor's running gait phase (shared across actions so strides carry over), t is seconds in this action.
       actions: {
         stand: { verb: "stands", label: "standing", rig: "figure", pose: (p, t) => (
@@ -308,6 +312,35 @@
         sit: { verb: "sits", label: "sitting", rig: "figure", pose: (p, t) => (
           { x: 44, y: 72 + S(t * 1.6) * 0.5, lean: -0.05, headY: S(t * 1.2) * 0.8, legs: [[1.5, 0.05], [1.42, 0.12]], arms: [[0.6, 1.3], [0.5, 1.2]] }),
           extra(c, t, w) { if (w > 0.5) { c.fillRect(28, 73, 28, 5); line(c, 32, 76, 32, 96, 4); line(c, 52, 76, 52, 96, 4); } } },
+        crouch: { verb: "crouches", label: "crouching", rig: "figure", pose: (p, t) => (
+          { y: 66 + S(t * 1.6) * 0.5, lean: 0.35, legs: [[1.0, -0.6], [0.85, -0.75]], arms: [[0.9, 1.4], [0.7, 1.3]] }) },
+        fall: { verb: "falls", label: "fallen flat", rig: "figure", pose: (p, t) => (
+          { y: 54 + S(t * 1.2) * 0.4, rot: PI / 2, dy: 40, legs: [[0.1, 0.1], [-0.05, 0]], arms: [[2.6, 2.8], [2.4, 2.6]] }) },
+        kick: { verb: "kicks", label: "kicking", rig: "figure", pose: (p, t) => {
+          const k = Math.pow(Math.max(0, S(t * TAU * 0.8)), 2), th = 0.2 + k * 1.3;
+          return { y: 54, lean: -k * 0.15, legs: [[th, th - (1 - k) * 0.6], [-0.15, -0.1]], arms: [[-0.2 - k * 0.6, -0.3], [0.6, 0.9]] };
+        }},
+        clap: { verb: "claps", label: "clapping", rig: "figure", pose: (p, t) => {
+          const q = Math.abs(S(t * TAU * 1.5));
+          return { y: 54 - q * 0.8, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[1.2, 1.9 + 0.4 * q], [1.2, 1.9 - 0.4 * q]] };
+        }},
+        point: { verb: "points", label: "pointing", rig: "figure", pose: (p, t) => (
+          { y: 54 + S(t * 1.6) * 0.5, headX: 1.5, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[1.57 + S(t * 2) * 0.05, 1.57], [-0.3, -0.2]] }) },
+        stretch: { verb: "stretches", label: "stretching", rig: "figure", pose: (p, t) => {
+          const s = S(t * 1.5);
+          return { y: 52 - Math.abs(s), lean: s * 0.08, legs: [[0.2, 0.14], [-0.2, -0.14]], arms: [[2.9 + s * 0.1, 3.05], [-2.9 + s * 0.1, -3.05]] };
+        }},
+        think: { verb: "thinks", label: "thinking", rig: "figure", pose: (p, t) => (
+          { y: 54, headY: S(t * 0.8) * 0.6, headX: -0.5, legs: [[0.15, 0.1], [-0.2, -0.14]], arms: [[0.5, 3.0], [-0.2, 0.6]] }),
+          extra(c, t) { c.lineWidth = 3; c.beginPath(); c.arc(68, 8 + S(t * 2) * 1.5, 4, PI, 0.4 * PI); c.stroke(); circle(c, 68, 19 + S(t * 2) * 1.5, 1.8); } },
+        laugh: { verb: "laughs", label: "laughing", rig: "figure", pose: (p, t) => (
+          { y: 54 + Math.abs(S(t * TAU * 4)) * 1.5, lean: -0.15, headY: -Math.abs(S(t * TAU * 4)) * 1.2, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[0.6, 1.6], [0.5, 1.5]] }) },
+        look: { verb: "looks", label: "looking around", rig: "figure", pose: (p, t) => (
+          { y: 54, headX: S(t * 0.9) * 2, lean: S(t * 0.9) * 0.05, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[1.3, 2.75], [-0.3, -0.2]] }) },
+        crawl: { verb: "crawls", label: "crawling", speed: 6, freq: 0.9, rig: "figure", pose: p => {
+          const s = S(p) * 0.25;
+          return { x: 36, y: 76, lean: 1.4, legs: [[s, -1.57 + s], [-s, -1.57 - s]], arms: [[-s, -s], [s, s]] };
+        }},
         sleep: { verb: "sleeps", label: "sleeping", rig: "figure", pose: (p, t) => (
           { y: 54 + S(t * 1.4) * 0.8, rot: -PI / 2, dy: 40, legs: [[0, 0], [0.05, 0.05]], arms: [[0.1, 0.1], [0.05, 0.05]] }),
           extra(c, t, w) { if (w > 0.6) { ellipse(c, 12, 94, 9, 3.5); zzz(c, t, 22, 72); } } },
@@ -315,7 +348,7 @@
     },
     bird: {
       size: 0.5, name: "bird", default: "fly",
-      verbs: { fly: "fly", glide: "glide", sit: "perch", stand: "perch", sleep: "perch", walk: "hop", jump: "hop", run: "hop", chase: "fly", flee: "fly" },
+      verbs: { fly: "fly", glide: "glide", sit: "perch", stand: "perch", sleep: "perch", stop: "perch", land: "perch", look: "perch", walk: "hop", jump: "hop", run: "hop", chase: "fly", flee: "fly" },
       actions: {
         fly: { verb: "flies", label: "flying", speed: 26, lift: 55, draw(c, t) {
           const w = S(t * TAU * 2);
@@ -367,7 +400,7 @@
     },
     cat: {
       size: 0.6, name: "cat", default: "sit",
-      verbs: { sit: "sit", stand: "sit", sleep: "sleep", walk: "walk", run: "run", chase: "run", flee: "run" },
+      verbs: { sit: "sit", stand: "sit", stop: "sit", crouch: "sit", look: "sit", sleep: "sleep", walk: "walk", run: "run", chase: "run", flee: "run" },
       actions: {
         sit: { verb: "sits", label: "sitting, swishing its tail", draw(c, t) {
           const a = S(t * TAU * 0.6);
@@ -537,6 +570,14 @@
     circle(c, hx, hy, 4.2);
   }
 
+  // Anything without its own way to stop just freezes its usual drawing.
+  for (const sh of Object.values(SHAPES)) {
+    if (sh.verbs.stop) continue;
+    const d = sh.actions[sh.default];
+    sh.actions.still = { verb: "stops", label: "stopped", lift: d.lift, draw: c => d.draw(c, 0.35) };
+    sh.verbs.stop = "still";
+  }
+
   // Nouns that map onto each object.
   const ALIASES = {
     man: ["man", "men", "woman", "women", "person", "human", "boy", "girl", "me", "you", "people", "guy", "lady", "kid", "child", "he", "she", "i"],
@@ -556,9 +597,10 @@
 
   // Verb forms that map onto each canonical verb.
   const VERB_FORMS = {
-    stand: "stand stands standing stood wait waits waiting",
-    walk: "walk walks walking walked stroll strolls strolling wander wanders wandering",
-    run: "run runs running ran sprint sprints sprinting jog jogs jogging race races racing rush rushes",
+    stand: "stand stands standing stood wait waits waiting get gets getting got rise",
+    stop: "stop stops stopping stopped halt halts halting halted freeze freezes freezing froze pause pauses pausing paused stay stays staying still",
+    walk: "walk walks walking walked stroll strolls strolling wander wanders wandering slow slows slowing slowed march marches marching",
+    run: "run runs running ran sprint sprints sprinting jog jogs jogging race races racing rush rushes hurry hurries hurrying hurried speed speeds speeding",
     jump: "jump jumps jumping jumped leap leaps leaping leapt hop hops hopping hopped",
     dance: "dance dances dancing danced boogie",
     wave: "wave waves waving waved greet greets greeting",
@@ -570,7 +612,7 @@
     grow: "grow grows growing grew sprout sprouts sprouting",
     bloom: "bloom blooms blooming bloomed open opens opening",
     break: "break breaks breaking broke broken shatter shatters",
-    rise: "rise rises rising rose",
+    rise: "rises rising rose",
     set: "set sets setting",
     roll: "roll rolls rolling rolled",
     bounce: "bounce bounces bouncing bounced",
@@ -581,10 +623,21 @@
     sway: "sway sways swaying swayed",
     chase: "chase chases chasing chased follow follows following followed hunt hunts hunting catch catches catching",
     flee: "flee flees fleeing fled escape escapes escaping",
+    crouch: "crouch crouches crouching crouched kneel kneels kneeling knelt duck ducks ducking squat squats squatting",
+    fall: "fall falls falling fell trip trips tripping tripped collapse collapses collapsing stumble stumbles faint faints",
+    kick: "kick kicks kicking kicked",
+    clap: "clap claps clapping clapped applaud applauds cheer cheers cheering",
+    point: "point points pointing pointed",
+    stretch: "stretch stretches stretching stretched reach reaches reaching yawn yawns yawning",
+    think: "think thinks thinking thought wonder wonders wondering ponder ponders",
+    laugh: "laugh laughs laughing laughed giggle giggles giggling smile smiles smiling",
+    look: "look looks looking looked watch watches watching watched see sees saw stare stares staring search searches",
+    land: "land lands landing landed",
   };
   const VERBS = {};
   for (const [k, forms] of Object.entries(VERB_FORMS)) for (const w of forms.split(" ")) VERBS[w] = k;
   const TRANSITIVE = new Set(["chase"]);
+  const FILLER = new Set("a an the and then to at of in on is are it its his her their them with up down around over away again very slowly quickly back forward too also so but or now suddenly finally just still off onto into from by".split(" "));
   const MAX_ACTORS = 3;
 
   // ---------- reading a sentence into a scene ----------
@@ -600,7 +653,8 @@
       const words = cl.split(/[^\p{L}]+/u).filter(Boolean);
       const step = { acts: {}, chase: null };
       const known = new Set(order);
-      let pending = [], lastVerb = null, transitive = null, withNext = false;
+      let pending = [], lastVerb = null, transitive = null, withNext = false, sawVerb = false;
+      const unknown = words.filter(w => !nounOf(w) && !VERBS[w] && !FILLER.has(w));
       const meet = (key, w) => {
         if (order.includes(key)) return true;
         if (order.length >= MAX_ACTORS) return false;
@@ -631,7 +685,7 @@
         if (w === "with") { withNext = true; continue; }
         const v = VERBS[w];
         if (!v) continue;
-        hasVerb = true;
+        hasVerb = true; sawVerb = true;
         let subs = pending.length ? pending : lastSubjects;
         if (!subs.length) {                                  // a verb with no subject: pick a thing that can do it
           const k = Object.keys(SHAPES).find(k => SHAPES[k].verbs[v] && v !== "flee") || "man";
@@ -641,6 +695,7 @@
         lastSubjects = [...subs]; pending = []; lastVerb = { verb: v, word: w };
         transitive = TRANSITIVE.has(v) ? subs : null;
       }
+      if (!sawVerb && unknown.length && (pending.length || lastSubjects.length)) notes.push(`“${unknown[0]}” isn't an action it knows yet`);
       for (const n of pending) if (!step.acts[n] && !known.has(n)) assign(n, null, null);
       if (pending.length) lastSubjects = [...pending];
       if (Object.keys(step.acts).length) steps.push(step);
@@ -809,7 +864,7 @@
         const T = rt.actors[rt.chase.to], vt = actOf(T).speed || 0;
         v = T.sx - A.sx > 72 ? Math.max(v, vt * 1.3 + 6) : vt;   // close the gap, then keep pace
       }
-      A.vel += (v - A.vel) * (1 - Math.exp(-dt * 2.2));          // momentum: speed up and slow down gradually
+      A.vel += (v - A.vel) * (1 - Math.exp(-dt * (v < A.vel ? 3.5 : 2.2)));   // momentum: speed up gradually, brake a little faster
     }
     // Movers walk across the screen until LIMIT_R; past that, the world (ground and anything standing still) scrolls instead.
     let shift = 0;
@@ -886,7 +941,7 @@
     let html;
     if (scene.steps.length === 1) html = `<b>${esc(text)}</b> → ${esc(describe(scene.steps[0]))}`;
     else html = scene.steps.map((st, i) => i === rt.step ? `<b class="now">${esc(describe(st))}</b>` : esc(describe(st))).join(" → ");
-    if (!scene.hasVerb) html += `. Add an action to change how it moves.`;
+    if (!scene.hasVerb && !scene.notes.length) html += `. Add an action to change how it moves.`;
     if (scene.notes.length) html += `<span class="note"> · ${esc(scene.notes.join(", "))}</span>`;
     statusEl.innerHTML = html;
   }
@@ -1025,7 +1080,7 @@
     b.addEventListener("click", () => { const v = `${articleFor(key)}${key}`; input.value = v; live(v, true); });
     chipsEl.appendChild(b);
   }
-  for (const ex of ["a man walks, then runs, then jumps", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man jumps, then dances, then sleeps"]) {
+  for (const ex of ["a man walks, then runs, then jumps", "a man runs, trips and falls, then gets up", "a man walks and then he stops", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man jumps, then dances, then sleeps"]) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = ex;
     b.addEventListener("click", () => { input.value = ex; live(ex, true); });

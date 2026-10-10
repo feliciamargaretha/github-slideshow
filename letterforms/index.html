@@ -551,7 +551,7 @@
       },
     },
     flower: {
-      size: 0.22, name: "flower", default: "sway",
+      size: 0.3, name: "flower", default: "sway",
       verbs: { sway: "sway", bloom: "bloom", grow: "bloom" },
       actions: {
         sway: { verb: "sways", label: "swaying", draw(c, t) { flower(c, t, 1); } },
@@ -560,6 +560,16 @@
     },
   };
   function flower(c, t, g) {
+    if (drawingSmall) {
+      // Icon version for small sizes: a big round head with a hollow middle on a stem, so the outline reads as a flower.
+      const s = S(t * TAU * 0.3) * 3, hx = 50 + s, hy = 30, r = 6 + 20 * g;
+      c.lineWidth = 7; c.beginPath(); c.moveTo(50, 97); c.quadraticCurveTo(50 - s, 72, hx, hy + 20); c.stroke();
+      ellipse(c, 37 - s * 0.3, 80, 12, 6, -0.5);
+      ellipse(c, 63 - s * 0.5, 72, 12, 6, 0.5);
+      circle(c, hx, hy, r);
+      if (g > 0.4) hole(c, () => circle(c, hx, hy, r * 0.32));
+      return;
+    }
     const s = S(t * TAU * 0.3) * 5, hx = 50 + s, hy = 30;
     c.lineWidth = 5; c.beginPath(); c.moveTo(50, 97); c.quadraticCurveTo(50 - s, 66, hx, hy + 8); c.stroke();
     ellipse(c, 42 - s * 0.3, 74, 10, 4.5, -0.5);
@@ -720,7 +730,8 @@
   const STAGE_W = 200, GROUND = 97;          // stage units; actors stand on GROUND
   const LIMIT_R = 150, LIMIT_L = 40;         // movers stay between these; past LIMIT_R the ground scrolls instead
   const STEP_SECONDS = 3.6, HOLD_SECONDS = 1.6;
-  const BLEND_SECONDS = 0.8;                 // how long one action takes to turn into the next
+  const BLEND_SECONDS = 0.8;
+  const OUTLINE_BELOW = 0.5;                 // drawn smaller than this, a thing switches to an outline of letters                 // how long one action takes to turn into the next
   const GAP_EVERY = 34, GAP = 5;             // ground texture: a 2-cell gap every 34 units
   const stage = document.getElementById("stage");
   const ctx = stage.getContext("2d");
@@ -918,6 +929,21 @@
       L.cov[r * COLS + col] = sum / (255 * (SY / 2) * (SX / 2));
     }
   }
+  // Outline mode for small things: catch thin strokes that cover only part of a cell,
+  // then keep just the cells on the edge so the shape reads as a line drawing instead of a blob.
+  const onCells = new Uint8Array(COLS * ROWS);
+  let drawingSmall = false;                  // true while drawing a thing small enough for its icon version
+  function outline(cov) {
+    for (let j = 0; j < cov.length; j++) onCells[j] = cov[j] >= 0.12 ? 1 : 0;
+    for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
+      const j = r * COLS + col;
+      if (!onCells[j]) { cov[j] = 0; continue; }
+      const edge = col === 0 || col === COLS - 1 || r === 0 || r === ROWS - 1 ||
+        !onCells[j - 1] || !onCells[j + 1] || !onCells[j - COLS] || !onCells[j + COLS];
+      cov[j] = edge ? 0.8 : 0;
+    }
+  }
+
   function beginLayer(L) {
     const { c } = L;
     c.setTransform(1, 0, 0, 1, 0, 0);
@@ -1012,6 +1038,7 @@
       const L = layers[i];
       beginLayer(L);
       L.c.save();
+      drawingSmall = !!rt && actorScale(actors[i].key) < OUTLINE_BELOW;
       if (rt) drawActor(L.c, actors[i], now);
       else drawWord(L.c, tOf(startT, now), text.length <= 14 ? text : fallback.letters.slice(0, 14));
       L.c.restore();
@@ -1021,6 +1048,7 @@
         beginLayer(G); G.c.save(); drawGhost(G.c, actors[i], now); G.c.restore(); coverage(G);
         for (let j = 0; j < L.cov.length; j++) L.cov[j] = L.cov[j] * k + G.cov[j] * (1 - k);
       }
+      if (drawingSmall) outline(L.cov);
     }
 
     // 3. set the letters. Each cell belongs to whichever layer covers it most (or the ground);

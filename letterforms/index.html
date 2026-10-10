@@ -730,23 +730,24 @@
   const STAGE_W = 200, GROUND = 97;          // stage units; actors stand on GROUND
   const LIMIT_R = 150, LIMIT_L = 40;         // movers stay between these; past LIMIT_R the ground scrolls instead
   const STEP_SECONDS = 3.6, HOLD_SECONDS = 1.6;
-  const BLEND_SECONDS = 0.8;
-  const OUTLINE_BELOW = 0.5;                 // drawn smaller than this, a thing switches to an outline of letters                 // how long one action takes to turn into the next
+  const BLEND_SECONDS = 0.8;                 // how long one action takes to turn into the next
   const GAP_EVERY = 34, GAP = 5;             // ground texture: a 2-cell gap every 34 units
   const stage = document.getElementById("stage");
   const ctx = stage.getContext("2d");
+  // Each thing is set in its own grid of letters. Small things get smaller letters (down to MIN_LETTER of the
+  // stage's size), so they keep enough letters to show their shape instead of shrinking into a blob.
+  const MIN_LETTER = 0.45;
   const makeLayer = () => {
     const cv = document.createElement("canvas");
-    cv.width = COLS * SX; cv.height = ROWS * SY;
-    return { cv, c: cv.getContext("2d", { willReadFrequently: true }), cov: new Float32Array(COLS * ROWS) };
+    return { cv, c: cv.getContext("2d", { willReadFrequently: true }), cov: new Float32Array(0), cols: 0, rows: 0 };
   };
   const layers = Array.from({ length: MAX_ACTORS }, makeLayer);
   const ghosts = Array.from({ length: MAX_ACTORS }, makeLayer);   // the outgoing action, while it dissolves into the new one
-  const UNIT = layers[0].cv.width / STAGE_W;   // mask pixels per stage unit (same on both axes)
 
-  let W = 0, H = 0, fs = 10, cellW = 6, ox = 0, oy = 0;
+  let W = 0, H = 0, fs = 10, cellW = 6, ox = 0, oy = 0, minLetterPx = 5;
   function layout() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    minLetterPx = dpr >= 2 ? 4 : 5;            // the smallest letters still read as letters on this screen
     W = innerWidth; H = innerHeight;
     stage.width = Math.round(W * dpr); stage.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -891,17 +892,19 @@
   }
 
   // ---------- drawing one actor ----------
-  function placeActor(c, A, act) {
-    const sh = SHAPES[A.key], sc = actorScale(A.key);
-    if (sh.sky) c.translate(A.sx - 50 * sc, 2);
-    else c.translate(A.sx - 50 * sc, GROUND * (1 - sc) - (act.lift ? act.lift * (1 - sc) + (scene.order.length > 1 ? 20 : 0) : 0));
-    c.scale(sc, sc);
+  // Where a thing sits on the stage (stage units) and how many letters its grid has.
+  const liftOf = (act, sc) => act.lift ? act.lift * (1 - sc) + (scene.order.length > 1 ? 20 : 0) : 0;
+  function boxOf(A) {
+    const sh = SHAPES[A.key], sc = actorScale(A.key), ls = Math.min(1, Math.max(sc, MIN_LETTER, minLetterPx / fs));
+    return {
+      x0: A.sx - 50 * sc, y0: sh.sky ? 2 : GROUND * (1 - sc) - liftOf(actOf(A), sc), w: 100 * sc, h: 100 * sc,
+      units: [100, 100], cols: Math.max(8, Math.round(COLS / 2 * sc / ls)), rows: Math.max(5, Math.round(ROWS * sc / ls)),
+    };
   }
-  // The current action. If the previous one shares a skeleton, blend the two poses.
+  // The current action, in the thing's own 100×100 box. If the previous one shares a skeleton, blend the two poses.
   function drawActor(c, A, now) {
     const act = actOf(A), t = tOf(A.actionStart, now), k = blendOf(A, now);
     const prev = A.prev && k < 1 ? SHAPES[A.key].actions[A.prev.action] : null;
-    placeActor(c, A, act);
     if (!act.rig) { act.draw(c, t); return; }
     let P = act.pose(A.phase, t);
     if (prev && sameRig(prev, act)) {
@@ -915,40 +918,48 @@
   // The outgoing action, drawn on its own so its letters can dissolve into the new shape.
   const needsGhost = (A, now) => !!A.prev && blendOf(A, now) < 1 && !sameRig(SHAPES[A.key].actions[A.prev.action], actOf(A));
   function drawGhost(c, A, now) {
-    const act = SHAPES[A.key].actions[A.prev.action], t = tOf(A.prev.start, now);
-    placeActor(c, A, act);
+    const act = SHAPES[A.key].actions[A.prev.action], t = tOf(A.prev.start, now), sc = actorScale(A.key);
+    c.translate(0, (liftOf(actOf(A), sc) - liftOf(act, sc)) / sc);   // the old action may have flown at a different height
     if (!act.rig) { act.draw(c, t); return; }
     if (act.extra) act.extra(c, t, 1);
     RIGS[act.rig](c, act.pose(A.phase, t), A.phase);
   }
   function coverage(L) {
     const data = L.c.getImageData(0, 0, L.cv.width, L.cv.height).data, w = L.cv.width;
-    for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
+    for (let r = 0; r < L.rows; r++) for (let col = 0; col < L.cols; col++) {
       let sum = 0;
       for (let y = 0; y < SY; y += 2) for (let x = 0; x < SX; x += 2) sum += data[((r * SY + y) * w + col * SX + x) * 4 + 3];
-      L.cov[r * COLS + col] = sum / (255 * (SY / 2) * (SX / 2));
+      L.cov[r * L.cols + col] = sum / (255 * (SY / 2) * (SX / 2));
     }
   }
-  // Outline mode for small things: catch thin strokes that cover only part of a cell,
+  // Outline mode for things too small even for small letters: catch thin strokes that cover only part of a cell,
   // then keep just the cells on the edge so the shape reads as a line drawing instead of a blob.
-  const onCells = new Uint8Array(COLS * ROWS);
+  const OUTLINE_ROWS = 12;
+  let onCells = new Uint8Array(0);
   let drawingSmall = false;                  // true while drawing a thing small enough for its icon version
-  function outline(cov) {
+  function outline(L) {
+    const { cov, cols, rows } = L;
+    if (onCells.length < cov.length) onCells = new Uint8Array(cov.length);
     for (let j = 0; j < cov.length; j++) onCells[j] = cov[j] >= 0.12 ? 1 : 0;
-    for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
-      const j = r * COLS + col;
+    for (let r = 0; r < rows; r++) for (let col = 0; col < cols; col++) {
+      const j = r * cols + col;
       if (!onCells[j]) { cov[j] = 0; continue; }
-      const edge = col === 0 || col === COLS - 1 || r === 0 || r === ROWS - 1 ||
-        !onCells[j - 1] || !onCells[j + 1] || !onCells[j - COLS] || !onCells[j + COLS];
+      const edge = col === 0 || col === cols - 1 || r === 0 || r === rows - 1 ||
+        !onCells[j - 1] || !onCells[j + 1] || !onCells[j - cols] || !onCells[j + cols];
       cov[j] = edge ? 0.8 : 0;
     }
   }
 
-  function beginLayer(L) {
+  function beginLayer(L, box) {
+    if (L.cols !== box.cols || L.rows !== box.rows) {
+      L.cols = box.cols; L.rows = box.rows;
+      L.cv.width = box.cols * SX; L.cv.height = box.rows * SY;
+      L.cov = new Float32Array(box.cols * box.rows);
+    }
     const { c } = L;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.clearRect(0, 0, L.cv.width, L.cv.height);
-    c.setTransform(UNIT, 0, 0, UNIT, 0, 0);
+    c.setTransform(L.cv.width / box.units[0], 0, 0, L.cv.height / box.units[1], 0, 0);
     c.fillStyle = "#000"; c.strokeStyle = "#000"; c.lineCap = "round"; c.lineJoin = "round";
   }
 
@@ -1030,57 +1041,79 @@
     readColors(now);
     update(now, dt);
 
-    // 1. draw each actor's silhouette into its own mask layer, and 2. measure how much of each cell it covers.
+    // 1. draw each thing's silhouette into its own mask, and 2. measure how much of each of its cells it covers.
     //    While an action dissolves into one with a different skeleton, mix the old silhouette's coverage in.
     const actors = rt ? scene.order.map(k => rt.actors[k]).filter(Boolean) : [];
-    const nLayers = rt ? actors.length : fallback ? 1 : 0;
-    for (let i = 0; i < nLayers; i++) {
-      const L = layers[i];
-      beginLayer(L);
+    const items = [];
+    if (rt) actors.forEach((A, i) => items.push({ A, i, box: boxOf(A), letters: A.letters, born: A.born }));
+    else if (fallback) items.push({ A: null, i: 0, box: { x0: 0, y0: 0, w: STAGE_W, h: 100, units: [STAGE_W, 100], cols: COLS, rows: ROWS }, letters: fallback.letters, born: fallback.born });
+    for (const it of items) {
+      const L = layers[it.i], { A, box } = it;
+      beginLayer(L, box);
+      drawingSmall = !!A && box.rows < OUTLINE_ROWS;
       L.c.save();
-      drawingSmall = !!rt && actorScale(actors[i].key) < OUTLINE_BELOW;
-      if (rt) drawActor(L.c, actors[i], now);
+      if (A) drawActor(L.c, A, now);
       else drawWord(L.c, tOf(startT, now), text.length <= 14 ? text : fallback.letters.slice(0, 14));
       L.c.restore();
       coverage(L);
-      if (rt && needsGhost(actors[i], now)) {
-        const G = ghosts[i], k = blendOf(actors[i], now);
-        beginLayer(G); G.c.save(); drawGhost(G.c, actors[i], now); G.c.restore(); coverage(G);
+      if (A && needsGhost(A, now)) {
+        const G = ghosts[it.i], k = blendOf(A, now);
+        beginLayer(G, box); G.c.save(); drawGhost(G.c, A, now); G.c.restore(); coverage(G);
         for (let j = 0; j < L.cov.length; j++) L.cov[j] = L.cov[j] * k + G.cov[j] * (1 - k);
       }
-      if (drawingSmall) outline(L.cov);
+      if (drawingSmall) outline(L);
     }
 
-    // 3. set the letters. Each cell belongs to whichever layer covers it most (or the ground);
-    //    each horizontal run spells its owner's words from the start.
+    // 3. set the letters. Each thing spells its own words along each horizontal run of its grid,
+    //    in letters sized to its grid; bigger things go down first so smaller ones sit on top.
     ctx.clearRect(0, 0, W, H);
     ctx.textBaseline = "top";
     const rect = input.getBoundingClientRect();
     const fromX = rect.left + 24, fromY = rect.top;
-    const groundLetters = rt ? lettersOf(text) : "";
-    const heavy = [], light = [], dots = [];
+    const pxX = cellW * COLS / STAGE_W, pxY = fs * ROWS / 100;      // screen pixels per stage unit
+    const cellU = STAGE_W / COLS, rowU = 100 / ROWS;                // one stage cell, in stage units
+    const occupied = new Uint8Array(COLS * ROWS);
+    const runs = [];
     let count = 0;
-    for (let r = 0; r < ROWS; r++) {
-      let k = 0, prevOwner = -2;
-      for (let col = 0; col < COLS; col++) {
-        const id = r * COLS + col;
-        let owner = -2, v = 0;
-        for (let i = 0; i < nLayers; i++) { const cv = layers[i].cov[id]; if (cv >= 0.3 && cv > v) { v = cv; owner = i; } }
-        if (owner === -2 && rt && r === ROWS - 1 && ((col * STAGE_W / COLS + rt.ground) % GAP_EVERY + GAP_EVERY) % GAP_EVERY >= GAP) { owner = -1; v = 0.5; }
-        let x = ox + col * cellW, y = oy + r * fs;
-        if (owner === -2) { prevOwner = -2; dots.push(x, y); continue; }
-        if (owner !== prevOwner) k = 0;
-        prevOwner = owner;
-        const word = owner === -1 ? groundLetters : rt ? actors[owner].letters : fallback.letters;
-        const ch = word[k % word.length]; k++; count++;
-        const born = owner === -1 ? -1e9 : rt ? actors[owner].born : fallback.born;
-        const age = (now - born) / 1000;
-        if (!reduceMotion && age < 1.6) {
-          const d = hash(id) * 0.6, q = clamp((age - d) / 0.9), e = 1 - Math.pow(1 - q, 3);
-          const sx = fromX + (hash(id + 7) - 0.5) * 120, sy = fromY + (hash(id + 3) - 0.5) * 30;
-          x = sx + (x - sx) * e; y = sy + (y - sy) * e;
+    items.sort((a, b) => b.box.h - a.box.h);
+    for (const it of items) {
+      const { box, letters: word } = it, L = layers[it.i];
+      const cw = box.w / box.cols, ch = box.h / box.rows, size = ch * pxY;
+      const heavy = [], light = [];
+      const age = (now - it.born) / 1000;
+      for (let r = 0; r < box.rows; r++) {
+        let k = 0;
+        for (let col = 0; col < box.cols; col++) {
+          const v = L.cov[r * box.cols + col];
+          if (v < 0.3) { k = 0; continue; }
+          const ux = box.x0 + col * cw, uy = box.y0 + r * ch;
+          const sc = Math.floor((ux + cw / 2) / cellU), sr = Math.floor((uy + ch / 2) / rowU);
+          if (sc >= 0 && sc < COLS && sr >= 0 && sr < ROWS) occupied[sr * COLS + sc] = 1;
+          let x = ox + ux * pxX, y = oy + uy * pxY;
+          const id = it.i * 5000 + r * box.cols + col;
+          if (!reduceMotion && age < 1.6) {
+            const d = hash(id) * 0.6, q = clamp((age - d) / 0.9), e = 1 - Math.pow(1 - q, 3);
+            const sx = fromX + (hash(id + 7) - 0.5) * 120, sy = fromY + (hash(id + 3) - 0.5) * 30;
+            x = sx + (x - sx) * e; y = sy + (y - sy) * e;
+          }
+          (v >= 0.72 ? heavy : light).push(x, y, word[k % word.length]); k++; count++;
         }
-        (v >= 0.72 ? heavy : light).push(x, y, ch);
+      }
+      runs.push({ size, heavy, light });
+    }
+
+    // the stage grid: the ground (with its scrolling gaps) and a faint dot wherever nothing is set
+    const groundLetters = rt ? lettersOf(text) : "";
+    const ground = [], dots = [];
+    for (let r = 0; r < ROWS; r++) {
+      let k = 0;
+      for (let col = 0; col < COLS; col++) {
+        const x = ox + col * cellW, y = oy + r * fs;
+        if (occupied[r * COLS + col]) { k = 0; continue; }
+        if (rt && r === ROWS - 1 && ((col * cellU + rt.ground) % GAP_EVERY + GAP_EVERY) % GAP_EVERY >= GAP) {
+          ground.push(x, y, groundLetters[k % groundLetters.length]); k++; count++; continue;
+        }
+        k = 0; dots.push(x, y);
       }
     }
 
@@ -1088,10 +1121,15 @@
     ctx.fillStyle = colors.grid;
     for (let i = 0; i < dots.length; i += 2) ctx.fillText("·", dots[i], dots[i + 1]);
     ctx.fillStyle = colors.soft;
-    for (let i = 0; i < light.length; i += 3) ctx.fillText(light[i + 2], light[i], light[i + 1]);
-    ctx.font = `700 ${fs}px "JetBrains Mono", monospace`;
-    ctx.fillStyle = colors.ink;
-    for (let i = 0; i < heavy.length; i += 3) ctx.fillText(heavy[i + 2].toUpperCase(), heavy[i], heavy[i + 1]);
+    for (let i = 0; i < ground.length; i += 3) ctx.fillText(ground[i + 2], ground[i], ground[i + 1]);
+    for (const { size, heavy, light } of runs) {
+      ctx.font = `400 ${size}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = colors.soft;
+      for (let i = 0; i < light.length; i += 3) ctx.fillText(light[i + 2], light[i], light[i + 1]);
+      ctx.font = `700 ${size}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = colors.ink;
+      for (let i = 0; i < heavy.length; i += 3) ctx.fillText(heavy[i + 2].toUpperCase(), heavy[i], heavy[i + 1]);
+    }
 
     specEl.textContent = `${COLS} × ${ROWS} cells · ${count} letters` + (scene && scene.steps.length > 1 ? ` · scene ${rt.step + 1}/${scene.steps.length}` : "");
     requestAnimationFrame(frame);

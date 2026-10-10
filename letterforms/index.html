@@ -77,7 +77,14 @@
   #word::placeholder { color: var(--ink-soft); opacity: 0.7; }
   .hint { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+
+  .rows { display: grid; gap: 8px; }
+  .row { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+  .row-label {
+    flex: 0 0 4.5em;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.8;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px 14px; min-width: 0; }
   .chips button {
     background: none; border: 0; padding: 2px 0; cursor: pointer;
     font: 400 13px var(--font-mono); color: var(--ink-soft);
@@ -91,6 +98,7 @@
   @media (max-width: 480px) {
     .hint { display: none; }
     #word, .prompt { font-size: 18px; }
+    .row-label { flex-basis: 3.8em; }
   }
 </style>
 
@@ -105,12 +113,15 @@
   <div class="dock-inner">
     <div class="status" id="status" aria-live="polite"></div>
     <form class="line" id="form" autocomplete="off">
-      <label class="sr" for="word">Type a thing to draw with its letters</label>
+      <label class="sr" for="word">Type a thing and what it does, like “a man runs”</label>
       <span class="prompt" aria-hidden="true">›</span>
-      <input id="word" name="word" type="text" maxlength="24" spellcheck="false" autocapitalize="off" placeholder="type a thing…">
+      <input id="word" name="word" type="text" maxlength="32" spellcheck="false" autocapitalize="off" placeholder="a man runs…">
       <span class="hint">enter ↵</span>
     </form>
-    <div class="chips" id="chips" role="group" aria-label="Things it knows how to draw"></div>
+    <div class="rows">
+      <div class="row"><span class="row-label" id="things-label">things</span><div class="chips" id="chips" role="group" aria-labelledby="things-label"></div></div>
+      <div class="row"><span class="row-label" id="verbs-label">actions</span><div class="chips" id="verbs" role="group" aria-labelledby="verbs-label"></div></div>
+    </div>
   </div>
 </div>
 
@@ -119,163 +130,462 @@
   const COLS = 40, ROWS = 24;          // type grid the object is set in
   const SX = 6, SY = 10;               // mask pixels per cell (matches 0.6 monospace aspect)
   const BOX = 0.24;                    // object height as a share of the screen
-  const TAU = Math.PI * 2, S = Math.sin, C = Math.cos;
+  const TAU = Math.PI * 2, PI = Math.PI, S = Math.sin, C = Math.cos;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = v => { v = clamp(v); return v * v * (3 - 2 * v); };
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- drawing helpers (100×100 unit space) ----------
   const line = (c, x1, y1, x2, y2, w) => { c.lineWidth = w; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); };
-  const circle = (c, x, y, r) => { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); };
-  const ellipse = (c, x, y, rx, ry, rot = 0) => { c.beginPath(); c.ellipse(x, y, rx, ry, rot, 0, TAU); c.fill(); };
+  const circle = (c, x, y, r) => { if (r <= 0) return; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); };
+  const ellipse = (c, x, y, rx, ry, rot = 0) => { if (rx <= 0 || ry <= 0) return; c.beginPath(); c.ellipse(x, y, rx, ry, rot, 0, TAU); c.fill(); };
   const poly = (c, p) => { c.beginPath(); c.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) c.lineTo(p[i], p[i + 1]); c.closePath(); c.fill(); };
   const hole = (c, fn) => { c.save(); c.globalCompositeOperation = "destination-out"; fn(); c.restore(); };
 
-  // ---------- the objects and their actions ----------
-  const SHAPES = {
-    man: { label: "a walking figure", draw(c, t) {
-      const p = t * TAU * 1.1;
-      c.translate(0, -Math.abs(S(p)) * 2.5);
-      circle(c, 52, 15, 8.5);
-      line(c, 50, 26, 49, 54, 10);
-      const leg = ph => {
-        const a = S(ph) * 0.55, kx = 49 + S(a) * 20, ky = 54 + C(a) * 20;
-        const b = a - 0.1 - Math.max(0, C(ph)) * 0.9, fx = kx + S(b) * 19, fy = ky + C(b) * 19;
-        line(c, 49, 54, kx, ky, 8); line(c, kx, ky, fx, fy, 7); line(c, fx, fy, fx + 6, fy, 6);
-      };
-      const arm = ph => {
-        const a = -S(ph) * 0.6, ex = 50 + S(a) * 14, ey = 29 + C(a) * 14, b = a + 0.6;
-        line(c, 50, 29, ex, ey, 7); line(c, ex, ey, ex + S(b) * 13, ey + C(b) * 13, 6);
-      };
-      arm(p + Math.PI); leg(p + Math.PI); leg(p); arm(p);
-    }},
-    bird: { label: "a bird, flapping", draw(c, t) {
-      const w = S(t * TAU * 2);
-      c.translate(0, -w * 3 + S(t * TAU * 0.3) * 4);
-      poly(c, [32, 54, 12, 45, 15, 63]);
-      ellipse(c, 48, 55, 20, 11, -0.15);
-      circle(c, 68, 46, 8.5);
-      poly(c, [75, 42, 88, 47, 75, 51]);
-      hole(c, () => circle(c, 70, 44, 2.3));
-      c.beginPath(); c.moveTo(38, 52);
-      c.quadraticCurveTo(34, 52 - w * 20, 28, 52 - w * 38);
-      c.lineTo(46, 52 - w * 26);
-      c.quadraticCurveTo(55, 52 - w * 12, 58, 52);
-      c.closePath(); c.fill();
-    }},
-    fish: { label: "a fish, swimming", draw(c, t) {
-      const sw = S(t * TAU * 1.4);
-      c.translate(S(t * TAU * 0.25) * 8, S(t * TAU * 0.5) * 3);
-      for (let i = 0; i < 3; i++) {
-        const ph = (t * 0.5 + i / 3) % 1;
-        circle(c, 80 + ph * 4 + S(ph * 10) * 2, 44 - ph * 40, 1.8 + ph * 2.2);
-      }
-      c.translate(48, 52); c.scale(1.2, 1.2); c.rotate(sw * 0.05);
-      ellipse(c, 0, 0, 26, 14);
-      c.save(); c.translate(-22, 0); c.rotate(sw * 0.45); poly(c, [0, 0, -18, -15, -13, 0, -18, 15]); c.restore();
-      poly(c, [-4, -12, 6, -23, 12, -10]);
-      poly(c, [0, 10, 8, 19, 10, 9]);
-      hole(c, () => circle(c, 15, -3, 2.8));
-      hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.moveTo(6, -11); c.quadraticCurveTo(1, 0, 6, 11); c.stroke(); });
-    }},
-    cat: { label: "a cat, swishing its tail", draw(c, t) {
-      const a = S(t * TAU * 0.6);
-      c.lineWidth = 7; c.beginPath(); c.moveTo(60, 88);
-      c.bezierCurveTo(84, 92, 86 + a * 6, 70, 76 + a * 14, 52 + Math.abs(a) * 4); c.stroke();
-      ellipse(c, 46, 72, 20, 21);
-      ellipse(c, 39, 92, 6, 4); ellipse(c, 53, 92, 6, 4);
-      c.save(); c.translate(46, 50); c.rotate(S(t * TAU * 0.25) * 0.08); c.translate(-46, -50);
-      circle(c, 46, 38, 14);
-      poly(c, [34, 31, 33, 13, 44, 26]);
-      poly(c, [48, 26, 59, 13, 58, 31]);
-      const blink = (t % 3.6) < 0.18;
-      hole(c, () => {
-        if (blink) { c.fillRect(37, 37, 7, 2.8); c.fillRect(48, 37, 7, 2.8); }
-        else { ellipse(c, 40.5, 38, 2.6, 3.6); ellipse(c, 51.5, 38, 2.6, 3.6); }
-      });
-      c.restore();
-    }},
-    tree: { label: "a tree in the wind", draw(c, t) {
-      const s = S(t * TAU * 0.35);
-      c.beginPath(); c.moveTo(43, 96); c.lineTo(57, 96); c.lineTo(53.5, 62);
-      c.quadraticCurveTo(51 + s, 52, 50 + s * 2, 46); c.lineTo(46.5, 62); c.closePath(); c.fill();
-      const blobs = [[50, 48, 13], [36, 40, 13], [64, 40, 13], [50, 30, 17], [41, 20, 12], [59, 20, 12]];
-      for (const [x, y, r] of blobs) { const k = (72 - y) / 52; circle(c, x + s * 6 * k, y + S(t * TAU * 0.7 + x) * 0.8, r); }
-      for (let i = 0; i < 3; i++) {
-        const ph = (t * 0.18 + i / 3) % 1;
-        circle(c, 30 + i * 18 + S(ph * 9 + i) * 6 + ph * 12, 56 + ph * 38, 2.8);
-      }
-    }},
-    heart: { label: "a beating heart", draw(c, t) {
-      const ph = t % 1.1;
-      const beat = Math.exp(-ph * 9) + (ph > 0.22 ? Math.exp(-(ph - 0.22) * 9) * 0.7 : 0);
-      const s = 1 + beat * 0.14;
-      c.translate(50, 54); c.scale(s, s);
-      c.beginPath(); c.moveTo(0, 32);
-      c.bezierCurveTo(-46, 4, -30, -36, 0, -14);
-      c.bezierCurveTo(30, -36, 46, 4, 0, 32); c.fill();
-    }},
-    sun: { label: "a turning sun", draw(c, t) {
-      circle(c, 50, 50, 17);
-      for (let i = 0; i < 12; i++) {
-        const a = t * 0.5 + i * TAU / 12, L = 8 + (i % 2 ? 0 : 5) + S(t * 3 + i) * 2;
-        line(c, 50 + C(a) * 24, 50 + S(a) * 24, 50 + C(a) * (26 + L), 50 + S(a) * (26 + L), 5.5);
-      }
-      hole(c, () => {
-        ellipse(c, 44, 46, 2.6, 3.4); ellipse(c, 56, 46, 2.6, 3.4);
-        c.lineWidth = 2.8; c.beginPath(); c.arc(50, 51, 7, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke();
-      });
-    }},
-    snake: { label: "a slithering snake", draw(c, t) {
-      const n = 36; let hy = 0;
-      for (let i = 0; i <= n; i++) {
-        const u = i / n, x = 8 + u * 72, y = 60 + S(u * 10 + t * 5) * 11 * (1 - u * 0.65);
-        circle(c, x, y, 2.2 + u * 4.5); hy = y;
-      }
-      ellipse(c, 84, hy, 9, 6.5);
-      if ((t % 1.8) < 0.35) { line(c, 92, hy, 99, hy, 2.6); }
-      hole(c, () => circle(c, 86, hy - 2, 2.2));
-    }},
-    ball: { label: "a bouncing ball", draw(c, t) {
-      const ph = (t % 1) / 1, h = 4 * ph * (1 - ph), r = 16, ground = 90;
-      const sq = h < 0.1 ? (0.1 - h) / 0.1 : 0, sx = 1 + sq * 0.35, sy = 1 - sq * 0.3;
-      const y = ground - r * sy - h * 52;
-      ellipse(c, 50, y, r * sx, r * sy);
-      hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.ellipse(50, y, r * sx, r * sy * 0.35, 0, 0, TAU); c.stroke(); });
-      const w = (1 - h) * 14 + 4; c.fillRect(50 - w, ground + 2, w * 2, 4.5);
-    }},
-    flower: { label: "a flower, swaying", draw(c, t) {
-      const s = S(t * TAU * 0.3) * 5, hx = 50 + s, hy = 30;
-      c.lineWidth = 5; c.beginPath(); c.moveTo(50, 97); c.quadraticCurveTo(50 - s, 66, hx, hy + 8); c.stroke();
-      ellipse(c, 42 - s * 0.3, 74, 10, 4.5, -0.5);
-      ellipse(c, 58 - s * 0.5, 62, 10, 4.5, 0.5);
-      for (let i = 0; i < 6; i++) { const a = t * 0.6 + i * TAU / 6; ellipse(c, hx + C(a) * 12, hy + S(a) * 12, 10, 6, a); }
-      hole(c, () => circle(c, hx, hy, 7));
-      circle(c, hx, hy, 4.2);
-    }},
-  };
+  // Floating "Z"s for anything asleep.
+  function zzz(c, t, x, y) {
+    for (let i = 0; i < 3; i++) {
+      const ph = (t * 0.35 + i / 3) % 1, s = 5 + ph * 7, zx = x + ph * 16, zy = y - ph * 30;
+      c.lineWidth = 3.2; c.beginPath();
+      c.moveTo(zx, zy); c.lineTo(zx + s, zy); c.lineTo(zx, zy + s * 1.2); c.lineTo(zx + s, zy + s * 1.2); c.stroke();
+    }
+  }
+  // Short dashes trailing behind anything fast.
+  function speedLines(c, t, x0, ys) {
+    ys.forEach((y, i) => { const off = (t * 2.6 + i * 0.37) % 1; line(c, x0 - off * 18, y, x0 - off * 18 + 9, y, 3); });
+  }
 
-  // Words that map onto each object.
+  // A stick figure facing right. Angles are measured from straight down; positive swings forward.
+  function figure(c, P) {
+    const x = P.x ?? 50, y = P.y ?? 54, L = P.lean || 0, ux = S(L), uy = -C(L);
+    const sx = x + ux * 25, sy = y + uy * 25;
+    circle(c, x + ux * 40 + (P.headX || 0), y + uy * 40 + (P.headY || 0), 8.5);
+    line(c, x, y, x + ux * 27, y + uy * 27, 9);
+    const limb = (bx, by, a1, l1, a2, l2, w1, w2, foot) => {
+      const kx = bx + S(a1) * l1, ky = by + C(a1) * l1, fx = kx + S(a2) * l2, fy = ky + C(a2) * l2;
+      line(c, bx, by, kx, ky, w1); line(c, kx, ky, fx, fy, w2);
+      if (foot) line(c, fx, fy, fx + C(a2) * 6, fy - S(a2) * 6, 6);
+    };
+    for (const [a1, a2] of P.legs) limb(x, y, a1, 20, a2, 19, 8, 7, true);
+    for (const [a1, a2] of P.arms) limb(sx, sy, a1, 14, a2, 13, 7, 6, false);
+  }
+
+  function flyingBird(c, w) {
+    poly(c, [32, 54, 12, 45, 15, 63]);
+    ellipse(c, 48, 55, 20, 11, -0.15);
+    circle(c, 68, 46, 8.5);
+    poly(c, [75, 42, 88, 47, 75, 51]);
+    hole(c, () => circle(c, 70, 44, 2.3));
+    c.beginPath(); c.moveTo(38, 52);
+    c.quadraticCurveTo(34, 52 - w * 20, 28, 52 - w * 38);
+    c.lineTo(46, 52 - w * 26);
+    c.quadraticCurveTo(55, 52 - w * 12, 58, 52);
+    c.closePath(); c.fill();
+  }
+  function perchedBird(c, t, dy, legLen) {
+    const peck = Math.pow(Math.max(0, S(t * TAU * 0.45)), 10);
+    c.save(); c.translate(50, 62 + dy); c.rotate(-0.35);
+    ellipse(c, 0, 0, 17, 11);
+    poly(c, [-12, 4, -32, 14, -27, 1]);
+    c.restore();
+    const hx = 63 + peck * 5, hy = 46 + dy + peck * 7;
+    circle(c, hx, hy, 8);
+    poly(c, [hx + 6, hy - 3, hx + 16, hy + 1 + peck * 3, hx + 6, hy + 4]);
+    hole(c, () => circle(c, hx + 2, hy - 2, 2.2));
+    line(c, 46, 72 + dy, 44, 72 + dy + legLen, 2.8); line(c, 53, 72 + dy, 55, 72 + dy + legLen, 2.8);
+  }
+
+  function fishBody(c, sw) {
+    ellipse(c, 0, 0, 26, 14);
+    c.save(); c.translate(-22, 0); c.rotate(sw * 0.45); poly(c, [0, 0, -18, -15, -13, 0, -18, 15]); c.restore();
+    poly(c, [-4, -12, 6, -23, 12, -10]);
+    poly(c, [0, 10, 8, 19, 10, 9]);
+    hole(c, () => circle(c, 15, -3, 2.8));
+    hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.moveTo(6, -11); c.quadraticCurveTo(1, 0, 6, 11); c.stroke(); });
+  }
+
+  function catSide(c, t, freq, swing, stretch, lift) {
+    const p = t * TAU * freq;
+    c.translate(0, -Math.abs(S(p)) * lift);
+    c.lineWidth = 6; c.beginPath(); c.moveTo(28, 54);
+    c.bezierCurveTo(18, 50, 14 + S(p) * 3, 34, 20 + S(p) * 6, 24); c.stroke();
+    ellipse(c, 48, 56, 22 * stretch, 10);
+    line(c, 64, 50, 72, 46, 10);
+    circle(c, 74, 44, 10);
+    poly(c, [66, 39, 67, 26, 75, 35]); poly(c, [75, 35, 83, 26, 83, 39]);
+    hole(c, () => circle(c, 78, 43, 2.3));
+    const leg = (bx, ph) => {
+      const a = S(ph) * swing, b = a - Math.max(0, C(ph)) * 0.9;
+      const kx = bx + S(a) * 12, ky = 60 + C(a) * 12;
+      line(c, bx, 60, kx, ky, 6); line(c, kx, ky, kx + S(b) * 12, ky + C(b) * 12, 5);
+    };
+    const front = 48 + 15 * stretch, back = 48 - 15 * stretch;
+    leg(front, p + PI); leg(back, p); leg(front, p); leg(back, p + PI);
+  }
+
+  function heartPath(c) {
+    c.beginPath(); c.moveTo(0, 32);
+    c.bezierCurveTo(-46, 4, -30, -36, 0, -14);
+    c.bezierCurveTo(30, -36, 46, 4, 0, 32);
+  }
+
+  function sunDisc(c, t, x, y, s) {
+    c.save(); c.translate(x, y); c.scale(s, s);
+    circle(c, 0, 0, 17);
+    for (let i = 0; i < 12; i++) {
+      const a = t * 0.5 + i * TAU / 12, L = 8 + (i % 2 ? 0 : 5) + S(t * 3 + i) * 2;
+      line(c, C(a) * 24, S(a) * 24, C(a) * (26 + L), S(a) * (26 + L), 5.5);
+    }
+    hole(c, () => {
+      ellipse(c, -6, -4, 2.6, 3.4); ellipse(c, 6, -4, 2.6, 3.4);
+      c.lineWidth = 2.8; c.beginPath(); c.arc(0, 1, 7, 0.2 * PI, 0.8 * PI); c.stroke();
+    });
+    c.restore();
+  }
+
+  // ---------- the objects, and the things they can do ----------
+  // verbs: canonical verb → action key. default: the action used when no verb (or an unknown one) is typed.
+  const SHAPES = {
+    man: {
+      name: "figure", default: "stand",
+      verbs: { stand: "stand", walk: "walk", run: "run", jump: "jump", dance: "dance", wave: "wave", sit: "sit", sleep: "sleep" },
+      actions: {
+        stand: { verb: "stands", label: "standing", draw(c, t) {
+          figure(c, { y: 54 + S(t * 1.6) * 0.6, headY: S(t * 1.6) * 0.6, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[0.45, 0.3], [-0.42, -0.28]] });
+        }},
+        walk: { verb: "walks", label: "walking", draw(c, t) {
+          const p = t * TAU * 1.1;
+          const leg = ph => { const a = S(ph) * 0.55; return [a, a - 0.1 - Math.max(0, C(ph)) * 0.9]; };
+          const arm = ph => { const a = -S(ph) * 0.6; return [a, a + 0.6]; };
+          figure(c, { y: 54 - Math.abs(S(p)) * 2.5, legs: [leg(p), leg(p + PI)], arms: [arm(p), arm(p + PI)] });
+        }},
+        run: { verb: "runs", label: "running", draw(c, t) {
+          const p = t * TAU * 1.6;
+          const leg = ph => { const a = S(ph) * 0.85 + 0.15; return [a, a - 0.3 - Math.max(0, C(ph)) * 1.6]; };
+          const arm = ph => { const a = -S(ph) * 0.9 + 0.2; return [a, a + 1.6]; };
+          speedLines(c, t, 22, [34, 50, 66]);
+          figure(c, { x: 54, y: 55 - Math.abs(S(p)) * 5, lean: 0.3, legs: [leg(p), leg(p + PI)], arms: [arm(p), arm(p + PI)] });
+        }},
+        jump: { verb: "jumps", label: "jumping", draw(c, t) {
+          const ph = (t % 1.3) / 1.3;
+          const h = ph > 0.3 && ph < 0.85 ? S((ph - 0.3) / 0.55 * PI) : 0;
+          const cr = ph < 0.3 ? S(ph / 0.3 * PI) : ph >= 0.85 ? S((ph - 0.85) / 0.15 * PI) * 0.8 : 0;
+          const th = 0.1 + cr * 0.8 + h * 0.8, sh = -0.1 - cr * 0.4 - h * 0.9;
+          const arm = -0.1 - cr * 0.9 + h * 2.7;
+          const w = (1 - h) * 10 + 5; c.fillRect(50 - w, 95, w * 2, 3.5);
+          figure(c, { y: 56 + cr * 9 - h * 26, lean: cr * 0.35, legs: [[th, sh], [th - 0.12, sh - 0.1]], arms: [[arm, arm + 0.3], [arm - 0.2, arm + 0.1]] });
+        }},
+        dance: { verb: "dances", label: "dancing", draw(c, t) {
+          const p = t * TAU * 1.0, s = S(p), s2 = S(p * 2);
+          figure(c, {
+            x: 50 + s * 4, y: 56 - Math.abs(s2) * 3, lean: s * 0.12,
+            legs: [[0.35 + s * 0.25, 0.35 + s * 0.25 - 0.35 * Math.abs(C(p))], [-0.35 + s * 0.25, -0.55 + s * 0.25]],
+            arms: [[2.5 + s2 * 0.4, 2.9 + 0.4 * S(p * 2 + 1)], [-2.5 + s2 * 0.4, -2.9 - 0.4 * S(p * 2 + 1)]],
+          });
+        }},
+        wave: { verb: "waves", label: "waving", draw(c, t) {
+          figure(c, { x: 46, y: 54 + S(t * 1.6) * 0.6, headX: 1, legs: [[0.22, 0.16], [-0.22, -0.16]], arms: [[-0.42, -0.28], [1.55, 2.6 + S(t * TAU * 2.2) * 0.6]] });
+        }},
+        sit: { verb: "sits", label: "sitting", draw(c, t) {
+          c.fillRect(28, 73, 28, 5); line(c, 32, 76, 32, 96, 4); line(c, 52, 76, 52, 96, 4);
+          figure(c, { x: 44, y: 72 + S(t * 1.6) * 0.5, lean: -0.05, headY: S(t * 1.2) * 0.8, legs: [[1.5, 0.05], [1.42, 0.12]], arms: [[0.6, 1.3], [0.5, 1.2]] });
+        }},
+        sleep: { verb: "sleeps", label: "sleeping", draw(c, t) {
+          line(c, 4, 93, 96, 93, 3);
+          ellipse(c, 12, 87, 10, 4);
+          c.save(); c.translate(0, 28); c.translate(50, 50); c.rotate(-PI / 2); c.translate(-50, -50);
+          figure(c, { y: 54 + S(t * 1.4) * 0.8, legs: [[0, 0], [0.05, 0.05]], arms: [[0.1, 0.1]] });
+          c.restore();
+          zzz(c, t, 22, 60);
+        }},
+      },
+    },
+    bird: {
+      name: "bird", default: "fly",
+      verbs: { fly: "fly", glide: "glide", sit: "perch", stand: "perch", sleep: "perch", walk: "hop", jump: "hop", run: "hop" },
+      actions: {
+        fly: { verb: "flies", label: "flying", draw(c, t) {
+          const w = S(t * TAU * 2);
+          c.translate(0, -w * 3 + S(t * TAU * 0.3) * 4);
+          flyingBird(c, w);
+        }},
+        glide: { verb: "glides", label: "gliding", draw(c, t) {
+          c.translate(S(t * 0.6) * 6, S(t * 0.9) * 8);
+          c.translate(50, 50); c.rotate(S(t * 0.7) * 0.1); c.translate(-50, -50);
+          flyingBird(c, 0.35 + S(t * 1.1) * 0.06);
+        }},
+        perch: { verb: "perches", label: "perched on a branch", draw(c, t) {
+          line(c, 8, 82, 92, 82, 4.5); line(c, 70, 82, 84, 74, 3.5);
+          perchedBird(c, t, 0, 10);
+        }},
+        hop: { verb: "hops", label: "hopping", draw(c, t) {
+          const h = Math.abs(S(t * TAU * 1.2));
+          line(c, 6, 92, 94, 92, 3);
+          perchedBird(c, t, -h * 16 + 8, 12);
+        }},
+      },
+    },
+    fish: {
+      name: "fish", default: "swim",
+      verbs: { swim: "swim", jump: "jump" },
+      actions: {
+        swim: { verb: "swims", label: "swimming", draw(c, t) {
+          const sw = S(t * TAU * 1.4);
+          c.translate(S(t * TAU * 0.25) * 8, S(t * TAU * 0.5) * 3);
+          for (let i = 0; i < 3; i++) {
+            const ph = (t * 0.5 + i / 3) % 1;
+            circle(c, 80 + ph * 4 + S(ph * 10) * 2, 44 - ph * 40, 1.8 + ph * 2.2);
+          }
+          c.translate(48, 52); c.scale(1.2, 1.2); c.rotate(sw * 0.05);
+          fishBody(c, sw);
+        }},
+        jump: { verb: "jumps", label: "leaping out of the water", draw(c, t) {
+          const u = (t % 2) / 2;
+          c.lineWidth = 3.5; c.beginPath();
+          for (let x = 4; x <= 96; x += 2) { const y = 74 + S(x * 0.2 + t * 3) * 1.5; x === 4 ? c.moveTo(x, y) : c.lineTo(x, y); }
+          c.stroke();
+          const fx = 18 + u * 64, fy = 80 - S(u * PI) * 54, ang = Math.atan2(-C(u * PI) * 54 * PI, 64);
+          if (fy < 78) { c.save(); c.translate(fx, fy); c.rotate(ang); c.scale(0.8, 0.8); fishBody(c, S(t * TAU * 3)); c.restore(); }
+          if (u < 0.2 || u > 0.8) {
+            const k = u < 0.2 ? u / 0.2 : (u - 0.8) / 0.2, sx = u < 0.5 ? 18 : 82;
+            for (let i = 0; i < 4; i++) circle(c, sx + (i - 1.5) * 7 * (0.5 + k), 70 - S(k * PI) * 14 * (1 - Math.abs(i - 1.5) / 3), 2.6);
+          }
+        }},
+      },
+    },
+    cat: {
+      name: "cat", default: "sit",
+      verbs: { sit: "sit", stand: "sit", sleep: "sleep", walk: "walk", run: "run" },
+      actions: {
+        sit: { verb: "sits", label: "sitting, swishing its tail", draw(c, t) {
+          const a = S(t * TAU * 0.6);
+          c.lineWidth = 7; c.beginPath(); c.moveTo(60, 88);
+          c.bezierCurveTo(84, 92, 86 + a * 6, 70, 76 + a * 14, 52 + Math.abs(a) * 4); c.stroke();
+          ellipse(c, 46, 72, 20, 21);
+          ellipse(c, 39, 92, 6, 4); ellipse(c, 53, 92, 6, 4);
+          c.save(); c.translate(46, 50); c.rotate(S(t * TAU * 0.25) * 0.08); c.translate(-46, -50);
+          circle(c, 46, 38, 14);
+          poly(c, [34, 31, 33, 13, 44, 26]); poly(c, [48, 26, 59, 13, 58, 31]);
+          const blink = (t % 3.6) < 0.18;
+          hole(c, () => {
+            if (blink) { c.fillRect(37, 37, 7, 2.8); c.fillRect(48, 37, 7, 2.8); }
+            else { ellipse(c, 40.5, 38, 2.6, 3.6); ellipse(c, 51.5, 38, 2.6, 3.6); }
+          });
+          c.restore();
+        }},
+        sleep: { verb: "sleeps", label: "curled up asleep", draw(c, t) {
+          c.save(); c.translate(54, 80); c.scale(1, 1 + S(t * 1.8) * 0.05); ellipse(c, 0, 0, 28, 13); c.restore();
+          circle(c, 28, 78, 11);
+          poly(c, [19, 72, 18, 61, 27, 69]); poly(c, [29, 68, 36, 59, 38, 70]);
+          c.lineWidth = 6; c.beginPath(); c.moveTo(80, 84); c.quadraticCurveTo(72, 98, 40, 93); c.stroke();
+          hole(c, () => { c.fillRect(21, 77, 5, 2.8); c.fillRect(30, 77, 5, 2.8); });
+          zzz(c, t, 34, 56);
+        }},
+        walk: { verb: "walks", label: "walking", draw(c, t) { catSide(c, t, 1.1, 0.45, 1, 1.5); } },
+        run: { verb: "runs", label: "running", draw(c, t) { speedLines(c, t, 16, [40, 54, 68]); catSide(c, t, 2.2, 0.85, 1.12, 5); } },
+      },
+    },
+    tree: {
+      name: "tree", default: "sway",
+      verbs: { sway: "sway", grow: "grow" },
+      actions: {
+        sway: { verb: "sways", label: "swaying in the wind", draw(c, t) {
+          const s = S(t * TAU * 0.35);
+          c.beginPath(); c.moveTo(43, 96); c.lineTo(57, 96); c.lineTo(53.5, 62);
+          c.quadraticCurveTo(51 + s, 52, 50 + s * 2, 46); c.lineTo(46.5, 62); c.closePath(); c.fill();
+          const blobs = [[50, 48, 13], [36, 40, 13], [64, 40, 13], [50, 30, 17], [41, 20, 12], [59, 20, 12]];
+          for (const [x, y, r] of blobs) { const k = (72 - y) / 52; circle(c, x + s * 6 * k, y + S(t * TAU * 0.7 + x) * 0.8, r); }
+          for (let i = 0; i < 3; i++) {
+            const ph = (t * 0.18 + i / 3) % 1;
+            circle(c, 30 + i * 18 + S(ph * 9 + i) * 6 + ph * 12, 56 + ph * 38, 2.8);
+          }
+        }},
+        grow: { verb: "grows", label: "growing from a seed", draw(c, t) {
+          const g = clamp((t % 7) / 5), trunk = smooth(g / 0.5) * 50, crown = smooth((g - 0.35) / 0.65);
+          line(c, 6, 97, 94, 97, 3);
+          if (trunk < 3) { circle(c, 50, 93, 3.5); return; }
+          const top = 96 - trunk;
+          poly(c, [43 + (1 - trunk / 50) * 5, 96, 57 - (1 - trunk / 50) * 5, 96, 52, top, 48, top]);
+          const blobs = [[50, 48, 13], [36, 40, 13], [64, 40, 13], [50, 30, 17], [41, 20, 12], [59, 20, 12]];
+          for (const [x, y, r] of blobs) circle(c, 50 + (x - 50) * crown, top + (y - 46) * crown, r * crown);
+        }},
+      },
+    },
+    heart: {
+      name: "heart", default: "beat",
+      verbs: { beat: "beat", break: "break" },
+      actions: {
+        beat: { verb: "beats", label: "beating", draw(c, t) {
+          const ph = t % 1.1;
+          const beat = Math.exp(-ph * 9) + (ph > 0.22 ? Math.exp(-(ph - 0.22) * 9) * 0.7 : 0);
+          c.translate(50, 54); c.scale(1 + beat * 0.14, 1 + beat * 0.14);
+          heartPath(c); c.fill();
+        }},
+        break: { verb: "breaks", label: "breaking in two", draw(c, t) {
+          const ph = (t % 3) / 3;
+          c.translate(50, 54);
+          if (ph < 0.3) { const b = Math.exp(-((ph * 3) % 1.1) * 9); c.scale(1 + b * 0.1, 1 + b * 0.1); heartPath(c); c.fill(); return; }
+          const k = ph < 0.45 ? 0 : ph < 0.6 ? (ph - 0.45) / 0.15 : ph < 0.9 ? 1 : 1 - (ph - 0.9) / 0.1;
+          const d = smooth(k) * 8, r = smooth(k) * 0.2;
+          const zig = [0, -14, -6, -4, 5, 6, -4, 16, 0, 32];
+          for (const side of [-1, 1]) {
+            c.save(); c.translate(side * d, d * 0.4); c.rotate(side * r);
+            c.beginPath(); c.moveTo(0, -60);
+            for (let i = 0; i < zig.length; i += 2) c.lineTo(zig[i], zig[i + 1]);
+            c.lineTo(0, 60); c.lineTo(side * 60, 60); c.lineTo(side * 60, -60); c.closePath(); c.clip();
+            heartPath(c); c.fill(); c.restore();
+          }
+          if (d < 1) hole(c, () => { c.lineWidth = 3; c.beginPath(); c.moveTo(0, -14); for (let i = 2; i < zig.length; i += 2) c.lineTo(zig[i], zig[i + 1]); c.stroke(); });
+        }},
+      },
+    },
+    sun: {
+      name: "sun", default: "shine",
+      verbs: { shine: "shine", rise: "rise", set: "set" },
+      actions: {
+        shine: { verb: "shines", label: "shining", draw(c, t) { sunDisc(c, t, 50, 50, 1); } },
+        rise: { verb: "rises", label: "rising over the horizon", draw(c, t) {
+          const e = smooth((t % 6) / 4.5);
+          c.save(); c.beginPath(); c.rect(0, 0, 100, 71); c.clip(); sunDisc(c, t, 50, 96 - e * 54, 0.85); c.restore();
+          line(c, 4, 73, 96, 73, 3.5);
+          for (let i = 0; i < 3; i++) { const w = (14 - i * 4) * e + S(t * 3 + i) * 2; line(c, 50 - w, 80 + i * 6, 50 + w, 80 + i * 6, 3); }
+        }},
+        set: { verb: "sets", label: "setting below the horizon", draw(c, t) {
+          const e = smooth((t % 6) / 4.5);
+          c.save(); c.beginPath(); c.rect(0, 0, 100, 71); c.clip(); sunDisc(c, t, 50, 42 + e * 54, 0.85); c.restore();
+          line(c, 4, 73, 96, 73, 3.5);
+          for (let i = 0; i < 3; i++) { const w = (14 - i * 4) * (1 - e) + S(t * 3 + i) * 2; line(c, 50 - w, 80 + i * 6, 50 + w, 80 + i * 6, 3); }
+        }},
+      },
+    },
+    snake: {
+      name: "snake", default: "slither",
+      verbs: { slither: "slither", walk: "slither", run: "slither", strike: "strike" },
+      actions: {
+        slither: { verb: "slithers", label: "slithering", draw(c, t) {
+          const n = 36; let hy = 0;
+          for (let i = 0; i <= n; i++) {
+            const u = i / n, x = 8 + u * 72, y = 60 + S(u * 10 + t * 5) * 11 * (1 - u * 0.65);
+            circle(c, x, y, 2.2 + u * 4.5); hy = y;
+          }
+          ellipse(c, 84, hy, 9, 6.5);
+          if ((t % 1.8) < 0.35) line(c, 92, hy, 99, hy, 2.6);
+          hole(c, () => circle(c, 86, hy - 2, 2.2));
+        }},
+        strike: { verb: "strikes", label: "striking", draw(c, t) {
+          const ph = (t % 2.2) / 2.2;
+          const e = ph < 0.6 ? 0 : ph < 0.68 ? smooth((ph - 0.6) / 0.08) : 1 - smooth((ph - 0.68) / 0.32);
+          const n = 40; let hx = 0, hy = 0;
+          for (let i = 0; i <= n; i++) {
+            const u = i / n, x = 14 + u * (40 + e * 34);
+            const y = 82 + S(u * 13) * 9 * (1 - u) * (1 - e * 0.6) - Math.pow(u, 3) * 38 * (1 - e * 0.65) + (e ? 0 : S(t * 2) * u * 2);
+            circle(c, x, y, 2.6 + u * 4); hx = x; hy = y;
+          }
+          ellipse(c, hx + 5, hy, 9, 6.5);
+          hole(c, () => { circle(c, hx + 6, hy - 2.5, 2.2); if (e > 0.3) poly(c, [hx + 4, hy + 1, hx + 16, hy - 2, hx + 16, hy + 6]); });
+        }},
+      },
+    },
+    ball: {
+      name: "ball", default: "bounce",
+      verbs: { bounce: "bounce", jump: "bounce", roll: "roll" },
+      actions: {
+        bounce: { verb: "bounces", label: "bouncing", draw(c, t) {
+          const ph = t % 1, h = 4 * ph * (1 - ph), r = 16, ground = 90;
+          const sq = h < 0.1 ? (0.1 - h) / 0.1 : 0, sx = 1 + sq * 0.35, sy = 1 - sq * 0.3;
+          const y = ground - r * sy - h * 52;
+          ellipse(c, 50, y, r * sx, r * sy);
+          hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.ellipse(50, y, r * sx, r * sy * 0.35, 0, 0, TAU); c.stroke(); });
+          const w = (1 - h) * 14 + 4; c.fillRect(50 - w, ground + 2, w * 2, 4.5);
+        }},
+        roll: { verb: "rolls", label: "rolling", draw(c, t) {
+          const ph = (t % 4) / 4, r = 15, x = 18 + (1 - Math.abs(1 - 2 * ph)) * 64, y = 89 - r, a = (x - 18) / r;
+          ellipse(c, x, y, r, r);
+          hole(c, () => { c.lineWidth = 2.8; c.beginPath(); c.moveTo(x - C(a) * r, y - S(a) * r); c.lineTo(x + C(a) * r, y + S(a) * r); c.stroke(); });
+          line(c, 4, 91, 96, 91, 3);
+        }},
+      },
+    },
+    flower: {
+      name: "flower", default: "sway",
+      verbs: { sway: "sway", bloom: "bloom", grow: "bloom" },
+      actions: {
+        sway: { verb: "sways", label: "swaying", draw(c, t) { flower(c, t, 1); } },
+        bloom: { verb: "blooms", label: "blooming", draw(c, t) { flower(c, t, smooth((t % 5) / 3.5)); } },
+      },
+    },
+  };
+  function flower(c, t, g) {
+    const s = S(t * TAU * 0.3) * 5, hx = 50 + s, hy = 30;
+    c.lineWidth = 5; c.beginPath(); c.moveTo(50, 97); c.quadraticCurveTo(50 - s, 66, hx, hy + 8); c.stroke();
+    ellipse(c, 42 - s * 0.3, 74, 10, 4.5, -0.5);
+    ellipse(c, 58 - s * 0.5, 62, 10, 4.5, 0.5);
+    if (g < 0.15) { ellipse(c, hx, hy, 5, 8); return; }
+    for (let i = 0; i < 6; i++) { const a = t * 0.6 + i * TAU / 6; ellipse(c, hx + C(a) * 12 * g, hy + S(a) * 12 * g, 10 * g, 6 * g, a); }
+    hole(c, () => circle(c, hx, hy, 7 * g));
+    circle(c, hx, hy, 4.2);
+  }
+
+  // Nouns that map onto each object.
   const ALIASES = {
-    man: ["man", "woman", "person", "human", "boy", "girl", "me", "you", "people", "walk", "walker", "guy", "lady"],
-    bird: ["bird", "crow", "pigeon", "sparrow", "dove", "robin", "fly", "seagull", "gull"],
-    fish: ["fish", "goldfish", "salmon", "swim", "carp", "tuna"],
-    cat: ["cat", "kitty", "kitten", "meow"],
-    tree: ["tree", "forest", "oak", "pine", "wood"],
-    heart: ["heart", "love", "beat"],
-    sun: ["sun", "sunshine", "summer", "day"],
+    man: ["man", "men", "woman", "women", "person", "human", "boy", "girl", "me", "you", "people", "guy", "lady", "kid", "child", "he", "she", "i"],
+    bird: ["bird", "crow", "pigeon", "sparrow", "dove", "robin", "seagull", "gull"],
+    fish: ["fish", "goldfish", "salmon", "carp", "tuna"],
+    cat: ["cat", "kitty", "kitten"],
+    tree: ["tree", "forest", "oak", "pine"],
+    heart: ["heart", "love"],
+    sun: ["sun", "sunshine"],
     snake: ["snake", "serpent", "python", "cobra"],
-    ball: ["ball", "bounce", "football", "basketball"],
-    flower: ["flower", "rose", "tulip", "daisy", "bloom"],
+    ball: ["ball", "football", "basketball"],
+    flower: ["flower", "rose", "tulip", "daisy"],
   };
   const LOOKUP = {};
   for (const [k, list] of Object.entries(ALIASES)) for (const w of list) LOOKUP[w] = k;
 
-  function resolve(text) {
+  // Verb forms that map onto each canonical verb.
+  const VERB_FORMS = {
+    stand: "stand stands standing stood wait waits waiting",
+    walk: "walk walks walking walked stroll strolls strolling wander wanders wandering",
+    run: "run runs running ran sprint sprints sprinting jog jogs jogging race races racing rush rushes",
+    jump: "jump jumps jumping jumped leap leaps leaping leapt hop hops hopping hopped",
+    dance: "dance dances dancing danced boogie",
+    wave: "wave waves waving waved greet greets greeting",
+    sit: "sit sits sitting sat rest rests resting perch perches perched perching",
+    sleep: "sleep sleeps sleeping slept nap naps napping dream dreams dreaming lie lies lying",
+    fly: "fly flies flying flew flap flaps flapping",
+    glide: "glide glides gliding soar soars soaring",
+    swim: "swim swims swimming swam",
+    grow: "grow grows growing grew sprout sprouts sprouting",
+    bloom: "bloom blooms blooming bloomed open opens opening",
+    break: "break breaks breaking broke broken shatter shatters",
+    rise: "rise rises rising rose",
+    set: "set sets setting",
+    roll: "roll rolls rolling rolled",
+    bounce: "bounce bounces bouncing bounced",
+    strike: "strike strikes striking struck bite bites biting attack attacks attacking",
+    beat: "beat beats beating pound pounds pounding",
+    shine: "shine shines shining shone glow glows glowing",
+    slither: "slither slithers slithering crawl crawls crawling",
+    sway: "sway sways swaying swayed",
+  };
+  const VERBS = {};
+  for (const [k, forms] of Object.entries(VERB_FORMS)) for (const w of forms.split(" ")) VERBS[w] = k;
+
+  function parse(text) {
     const words = text.toLowerCase().split(/[^\p{L}]+/u).filter(Boolean);
+    let noun = null, nounWord = null, verb = null, verbWord = null;
     for (const w of words) {
-      if (LOOKUP[w]) return LOOKUP[w];
-      if (w.endsWith("s") && LOOKUP[w.slice(0, -1)]) return LOOKUP[w.slice(0, -1)];
+      if (!noun) {
+        const k = LOOKUP[w] || (w.endsWith("s") && LOOKUP[w.slice(0, -1)]);
+        if (k) { noun = k; nounWord = w; continue; }
+      }
+      if (!verb && VERBS[w]) { verb = VERBS[w]; verbWord = w; }
     }
-    return null;
+    // A verb on its own ("runs") picks the first thing that can do it.
+    if (!noun && verb) { noun = Object.keys(SHAPES).find(k => SHAPES[k].verbs[verb]) || null; nounWord = noun; }
+    if (!noun) return null;
+    const shape = SHAPES[noun], supported = !!(verb && shape.verbs[verb]);
+    return { noun, nounWord, verb, verbWord, supported, action: supported ? shape.verbs[verb] : shape.default };
   }
 
   // Fallback: spell the word itself, in its own letters, with a wave.
@@ -304,15 +614,13 @@
     W = innerWidth; H = innerHeight;
     stage.width = Math.round(W * dpr); stage.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    let boxH = Math.max(150, H * BOX);
-    fs = boxH / ROWS;
+    fs = Math.max(150, H * BOX) / ROWS;
     ctx.font = `400 ${fs}px "JetBrains Mono", monospace`;
     cellW = ctx.measureText("M").width || fs * 0.6;
     const maxW = W - 32;
     if (cellW * COLS > maxW) { const k = maxW / (cellW * COLS); fs *= k; cellW *= k; }
     ox = Math.round((W - cellW * COLS) / 2);
-    oy = Math.round(H * 0.42 - (fs * ROWS) / 2);
-    oy = Math.max(64, oy);
+    oy = Math.max(64, Math.round(H * 0.4 - (fs * ROWS) / 2));
   }
 
   // ---------- colors from tokens ----------
@@ -320,7 +628,7 @@
   function readColors(now) {
     if (now - colorsAt < 500) return;
     const cs = getComputedStyle(document.documentElement);
-    colors = { ink: cs.getPropertyValue("--ink").trim(), soft: cs.getPropertyValue("--ink-soft").trim(), grid: cs.getPropertyValue("--grid").trim(), accent: cs.getPropertyValue("--accent").trim() };
+    colors = { ink: cs.getPropertyValue("--ink").trim(), soft: cs.getPropertyValue("--ink-soft").trim(), grid: cs.getPropertyValue("--grid").trim() };
     colorsAt = now;
   }
 
@@ -328,32 +636,56 @@
   const statusEl = document.getElementById("status");
   const input = document.getElementById("word");
   const chipsEl = document.getElementById("chips");
+  const verbsEl = document.getElementById("verbs");
   const specEl = document.getElementById("spec");
-  let current = { text: "", letters: "", shape: null, born: 0 };
+  let current = { text: "", letters: "", shape: null, action: null, nounWord: null, born: 0, actionStart: 0 };
   const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const esc = s => s.replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
   function commit(raw) {
-    const text = raw.trim();
+    const text = raw.trim().replace(/\s+/g, " ");
     const letters = [...text].filter(ch => /\p{L}/u.test(ch)).join("").toLowerCase();
-    if (!letters) return;
-    if (letters === current.letters && text === current.text) return;
-    const shape = resolve(text);
-    current = { text, letters, shape, born: performance.now() };
-    for (const b of chipsEl.children) b.setAttribute("aria-pressed", String(b.dataset.key === shape));
-    const lettersList = [...new Set(letters)].join(", ");
-    statusEl.innerHTML = shape
-      ? `<b>${escapeHtml(text)}</b> → ${SHAPES[shape].label}, set in ${escapeHtml(lettersList)}`
-      : `No drawing for <b>${escapeHtml(text)}</b> yet, so it spells itself out`;
-    try { history.replaceState(null, "", "#" + letters.replace(/[^a-z]/g, "")); } catch (e) {}
+    if (!letters || text === current.text) return;
+    const now = performance.now(), p = parse(text);
+    const shape = p ? p.noun : null;
+    // Letters fly in from the input only when the thing itself changes; a new verb just changes the motion.
+    const sameThing = shape && shape === current.shape;
+    current = {
+      text, letters, shape, action: p ? p.action : null, nounWord: p ? p.nounWord : null,
+      born: sameThing ? current.born : now, actionStart: now,
+    };
+    if (!p) {
+      statusEl.innerHTML = `No drawing for <b>${esc(text)}</b> yet, so it spells itself out`;
+    } else {
+      const sh = SHAPES[shape], act = sh.actions[p.action];
+      if (!p.verb) statusEl.innerHTML = `<b>${esc(text)}</b> → a ${sh.name}, ${act.label}. Add an action to change how it moves.`;
+      else if (p.supported) statusEl.innerHTML = `<b>${esc(text)}</b> → a ${sh.name}, ${act.label}`;
+      else statusEl.innerHTML = `A ${sh.name} can't <b>${esc(p.verbWord)}</b> yet, so it's ${act.label}`;
+    }
+    renderChips();
+    try { history.replaceState(null, "", "#" + text.toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "")); } catch (e) {}
   }
-  const escapeHtml = s => s.replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+
+  function renderChips() {
+    for (const b of chipsEl.children) b.setAttribute("aria-pressed", String(b.dataset.key === current.shape));
+    verbsEl.replaceChildren();
+    const sh = current.shape && SHAPES[current.shape];
+    if (!sh) { const s = document.createElement("span"); s.className = "row-label"; s.style.flexBasis = "auto"; s.textContent = "pick a thing first"; verbsEl.appendChild(s); return; }
+    const noun = current.nounWord || current.shape;
+    for (const [key, act] of Object.entries(sh.actions)) {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = act.verb; b.setAttribute("aria-pressed", String(key === current.action));
+      b.addEventListener("click", () => { const v = `${articleFor(noun)}${noun} ${act.verb}`; input.value = v; commit(v); });
+      verbsEl.appendChild(b);
+    }
+  }
+  const articleFor = n => ["me", "you", "he", "she", "i", "people", "men", "women", "love", "sunshine"].includes(n) ? "" : /^[aeiou]/.test(n) ? "an " : "a ";
 
   // ---------- frame ----------
   const cov = new Float32Array(COLS * ROWS);
-  const start = performance.now();
   function frame(now) {
     readColors(now);
-    const t = reduceMotion ? 0.35 : (now - start) / 1000;
+    const t = reduceMotion ? 0.35 : (now - current.actionStart) / 1000;
 
     // 1. draw the object's silhouette into the small mask canvas
     mctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -362,7 +694,7 @@
     mctx.fillStyle = "#000"; mctx.strokeStyle = "#000"; mctx.lineCap = "round"; mctx.lineJoin = "round";
     if (current.letters) {
       mctx.save();
-      if (current.shape) SHAPES[current.shape].draw(mctx, t);
+      if (current.shape) SHAPES[current.shape].actions[current.action].draw(mctx, t);
       else drawWord(mctx, t, current.text.length <= 12 ? current.text : current.letters.slice(0, 12));
       mctx.restore();
     }
@@ -375,7 +707,7 @@
       cov[r * COLS + col] = sum / (255 * (SY / 2) * (SX / 2));
     }
 
-    // 3. set the letters: each horizontal run spells the word from its start
+    // 3. set the letters: each horizontal run spells the text from its start
     ctx.clearRect(0, 0, W, H);
     ctx.textBaseline = "top";
     const age = (now - current.born) / 1000;
@@ -393,7 +725,7 @@
         if (v < 0.3 || !word) { k = 0; dots.push(x, y); continue; }
         const ch = word[k % word.length]; k++; count++;
         if (flying) {
-          const id = r * COLS + col, d = hash(id) * 0.6, q = Math.min(1, Math.max(0, (age - d) / 0.9));
+          const id = r * COLS + col, d = hash(id) * 0.6, q = clamp((age - d) / 0.9);
           const e = 1 - Math.pow(1 - q, 3);
           const sx = fromX + (hash(id + 7) - 0.5) * 120, sy = fromY + (hash(id + 3) - 0.5) * 30;
           x = sx + (x - sx) * e; y = sy + (y - sy) * e;
@@ -417,7 +749,7 @@
 
   // ---------- input ----------
   let timer = 0;
-  input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => commit(input.value), 550); });
+  input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => commit(input.value), 600); });
   document.getElementById("form").addEventListener("submit", e => { e.preventDefault(); clearTimeout(timer); commit(input.value); });
   document.addEventListener("keydown", e => {
     if (document.activeElement !== input && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && document.activeElement.tagName !== "BUTTON") input.focus();
@@ -425,12 +757,12 @@
   for (const key of Object.keys(SHAPES)) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = key; b.dataset.key = key; b.setAttribute("aria-pressed", "false");
-    b.addEventListener("click", () => { input.value = key; commit(key); });
+    b.addEventListener("click", () => { const v = `${articleFor(key)}${key}`; input.value = v; commit(v); });
     chipsEl.appendChild(b);
   }
 
   addEventListener("resize", layout);
-  const first = (location.hash.slice(1) || "man").toLowerCase();
+  const first = location.hash.slice(1).replace(/-/g, " ").toLowerCase() || "a man walks";
   input.value = first;
   const go = () => { layout(); commit(first); requestAnimationFrame(frame); };
   (document.fonts && document.fonts.load ? Promise.all([document.fonts.load('400 16px "JetBrains Mono"'), document.fonts.load('700 16px "JetBrains Mono"')]).catch(() => {}) : Promise.resolve()).then(go);

@@ -347,7 +347,7 @@
       },
     },
     bird: {
-      size: 0.5, name: "bird", default: "fly",
+      size: 0.28, name: "bird", default: "fly",
       verbs: { fly: "fly", glide: "glide", sit: "perch", stand: "perch", sleep: "perch", stop: "perch", land: "perch", look: "perch", walk: "hop", jump: "hop", run: "hop", chase: "fly", flee: "fly" },
       actions: {
         fly: { verb: "flies", label: "flying", speed: 26, lift: 55, draw(c, t) {
@@ -371,7 +371,7 @@
       },
     },
     fish: {
-      size: 0.55, name: "fish", default: "swim",
+      size: 0.3, name: "fish", default: "swim",
       verbs: { swim: "swim", jump: "jump", chase: "swim", flee: "swim" },
       actions: {
         swim: { verb: "swims", label: "swimming", speed: 12, lift: 40, draw(c, t) {
@@ -399,7 +399,7 @@
       },
     },
     cat: {
-      size: 0.6, name: "cat", default: "sit",
+      size: 0.4, name: "cat", default: "sit",
       verbs: { sit: "sit", stand: "sit", stop: "sit", crouch: "sit", look: "sit", sleep: "sleep", walk: "walk", run: "run", chase: "run", flee: "run" },
       actions: {
         sit: { verb: "sits", label: "sitting, swishing its tail", draw(c, t) {
@@ -432,7 +432,7 @@
       },
     },
     tree: {
-      size: 1.05, name: "tree", default: "sway",
+      size: 1.6, name: "tree", default: "sway",
       verbs: { sway: "sway", grow: "grow" },
       actions: {
         sway: { verb: "sways", label: "swaying in the wind", draw(c, t) {
@@ -457,7 +457,7 @@
       },
     },
     heart: {
-      size: 0.6, name: "heart", default: "beat",
+      size: 0.35, name: "heart", default: "beat",
       verbs: { beat: "beat", break: "break" },
       actions: {
         beat: { verb: "beats", label: "beating", draw(c, t) {
@@ -504,7 +504,7 @@
       },
     },
     snake: {
-      size: 0.6, name: "snake", default: "slither",
+      size: 0.35, name: "snake", default: "slither",
       verbs: { slither: "slither", walk: "slither", run: "slither", strike: "strike", chase: "slither", flee: "slither" },
       actions: {
         slither: { verb: "slithers", label: "slithering", speed: 9, draw(c, t) {
@@ -532,7 +532,7 @@
       },
     },
     ball: {
-      size: 0.45, name: "ball", default: "bounce",
+      size: 0.3, name: "ball", default: "bounce",
       verbs: { bounce: "bounce", jump: "bounce", roll: "roll", chase: "roll", flee: "roll" },
       actions: {
         bounce: { verb: "bounces", label: "bouncing", speed: 10, draw(c, t) {
@@ -551,7 +551,7 @@
       },
     },
     flower: {
-      size: 0.6, name: "flower", default: "sway",
+      size: 0.22, name: "flower", default: "sway",
       verbs: { sway: "sway", bloom: "bloom", grow: "bloom" },
       actions: {
         sway: { verb: "sways", label: "swaying", draw(c, t) { flower(c, t, 1); } },
@@ -770,6 +770,8 @@
 
   let text = "", scene = null, rt = null, fallback = null;
 
+  // Sizes are relative to a standing person (size 1), roughly true to life but nudged up where a
+  // real-scale drawing would be too few letters to read. The biggest thing on stage fills the box.
   function actorScale(key) {
     const max = Math.max(...scene.order.map(k => SHAPES[k].size));
     return SHAPES[key].size / max;

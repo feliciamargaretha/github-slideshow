@@ -489,18 +489,9 @@
       verbs: { shine: "shine", rise: "rise", set: "set" },
       actions: {
         shine: { verb: "shines", label: "shining", draw(c, t) { sunDisc(c, t, 50, 50, 1); } },
-        rise: { verb: "rises", label: "rising over the horizon", draw(c, t) {
-          const e = smooth((t % 6) / 4.5);
-          c.save(); c.beginPath(); c.rect(0, 0, 100, 71); c.clip(); sunDisc(c, t, 50, 96 - e * 54, 0.85); c.restore();
-          line(c, 4, 73, 96, 73, 3.5);
-          for (let i = 0; i < 3; i++) { const w = (14 - i * 4) * e + S(t * 3 + i) * 2; line(c, 50 - w, 80 + i * 6, 50 + w, 80 + i * 6, 3); }
-        }},
-        set: { verb: "sets", label: "setting below the horizon", draw(c, t) {
-          const e = smooth((t % 6) / 4.5);
-          c.save(); c.beginPath(); c.rect(0, 0, 100, 71); c.clip(); sunDisc(c, t, 50, 42 + e * 54, 0.85); c.restore();
-          line(c, 4, 73, 96, 73, 3.5);
-          for (let i = 0; i < 3; i++) { const w = (14 - i * 4) * (1 - e) + S(t * 3 + i) * 2; line(c, 50 - w, 80 + i * 6, 50 + w, 80 + i * 6, 3); }
-        }},
+        // sink(t): 0 = at its place in the sky, 1 = down below the horizon (the ground line)
+        rise: { verb: "rises", label: "rising", sink: t => 1 - smooth((t % 6) / 4.5), draw(c, t) { sunDisc(c, t, 50, 50, 1); } },
+        set: { verb: "sets", label: "setting", sink: t => smooth((t % 6) / 4.5), draw(c, t) { sunDisc(c, t, 50, 50, 1); } },
       },
     },
     snake: {
@@ -649,6 +640,8 @@
   const TRANSITIVE = new Set(["chase"]);
   const FILLER = new Set("a an the and then to at of in on is are it its his her their them with up down around over away again very slowly quickly back forward too also so but or now suddenly finally just still off onto into from by".split(" "));
   const MAX_ACTORS = 3;
+  const POS_H = { left: "left", right: "right", middle: "center", center: "center", centre: "center" };
+  const POS_V = { top: "top", high: "top", upper: "top", sky: "top", bottom: "low", low: "low", lower: "low", horizon: "low" };
 
   // ---------- reading a sentence into a scene ----------
   // "a man walks, then runs" → two steps. "a cat chases a bird" → one step, two actors, a chase.
@@ -656,7 +649,7 @@
     const clauses = text.toLowerCase()
       .split(/\s*(?:[,;.!?]|\band then\b|\bthen\b|\bafter that\b|\bafterwards\b|\bnext\b)\s*/)
       .filter(cl => /\p{L}/u.test(cl));
-    const steps = [], order = [], nounWords = {}, notes = [];
+    const steps = [], order = [], nounWords = {}, notes = [], pos = {};
     let lastSubjects = [], hasVerb = false;
 
     for (const cl of clauses) {
@@ -664,7 +657,8 @@
       const step = { acts: {}, chase: null };
       const known = new Set(order);
       let pending = [], lastVerb = null, transitive = null, withNext = false, sawVerb = false;
-      const unknown = words.filter(w => !nounOf(w) && !VERBS[w] && !FILLER.has(w));
+      const unknown = words.filter(w => !nounOf(w) && !VERBS[w] && !FILLER.has(w) && !POS_H[w] && !POS_V[w]);
+      let lastNoun = null;
       const meet = (key, w) => {
         if (order.includes(key)) return true;
         if (order.length >= MAX_ACTORS) return false;
@@ -678,9 +672,15 @@
       };
 
       for (const w of words) {
+        if (POS_H[w] || POS_V[w]) {                         // "the sun on the left", "a cat in the middle"
+          const who = lastNoun || lastSubjects[lastSubjects.length - 1];
+          if (who) { pos[who] = { ...pos[who] }; if (POS_H[w]) pos[who].h = POS_H[w]; else pos[who].v = POS_V[w]; }
+          continue;
+        }
         const n = nounOf(w);
         if (n) {
           if (!meet(n, w)) continue;
+          lastNoun = n;
           if (transitive) {                                  // "a cat chases a bird": the bird is chased
             assign(n, "flee", null);
             step.chase = { from: transitive[0], to: n };
@@ -710,7 +710,7 @@
       if (pending.length) lastSubjects = [...pending];
       if (Object.keys(step.acts).length) steps.push(step);
     }
-    return order.length ? { steps, order, nounWords, notes, hasVerb } : null;
+    return order.length ? { steps, order, nounWords, notes, hasVerb, pos } : null;
   }
 
   // Fallback: spell the word itself, in its own letters, with a wave.
@@ -784,10 +784,18 @@
 
   // Sizes are relative to a standing person (size 1), roughly true to life but nudged up where a
   // real-scale drawing would be too few letters to read. The biggest thing on stage fills the box.
+  // Sky things (the sun) live in a band at the top; when one is up, ground things shrink a little to leave it room.
+  const SKY_ALONE = 0.42, SKY_SHARED = 0.34, GROUND_UNDER_SKY = 0.68;
   function actorScale(key) {
-    const max = Math.max(...scene.order.map(k => SHAPES[k].size));
-    return SHAPES[key].size / max;
+    const ground = scene.order.filter(k => !SHAPES[k].sky), hasSky = ground.length < scene.order.length;
+    if (SHAPES[key].sky) return ground.length ? SKY_SHARED : SKY_ALONE;
+    const max = Math.max(...ground.map(k => SHAPES[k].size));
+    return SHAPES[key].size / max * (hasSky ? GROUND_UNDER_SKY : 1);
   }
+  // Where the person asked for something to be ("on the left", "top right"), as stage x.
+  const POS_X = { left: 45, center: 100, right: 150 };
+  const SKY_X = { left: 30, center: 100, right: 170 };
+  const posOf = key => (scene.pos && scene.pos[key]) || {};
   const actOf = A => SHAPES[A.key].actions[A.action];
 
   const tOf = (start, now) => reduceMotion ? 0.35 : (now - start) / 1000;
@@ -823,18 +831,20 @@
       A.letters = lettersOf(scene.nounWords[key] + a.word);
     }
     // place newcomers so they don't land on top of anyone
-    const others = Object.values(rt.actors).filter(o => !fresh.includes(o));
-    if (!others.length && fresh.length > 1) {
-      const slots = fresh.length === 2 ? [60, 140] : [40, 100, 160];
-      fresh.forEach((A, j) => A.sx = slots[j]);
+    const others = Object.values(rt.actors).filter(o => !fresh.includes(o) && !SHAPES[o.key].sky);
+    const groundFresh = fresh.filter(A => !SHAPES[A.key].sky);
+    if (!others.length && groundFresh.length > 1) {
+      const slots = groundFresh.length === 2 ? [60, 140] : [40, 100, 160];
+      groundFresh.forEach((A, j) => A.sx = slots[j]);
     } else {
-      for (const A of fresh) {
+      for (const A of groundFresh) {
         if (!others.length) { A.sx = (actOf(A).speed || 0) > 0 ? 55 : 100; others.push(A); continue; }
         let best = 100, bestD = -1;
         for (const x of [45, 100, 150]) { const d = Math.min(...others.map(o => Math.abs(o.sx - x))); if (d > bestD) { bestD = d; best = x; } }
         A.sx = best; others.push(A);
       }
     }
+    for (const A of groundFresh) { const h = posOf(A.key).h; if (h) A.sx = POS_X[h]; A.posH = h; }
     if (st.chase) {
       const f = rt.actors[st.chase.from], to = rt.actors[st.chase.to];
       if (f && to) {
@@ -857,6 +867,11 @@
     if (old) while (i < n && i < old.steps.length && sig(old.steps[i]) === sig(next.steps[i])) i++;
     if (i >= n) i = Math.min(rt.step, n - 1);
     enterStep(i, now);
+    // a newly asked-for side: slide there
+    for (const A of Object.values(rt.actors)) {
+      const h = posOf(A.key).h;
+      if (h !== A.posH) { A.posH = h; if (h && !SHAPES[A.key].sky) A.slideTo = POS_X[h]; }
+    }
   }
 
   function update(now, dt) {
@@ -885,6 +900,10 @@
     for (const A of list) if (A.vel > 0.5 && !SHAPES[A.key].sky) shift = Math.max(shift, A.sx + A.vel * dt - LIMIT_R);
     for (const A of list) {
       if (SHAPES[A.key].sky) continue;
+      if (A.slideTo != null) {
+        if (A.vel > 0.5 || Math.abs(A.slideTo - A.sx) < 0.5) A.slideTo = null;
+        else A.sx += (A.slideTo - A.sx) * (1 - Math.exp(-dt * 4));
+      }
       if (A.vel > 0.5) A.sx = Math.max(LIMIT_L, A.sx + A.vel * dt - shift);
       else { A.sx -= shift; if (A.sx < -45) A.sx += STAGE_W + 90; }
     }
@@ -894,16 +913,26 @@
   // ---------- drawing one actor ----------
   // Where a thing sits on the stage (stage units) and how many letters its grid has.
   const liftOf = (act, sc) => act.lift ? act.lift * (1 - sc) + (scene.order.length > 1 ? 20 : 0) : 0;
-  function boxOf(A) {
+  function boxOf(A, now) {
     const sh = SHAPES[A.key], sc = actorScale(A.key), ls = Math.min(1, Math.max(sc, MIN_LETTER, minLetterPx / fs));
+    const h = 100 * sc;
+    let y0 = GROUND * (1 - sc) - liftOf(actOf(A), sc);
+    if (sh.sky) {
+      const pos = posOf(A.key), act = actOf(A);
+      A.sx = SKY_X[pos.h || "left"];
+      const up = pos.v === "low" ? GROUND - h * 0.8 : 1, down = GROUND - h * 0.38;
+      y0 = act.sink ? up + (down - up) * act.sink(tOf(A.actionStart, now)) : up;
+      A.horizon = (GROUND - 1.5 - y0) / sc;   // in the sun's own box units: hide anything below the ground line
+    }
     return {
-      x0: A.sx - 50 * sc, y0: sh.sky ? 2 : GROUND * (1 - sc) - liftOf(actOf(A), sc), w: 100 * sc, h: 100 * sc,
+      x0: A.sx - 50 * sc, y0, w: h, h,
       units: [100, 100], cols: Math.max(8, Math.round(COLS / 2 * sc / ls)), rows: Math.max(5, Math.round(ROWS * sc / ls)),
     };
   }
   // The current action, in the thing's own 100×100 box. If the previous one shares a skeleton, blend the two poses.
   function drawActor(c, A, now) {
     const act = actOf(A), t = tOf(A.actionStart, now), k = blendOf(A, now);
+    if (SHAPES[A.key].sky) { c.beginPath(); c.rect(-50, -50, 200, A.horizon + 50); c.clip(); }
     const prev = A.prev && k < 1 ? SHAPES[A.key].actions[A.prev.action] : null;
     if (!act.rig) { act.draw(c, t); return; }
     let P = act.pose(A.phase, t);
@@ -964,13 +993,14 @@
   }
 
   // ---------- status and chips ----------
+  const where = k => { const p = posOf(k), v = SHAPES[k].sky ? p.v : null, bits = [v, p.h === "center" ? "middle" : p.h].filter(Boolean); return bits.length ? `, ${bits.join(" ")}` : ""; };
   function describe(st) {
     if (st.chase) {
       const rest = Object.entries(st.acts).filter(([k]) => k !== st.chase.from && k !== st.chase.to)
         .map(([k, a]) => `${scene.nounWords[k]} ${SHAPES[k].actions[a.action].label}`);
       return [`${scene.nounWords[st.chase.from]} chasing ${scene.nounWords[st.chase.to]}`, ...rest].join(", ");
     }
-    return Object.entries(st.acts).map(([k, a]) => `${scene.nounWords[k]} ${SHAPES[k].actions[a.action].label}`).join(", ");
+    return Object.entries(st.acts).map(([k, a]) => `${scene.nounWords[k]} ${SHAPES[k].actions[a.action].label}${where(k)}`).join(", ");
   }
   function renderStatus() {
     if (!scene) {
@@ -1021,7 +1051,7 @@
     text = raw.trim().replace(/\s+/g, " ");
     const now = performance.now();
     const next = buildScene(final ? text : settled(raw).trim());
-    const sig = next ? JSON.stringify([next.steps, next.order, next.nounWords]) : "";
+    const sig = next ? JSON.stringify([next.steps, next.order, next.nounWords, next.pos]) : "";
     if (next && sig !== lastSig) { fallback = null; applyScene(next, now); }
     else if (!next) {
       rt = null; scene = null;
@@ -1045,7 +1075,7 @@
     //    While an action dissolves into one with a different skeleton, mix the old silhouette's coverage in.
     const actors = rt ? scene.order.map(k => rt.actors[k]).filter(Boolean) : [];
     const items = [];
-    if (rt) actors.forEach((A, i) => items.push({ A, i, box: boxOf(A), letters: A.letters, born: A.born }));
+    if (rt) actors.forEach((A, i) => items.push({ A, i, box: boxOf(A, now), letters: A.letters, born: A.born }));
     else if (fallback) items.push({ A: null, i: 0, box: { x0: 0, y0: 0, w: STAGE_W, h: 100, units: [STAGE_W, 100], cols: COLS, rows: ROWS }, letters: fallback.letters, born: fallback.born });
     for (const it of items) {
       const L = layers[it.i], { A, box } = it;
@@ -1148,7 +1178,7 @@
     b.addEventListener("click", () => { const v = `${articleFor(key)}${key}`; input.value = v; live(v, true); });
     chipsEl.appendChild(b);
   }
-  for (const ex of ["a man walks, then runs, then jumps", "a man runs, trips and falls, then gets up", "a man walks and then he stops", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man jumps, then dances, then sleeps"]) {
+  for (const ex of ["a man walks, then runs, then jumps", "a man runs, trips and falls, then gets up", "a man walks and then he stops", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man walks under the sun on the right", "a man jumps, then dances, then sleeps"]) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = ex;
     b.addEventListener("click", () => { input.value = ex; live(ex, true); });

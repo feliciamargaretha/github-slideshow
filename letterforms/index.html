@@ -10,26 +10,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Major+Mono+Display&display=swap">
 <style>
-  /* Layout: one full-screen stage; the object sits in a 40×24 type grid above a typewriter-style input line. */
+  /* Layout: one full-screen stage; letters act out the sentence above a typewriter-style input line.
+     One deliberate look in every theme: warm beige paper, warm dark ink. */
   :root {
-    --bg: #ECEEF1;
-    --ink: #14171C;
-    --ink-soft: #5A6170;
-    --grid: #D2D6DD;
-    --line: #C6CBD4;
-    --accent: #2F45C9;
+    --bg: #EEE3CF;
+    --ink: #2B241D;
+    --ink-soft: #7A6B58;
+    --grid: #DCCDB4;
+    --line: #C9B79A;
+    --accent: #3A4BB0;
+    color-scheme: light;
     --font-display: "Major Mono Display", "JetBrains Mono", ui-monospace, monospace;
     --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0E1013; --ink: #ECE9E2; --ink-soft: #8C93A3; --grid: #22262E; --line: #2C313B; --accent: #98A6FF;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #0E1013; --ink: #ECE9E2; --ink-soft: #8C93A3; --grid: #22262E; --line: #2C313B; --accent: #98A6FF;
-    color-scheme: dark;
   }
   html, body { height: 100%; }
   body {
@@ -120,11 +112,6 @@
       <input id="word" name="word" type="text" maxlength="90" spellcheck="false" autocapitalize="off" placeholder="a man walks, then runs…">
       <span class="hint">enter ↵</span>
     </form>
-    <div class="rows">
-      <div class="row"><span class="row-label" id="things-label">things</span><div class="chips" id="chips" role="group" aria-labelledby="things-label"></div></div>
-      <div class="row"><span class="row-label" id="verbs-label">actions</span><div class="chips" id="verbs" role="group" aria-labelledby="verbs-label"></div></div>
-      <div class="row"><span class="row-label" id="examples-label">scenes</span><div class="chips" id="examples" role="group" aria-labelledby="examples-label"></div></div>
-    </div>
   </div>
 </div>
 
@@ -727,11 +714,12 @@
   }
 
   // ---------- canvases ----------
-  const STAGE_W = 200, GROUND = 97;          // stage units; actors stand on GROUND
+  const STAGE_W = 200, GROUND = 97;          // stage units; GROUND anchors things that fly
+  const LINE = 100;                          // the ground line, at the bottom of the stage grid: everything else stands on it
   const LIMIT_R = 150, LIMIT_L = 40;         // movers stay between these; past LIMIT_R the ground scrolls instead
   const STEP_SECONDS = 3.6, HOLD_SECONDS = 1.6;
   const BLEND_SECONDS = 0.8;                 // how long one action takes to turn into the next
-  const GAP_EVERY = 34, GAP = 5;             // ground texture: a 2-cell gap every 34 units
+  const GAP_EVERY = 34;                      // ground texture: a tick under the line every 34 units
   const stage = document.getElementById("stage");
   const ctx = stage.getContext("2d");
   // Each thing is set in its own grid of letters. Small things get smaller letters (down to MIN_LETTER of the
@@ -765,7 +753,7 @@
   function readColors(now) {
     if (now - colorsAt < 500) return;
     const cs = getComputedStyle(document.documentElement);
-    colors = { ink: cs.getPropertyValue("--ink").trim(), soft: cs.getPropertyValue("--ink-soft").trim(), grid: cs.getPropertyValue("--grid").trim() };
+    colors = { ink: cs.getPropertyValue("--ink").trim(), soft: cs.getPropertyValue("--ink-soft").trim(), grid: cs.getPropertyValue("--grid").trim(), line: cs.getPropertyValue("--line").trim() };
     colorsAt = now;
   }
 
@@ -913,21 +901,49 @@
   // ---------- drawing one actor ----------
   // Where a thing sits on the stage (stage units) and how many letters its grid has.
   const liftOf = (act, sc) => act.lift ? act.lift * (1 - sc) + (scene.order.length > 1 ? 20 : 0) : 0;
+  // Where a thing's feet are when it's at rest, in its own box units: draw its first frame once and find the lowest ink.
+  const restCache = {};
+  const meas = document.createElement("canvas");
+  meas.width = meas.height = 200;
+  const mctx = meas.getContext("2d", { willReadFrequently: true });
+  function restBottom(key, action) {
+    const id = key + ":" + action;
+    if (restCache[id] != null) return restCache[id];
+    const act = SHAPES[key].actions[action];
+    mctx.setTransform(1, 0, 0, 1, 0, 0); mctx.clearRect(0, 0, 200, 200); mctx.setTransform(2, 0, 0, 2, 0, 0);
+    mctx.fillStyle = "#000"; mctx.strokeStyle = "#000"; mctx.lineCap = "round"; mctx.lineJoin = "round";
+    const was = drawingSmall; drawingSmall = false;
+    mctx.save();
+    if (act.rig) { if (act.extra) act.extra(mctx, 0, 1); RIGS[act.rig](mctx, act.pose(0, 0), 0); } else act.draw(mctx, 0);
+    mctx.restore();
+    drawingSmall = was;
+    const d = mctx.getImageData(0, 0, 200, 200).data;
+    let bottom = 97;
+    find: for (let y = 199; y >= 0; y--) for (let x = 0; x < 200; x++) if (d[(y * 200 + x) * 4 + 3] > 100) { bottom = (y + 1) / 2; break find; }
+    return restCache[id] = bottom;
+  }
+
   function boxOf(A, now) {
-    const sh = SHAPES[A.key], sc = actorScale(A.key), ls = Math.min(1, Math.max(sc, MIN_LETTER, minLetterPx / fs));
-    const h = 100 * sc;
-    let y0 = GROUND * (1 - sc) - liftOf(actOf(A), sc);
+    const sh = SHAPES[A.key], act = actOf(A), sc = actorScale(A.key), ls = Math.min(1, Math.max(sc, MIN_LETTER, minLetterPx / fs));
+    const h = 100 * sc, cols = Math.max(8, Math.round(COLS / 2 * sc / ls)), rows = Math.max(5, Math.round(ROWS * sc / ls)), ch = h / rows;
+    let y0, grounded = false;
     if (sh.sky) {
-      const pos = posOf(A.key), act = actOf(A);
+      const pos = posOf(A.key);
       A.sx = SKY_X[pos.h || "left"];
-      const up = pos.v === "low" ? GROUND - h * 0.8 : 1, down = GROUND - h * 0.38;
+      const up = pos.v === "low" ? LINE - h * 0.8 : 1, down = LINE - h * 0.38;
       y0 = act.sink ? up + (down - up) * act.sink(tOf(A.actionStart, now)) : up;
-      A.horizon = (GROUND - 1.5 - y0) / sc;   // in the sun's own box units: hide anything below the ground line
+      A.horizon = (LINE - y0) / sc;          // in the sun's own box units: hide anything below the ground line
+    } else if (act.lift) {
+      y0 = GROUND * (1 - sc) - liftOf(act, sc);
+    } else {
+      // Stand on the line: put the row of letters holding the feet right on top of it.
+      let rb = restBottom(A.key, A.action);
+      const k = blendOf(A, now);
+      if (A.prev && k < 1 && !SHAPES[A.key].actions[A.prev.action].lift) { const pb = restBottom(A.key, A.prev.action); rb = pb + (rb - pb) * k; }
+      y0 = LINE - Math.round(rb * sc / ch) * ch;
+      grounded = true;
     }
-    return {
-      x0: A.sx - 50 * sc, y0, w: h, h,
-      units: [100, 100], cols: Math.max(8, Math.round(COLS / 2 * sc / ls)), rows: Math.max(5, Math.round(ROWS * sc / ls)),
-    };
+    return { x0: A.sx - 50 * sc, y0, w: h, h, units: [100, 100], cols, rows, grounded };
   }
   // The current action, in the thing's own 100×100 box. If the previous one shares a skeleton, blend the two poses.
   function drawActor(c, A, now) {
@@ -1004,7 +1020,7 @@
   }
   function renderStatus() {
     if (!scene) {
-      statusEl.innerHTML = text ? `No drawing for <b>${esc(text)}</b> yet, so it spells itself out` : "Type a thing and what it does. It moves as soon as it recognises a word.";
+      statusEl.innerHTML = text ? `No drawing for <b>${esc(text)}</b> yet, so it spells itself out` : "Type a thing and what it does, like “a man walks, then runs” or “a cat chases a bird”.";
       return;
     }
     let html;
@@ -1017,6 +1033,7 @@
   const articleFor = n => ["me", "you", "he", "she", "i", "people", "men", "women", "love", "sunshine"].includes(n) ? "" : /^[aeiou]/.test(n) ? "an " : "a ";
 
   function renderChips() {
+    if (!chipsEl || !verbsEl) return;                // the option rows are hidden; typing is the only way in
     const key = scene ? scene.order[0] : null;
     for (const b of chipsEl.children) b.setAttribute("aria-pressed", String(!!scene && scene.order.includes(b.dataset.key)));
     verbsEl.replaceChildren();
@@ -1115,8 +1132,8 @@
         let k = 0;
         for (let col = 0; col < box.cols; col++) {
           const v = L.cov[r * box.cols + col];
-          if (v < 0.3) { k = 0; continue; }
           const ux = box.x0 + col * cw, uy = box.y0 + r * ch;
+          if (v < 0.3 || (box.grounded && uy + ch / 2 > LINE)) { k = 0; continue; }   // nothing below the ground line
           const sc = Math.floor((ux + cw / 2) / cellU), sr = Math.floor((uy + ch / 2) / rowU);
           if (sc >= 0 && sc < COLS && sr >= 0 && sr < ROWS) occupied[sr * COLS + sc] = 1;
           let x = ox + ux * pxX, y = oy + uy * pxY;
@@ -1132,26 +1149,27 @@
       runs.push({ size, heavy, light });
     }
 
-    // the stage grid: the ground (with its scrolling gaps) and a faint dot wherever nothing is set
-    const groundLetters = rt ? lettersOf(text) : "";
-    const ground = [], dots = [];
-    for (let r = 0; r < ROWS; r++) {
-      let k = 0;
-      for (let col = 0; col < COLS; col++) {
-        const x = ox + col * cellW, y = oy + r * fs;
-        if (occupied[r * COLS + col]) { k = 0; continue; }
-        if (rt && r === ROWS - 1 && ((col * cellU + rt.ground) % GAP_EVERY + GAP_EVERY) % GAP_EVERY >= GAP) {
-          ground.push(x, y, groundLetters[k % groundLetters.length]); k++; count++; continue;
-        }
-        k = 0; dots.push(x, y);
-      }
+    // the stage grid: a faint dot wherever nothing is set
+    const dots = [];
+    for (let r = 0; r < ROWS; r++) for (let col = 0; col < COLS; col++) {
+      if (!occupied[r * COLS + col]) dots.push(ox + col * cellW, oy + r * fs);
     }
-
     ctx.font = `400 ${fs}px "JetBrains Mono", monospace`;
     ctx.fillStyle = colors.grid;
     for (let i = 0; i < dots.length; i += 2) ctx.fillText("·", dots[i], dots[i + 1]);
-    ctx.fillStyle = colors.soft;
-    for (let i = 0; i < ground.length; i += 3) ctx.fillText(ground[i + 2], ground[i], ground[i + 1]);
+
+    // the ground: one line right under everyone's feet, with short ticks beneath that slide past when someone travels
+    const gy = Math.round(oy + ROWS * fs) + 0.5, gx0 = ox, gx1 = ox + COLS * cellW;
+    ctx.strokeStyle = colors.ink; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(gx0, gy); ctx.lineTo(gx1, gy); ctx.stroke();
+    ctx.strokeStyle = colors.line; ctx.lineWidth = 1;
+    const off = ((rt ? rt.ground : 0) % GAP_EVERY + GAP_EVERY) % GAP_EVERY;
+    ctx.beginPath();
+    for (let u = GAP_EVERY - off; u < STAGE_W; u += GAP_EVERY) {
+      const x = gx0 + u * pxX;
+      ctx.moveTo(x, gy + 4); ctx.lineTo(x - fs * 0.5, gy + 4 + fs * 0.5);
+    }
+    ctx.stroke();
     for (const { size, heavy, light } of runs) {
       ctx.font = `400 ${size}px "JetBrains Mono", monospace`;
       ctx.fillStyle = colors.soft;
@@ -1172,13 +1190,14 @@
   document.addEventListener("keydown", e => {
     if (document.activeElement !== input && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey && document.activeElement.tagName !== "BUTTON") input.focus();
   });
-  for (const key of Object.keys(SHAPES)) {
+  for (const key of chipsEl ? Object.keys(SHAPES) : []) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = key; b.dataset.key = key; b.setAttribute("aria-pressed", "false");
     b.addEventListener("click", () => { const v = `${articleFor(key)}${key}`; input.value = v; live(v, true); });
     chipsEl.appendChild(b);
   }
-  for (const ex of ["a man walks, then runs, then jumps", "a man runs, trips and falls, then gets up", "a man walks and then he stops", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man walks under the sun on the right", "a man jumps, then dances, then sleeps"]) {
+  const EXAMPLES = ["a man walks, then runs, then jumps", "a man runs, trips and falls, then gets up", "a man walks and then he stops", "a cat chases a bird", "a man walks with a cat", "the sun rises, then a bird flies", "a man walks under the sun on the right", "a man jumps, then dances, then sleeps"];
+  for (const ex of examplesEl ? EXAMPLES : []) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = ex;
     b.addEventListener("click", () => { input.value = ex; live(ex, true); });

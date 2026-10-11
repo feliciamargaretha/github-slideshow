@@ -13,11 +13,11 @@
   /* Layout: one full-screen stage; letters act out the sentence above a typewriter-style input line.
      One deliberate look in every theme: warm beige paper, warm dark ink. */
   :root {
-    --bg: #EEE3CF;
-    --ink: #2B241D;
-    --ink-soft: #7A6B58;
-    --grid: #DCCDB4;
-    --line: #C9B79A;
+    --bg: #F6F2EA;
+    --ink: #2B261F;
+    --ink-soft: #7C7264;
+    --grid: #E3DCCF;
+    --line: #CDC3B2;
     --accent: #3A4BB0;
     color-scheme: light;
     --font-display: "Major Mono Display", "JetBrains Mono", ui-monospace, monospace;
@@ -49,7 +49,7 @@
     display: flex; justify-content: center;
   }
   .dock-inner { width: 100%; max-width: 560px; display: grid; gap: 12px; }
-  .status { font-size: 12px; color: var(--ink-soft); min-height: 1.4em; }
+  .status { font-size: 12px; line-height: 1.4; color: var(--ink-soft); height: 2.8em; overflow: hidden; }
   .status b { color: var(--ink); font-weight: 700; }
   .status b.now { color: var(--accent); }
   .status .note { opacity: 0.85; }
@@ -105,13 +105,13 @@
 
 <div class="dock">
   <div class="dock-inner">
-    <div class="status" id="status" aria-live="polite"></div>
     <form class="line" id="form" autocomplete="off">
       <label class="sr" for="word">Describe a scene, like “a man walks, then runs” or “a cat chases a bird”</label>
       <span class="prompt" aria-hidden="true">›</span>
       <input id="word" name="word" type="text" maxlength="90" spellcheck="false" autocapitalize="off" placeholder="a man walks, then runs…">
       <span class="hint">enter ↵</span>
     </form>
+    <div class="status" id="status" aria-live="polite"></div>
   </div>
 </div>
 
@@ -259,7 +259,7 @@
   // verbs: canonical verb → action key. default: the action used when no verb (or an unknown one) is typed.
   const SHAPES = {
     man: {
-      size: 1, name: "figure", default: "stand",
+      size: 1, fill: 0.9, name: "figure", default: "stand",
       verbs: {
         stand: "stand", stop: "stand", walk: "walk", run: "run", jump: "jump", dance: "dance", wave: "wave", sit: "sit", sleep: "sleep",
         chase: "run", flee: "run", crouch: "crouch", fall: "fall", kick: "kick", clap: "clap", point: "point", stretch: "stretch",
@@ -733,6 +733,7 @@
   const ghosts = Array.from({ length: MAX_ACTORS }, makeLayer);   // the outgoing action, while it dissolves into the new one
 
   let W = 0, H = 0, fs = 10, cellW = 6, ox = 0, oy = 0, minLetterPx = 5;
+  const GROUND_GAP = 28;                     // pixels between the ground line and the text box
   function layout() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     minLetterPx = dpr >= 2 ? 4 : 5;            // the smallest letters still read as letters on this screen
@@ -745,7 +746,8 @@
     const maxW = W - 32;
     if (cellW * COLS > maxW) { const k = maxW / (cellW * COLS); fs *= k; cellW *= k; }
     ox = Math.round((W - cellW * COLS) / 2);
-    oy = Math.max(64, Math.round(H * 0.38 - (fs * ROWS) / 2));
+    const formTop = document.getElementById("form").getBoundingClientRect().top;
+    oy = Math.max(56, Math.round(formTop - GROUND_GAP - fs * ROWS));
   }
 
   // ---------- colors from tokens ----------
@@ -777,8 +779,9 @@
   function actorScale(key) {
     const ground = scene.order.filter(k => !SHAPES[k].sky), hasSky = ground.length < scene.order.length;
     if (SHAPES[key].sky) return ground.length ? SKY_SHARED : SKY_ALONE;
-    const max = Math.max(...ground.map(k => SHAPES[k].size));
-    return SHAPES[key].size / max * (hasSky ? GROUND_UNDER_SKY : 1);
+    const top = ground.reduce((a, k) => SHAPES[k].size > SHAPES[a].size ? k : a, ground[0]);
+    // the biggest thing fills the box (the person only 90% of it), everything else is in proportion to it
+    return SHAPES[key].size / SHAPES[top].size * (SHAPES[top].fill || 1) * (hasSky ? GROUND_UNDER_SKY : 1);
   }
   // Where the person asked for something to be ("on the left", "top right"), as stage x.
   const POS_X = { left: 45, center: 100, right: 150 };

@@ -591,6 +591,46 @@
   .grp-caret { width: 12px; color: var(--muted); }
   .grp-count { min-width: 22px; height: 20px; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 14%, var(--bg)); color: var(--accent); font-size: 12px; line-height: 20px; text-align: center; }
   html[data-table="grouped"] tr.grp-row:first-child td { padding-top: var(--s3); }
+
+  /* 5. Pipeline board: invoices as tiles in columns by payment stage */
+  .board { display: grid; grid-template-columns: repeat(5, minmax(200px, 1fr)); gap: var(--s3); align-items: start; overflow-x: auto; padding-bottom: var(--s2); }
+  .board[hidden] { display: none; }
+  .b-col { display: flex; flex-direction: column; gap: var(--s2); min-width: 0; padding: var(--s3); border-radius: var(--radius-lg); background: color-mix(in srgb, #000 22%, var(--bg)); }
+  .b-head { display: flex; justify-content: space-between; align-items: center; }
+  .b-title { display: inline-flex; align-items: center; gap: var(--s2); font-size: 13px; }
+  .b-dot { width: 8px; height: 8px; border-radius: 2px; background: var(--b-c, #6b6e74); }
+  .b-count { font-size: 12px; min-width: 22px; height: 20px; line-height: 20px; text-align: center; border-radius: 4px; background: color-mix(in srgb, var(--b-c, #6b6e74) 16%, transparent); color: var(--b-c-text, var(--fg)); }
+  .b-total { font-size: 18px; line-height: 24px; font-variant-numeric: tabular-nums; padding-bottom: var(--s2); border-bottom: 1px solid var(--outline, #46494f); }
+  .b-total .muted { font-size: 12px; }
+  .b-col.b-draft { --b-c: #6b6e74; }
+  .b-col.b-awaiting-payment { --b-c: #b8bbc0; }
+  .b-col.b-overdue { --b-c: #ff7a4d; --b-c-text: #ff9a76; }
+  .b-col.b-partially-paid { --b-c: #ffbe5c; --b-c-text: #ffbe5c; }
+  .b-col.b-paid { --b-c: var(--accent); --b-c-text: var(--accent); }
+  .b-list { display: flex; flex-direction: column; gap: var(--s2); }
+  .b-card {
+    display: flex; flex-direction: column; gap: var(--s2); padding: var(--s3); cursor: pointer;
+    background: var(--surface); border: 1px solid var(--outline, #46494f); border-radius: var(--radius);
+    box-shadow: inset 2px 0 0 var(--b-c, transparent);
+  }
+  .b-card:hover { border-color: var(--accent); }
+  .b-card.is-selected { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+  .b-card.is-open { border-color: var(--accent); }
+  .b-row { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); min-width: 0; }
+  .b-proj { display: inline-flex; align-items: center; gap: var(--s2); min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .b-amt { font-size: 18px; line-height: 24px; color: #f6f7f8; font-variant-numeric: tabular-nums; }
+  .b-meta { font-size: 12px; color: var(--muted); }
+  .b-client { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .b-client .avatar { width: 20px; height: 20px; font-size: 9px; }
+  .b-when { white-space: nowrap; font-size: 12px; color: var(--muted); }
+  .b-amt-row { align-items: baseline; }
+  .b-overdue .b-when { color: #ff9a76; }
+  .b-progress { height: 4px; border-radius: 2px; background: color-mix(in srgb, #ffbe5c 18%, transparent); overflow: hidden; }
+  .b-progress span { display: block; height: 100%; background: #ffbe5c; }
+  .b-more { height: 32px; border-radius: var(--radius); border: 1px dashed var(--outline, #46494f); background: none; color: var(--muted); cursor: pointer; }
+  .b-more:hover { color: var(--fg); border-color: var(--line-control); }
+  .b-empty { font-size: 12px; padding: var(--s3) 0; text-align: center; }
+  .b-foot { grid-column: 1 / -1; font-size: 12px; margin: 0; }
 </style>
 </head>
 <body>
@@ -716,6 +756,7 @@
 
         <div class="chips" id="chips"></div>
 
+        <div class="board" id="board" hidden></div>
         <div class="table-wrap">
           <table aria-label="Invoices">
             <thead><tr id="thead-row"></tr></thead>
@@ -1051,8 +1092,59 @@
     e.stopPropagation(); const g = +b.dataset.grp;
     tableCollapsed.has(g) ? tableCollapsed.delete(g) : tableCollapsed.add(g); renderTable();
   }, true);
+  // ---------- Pipeline board (table style "board") ----------
+  const BOARD_COLS = ['Draft', 'Awaiting payment', 'Overdue', 'Partially paid', 'Paid'];
+  const BOARD_CAP = 6, boardOpen = new Set();
+  function renderBoard(list) {
+    const cols = BOARD_COLS.map(st => list.filter(i => i.status === st));
+    const cancelled = list.filter(i => i.status === 'Cancelled').length;
+    $('#board').innerHTML = cols.map((items, c) => {
+      const st = BOARD_COLS[c], key = st.toLowerCase().replace(/ /g, '-');
+      const total = items.reduce((a, i) => a + (st === 'Paid' ? i.total : balance(i)), 0);
+      const shown = boardOpen.has(c) ? items : items.slice(0, BOARD_CAP);
+      return `<section class="b-col b-${key}" aria-label="${st}, ${items.length} invoices">
+        <header class="b-head"><span class="b-title"><span class="b-dot"></span>${st}</span><span class="b-count">${items.length}</span></header>
+        <div class="b-total">${money(total)}<span class="muted">${st === 'Paid' ? ' collected' : ' open'}</span></div>
+        <div class="b-list">${shown.map(inv => {
+          const late = diffDays(TODAY, inv.due);
+          const when = st === 'Paid' ? `Paid ${inv.paidDate.getDate()} ${MONTHS[inv.paidDate.getMonth()]}` : st === 'Draft' ? 'Not sent' : late > 0 ? `${late}d late` : late === 0 ? 'Due today' : `in ${-late}d`;
+          const pct = inv.total ? Math.round(inv.paid / inv.total * 100) : 0;
+          return `<article class="b-card${state.selected.has(inv.id) ? ' is-selected' : ''}${state.drawer && state.drawer.id === inv.id ? ' is-open' : ''}" data-id="${inv.id}" tabindex="0" aria-label="${inv.no}, ${esc(inv.project)}, ${esc(inv.client.name)}, ${money(inv.total)}, ${st === 'Paid' ? 'paid ' + fmtDate(inv.paidDate) : st === 'Draft' ? 'not sent' : late > 0 ? plural(late, 'day') + ' overdue' : 'due in ' + plural(-late, 'day')}. Press Enter to preview.">
+            <div class="b-row"><span class="b-proj">${groupDot(inv.group)}${esc(inv.project)}</span>
+              <input type="checkbox" data-check="${inv.id}" aria-label="Select ${inv.no}"${state.selected.has(inv.id) ? ' checked' : ''}></div>
+            <div class="b-row b-amt-row"><span class="b-amt">${money(inv.total)}</span><span class="b-when">${when}</span></div>
+            ${st === 'Partially paid' ? `<div class="b-progress" role="img" aria-label="${pct}% paid"><span style="width:${pct}%"></span></div>` : ''}
+            <div class="b-row b-meta"><span class="b-client">${avatar(inv.client)}${esc(inv.client.name)}</span></div>
+          </article>`; }).join('')}
+          ${items.length > BOARD_CAP ? `<button class="b-more" data-bmore="${c}">${boardOpen.has(c) ? 'Show less' : `Show ${items.length - BOARD_CAP} more`}</button>` : ''}
+          ${!items.length ? '<div class="b-empty muted">Nothing here</div>' : ''}
+        </div></section>`;
+    }).join('') + (cancelled ? `<p class="b-foot muted">${plural(cancelled, 'cancelled invoice')} hidden from the board</p>` : '');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#board')) return;
+    const more = e.target.closest('[data-bmore]');
+    if (more) { const c = +more.dataset.bmore; boardOpen.has(c) ? boardOpen.delete(c) : boardOpen.add(c); return renderTable(); }
+    if (e.target.matches('input[type=checkbox]')) return;
+    const cl = e.target.closest('.b-card'); if (cl) openInvoice(cl.dataset.id);
+  });
+  document.addEventListener('change', e => {
+    const t = e.target; if (!t.closest('#board') || !t.dataset.check) return;
+    t.checked ? state.selected.add(t.dataset.check) : state.selected.delete(t.dataset.check); renderTable();
+  });
+  document.addEventListener('keydown', e => {
+    const c = e.target.closest && e.target.closest('.b-card');
+    if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openInvoice(c.dataset.id); }
+  });
+
   function renderTable() {
     const list = filtered();
+    const board = document.documentElement.dataset.table === 'board';
+    $('#board').hidden = !board; $('.table-wrap').hidden = board;
+    if (board) {
+      $('#total-count').textContent = (isFiltering() ? plural(list.length, 'result') + ' of ' + invoices.filter(inGroup).length : plural(list.length, 'invoice'));
+      renderBoard(list); renderChips(); renderBulk(); return;
+    }
     $('#total-count').textContent = (isFiltering() ? plural(list.length, 'result') + ' of ' + invoices.filter(inGroup).length : plural(list.length, 'invoice'));
     renderHead(list);
     const visCols = COLS.filter(c => state.cols[c.key]);
@@ -1787,6 +1879,7 @@
       <button class="tab" role="radio" data-table-style="cards">Card rows</button>
       <button class="tab" role="radio" data-table-style="status">Status-led</button>
       <button class="tab" role="radio" data-table-style="grouped">Grouped</button>
+      <button class="tab" role="radio" data-table-style="board">Board</button>
     </div>
   </div>
   <div id="sp-controls"></div>

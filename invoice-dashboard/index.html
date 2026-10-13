@@ -197,8 +197,8 @@
     display: flex; flex-direction: column; gap: var(--s2);
     background: var(--surface); text-align: left; cursor: pointer; position: relative; width: 100%;
   }
-  /* Hover: no outline change; a soft pink-tinted glow around the card instead */
-  .kpi:hover { box-shadow: 0 0 0 1px rgba(255, 210, 248, .07), 0 0 16px rgba(248, 94, 228, .14), 0 0 40px rgba(248, 94, 228, .07); }
+  /* Hover: no outline change; a soft, tight white cast around the card instead */
+  .kpi:hover { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 0 10px rgba(255, 255, 255, .10), 0 0 22px rgba(255, 255, 255, .05); }
   .kpi:focus-visible { outline: 2px solid var(--line-strong); outline-offset: 2px; }
   .kpi-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
   .kpi-go { display: inline-flex; align-items: center; gap: var(--s1); color: var(--muted); font-size: 13px; }
@@ -237,7 +237,7 @@
   .kpi .muted, .kpi .kpi-go { color: #eef0f2; }
   /* Bottom row steps down one level from the main figures above it */
   .kpi .kpi-split { color: #c4c7cc; }
-  .kpi .kpi-split .muted { color: #a9acb2; }
+  .kpi .kpi-split .muted { color: #a9acb2; font-size: 12px; line-height: 16px; }
   /* Soft dark halo around card text so it stays legible on the bright glow */
   .kpi > * { text-shadow: 0 0 2px rgba(18, 18, 22, .9), 0 0 10px rgba(18, 18, 22, .75), 0 0 22px rgba(18, 18, 22, .5); }
   .kpi-split { border-top-color: rgba(255, 255, 255, .12); }

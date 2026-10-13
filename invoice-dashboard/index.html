@@ -228,7 +228,8 @@
   tbody tr.is-open td:first-child { box-shadow: inset 3px 0 0 var(--line-strong); }
   td.num, th.num { text-align: right; }
   .col-check { width: 48px; padding-right: 0 !important; }
-  .col-edit { width: 1%; text-align: right !important; }
+  .col-edit { width: 1%; text-align: right !important; padding-right: var(--s2) !important; }
+  thead .col-edit .pop-wrap { vertical-align: middle; }
   .sort-btn { background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; gap: var(--s1); }
   .sort-btn:hover { text-decoration: underline; }
   .cell-stack { display: flex; flex-direction: column; gap: 2px; }
@@ -698,7 +699,7 @@
     $('#thead-row').innerHTML =
       `<th class="col-check"><input type="checkbox" id="check-all" aria-label="Select all"${selCount && selCount === visibleIds.length ? ' checked' : ''}></th>` +
       COLS.filter(c => state.cols[c.key]).map(c => `<th class="${c.num ? 'num' : ''}${c.key === 'project' ? ' th-project' : ''}"${c.sort && state.sort.key === c.sort ? ` aria-sort="${state.sort.dir === 'asc' ? 'ascending' : 'descending'}"` : ''}>${c.sort ? `<button class="sort-btn" data-sort="${c.sort}">${c.label} ${sortMark(c.sort)}</button>` : c.label}</th>`).join('') +
-      `<th class="col-edit"><div class="pop-wrap"><button class="btn small ghost" data-pop="pop-cols" aria-label="Edit columns">Edit columns</button>
+      `<th class="col-edit"><div class="pop-wrap"><button class="btn ghost icon-btn" data-pop="pop-cols" aria-label="Edit columns" title="Edit columns"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M6 2.5v11M10 2.5v11"/></svg></button>
         <div class="popover" id="pop-cols">${COLS.map(c => `<label class="check"><input type="checkbox" data-col="${c.key}"${state.cols[c.key] ? ' checked' : ''}${c.key === 'project' ? ' disabled' : ''}> ${c.label}</label>`).join('')}</div></div></th>`;
     const ca = $('#check-all');
     ca.indeterminate = selCount > 0 && selCount < visibleIds.length;

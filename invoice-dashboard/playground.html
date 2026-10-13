@@ -511,6 +511,27 @@
   html[data-preset="solid"] .kpi-chart .month-line { stroke: var(--accent); stroke-opacity: .55; stroke-width: 1; vector-effect: non-scaling-stroke; }
   html[data-preset="solid"] .kpi-chart .month-label { position: absolute; top: 0; transform: translateX(4px); font-size: 11px; line-height: 12px; color: color-mix(in srgb, var(--accent) 80%, var(--surface)); }
   html[data-preset="solid"] .kpi:hover .kpi-chart { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 50%, transparent)); }
+
+  /* Exploration visuals on the other two cards (Solid lime, toggled in the Style panel) */
+  html[data-preset="solid"]:not([data-card-extras="on"]) .kpi-extra { display: none; }
+  html[data-preset="solid"] .kpi-chart.age {
+    display: flex; gap: 6px; align-items: flex-end; height: 60px; width: 34%; bottom: var(--s3);
+    -webkit-mask-image: none; mask-image: none;
+  }
+  .age-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 4px; }
+  .age-bar { display: block; border-radius: 2px; border: 1px solid; }
+  .age-col.a0 .age-bar { background: color-mix(in srgb, var(--accent) 6%, transparent); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+  .age-col.a1 .age-bar { background: color-mix(in srgb, var(--accent) 20%, transparent); border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+  .age-col.a2 .age-bar { background: color-mix(in srgb, var(--accent) 32%, transparent); border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
+  .age-col.a3 .age-bar { background: color-mix(in srgb, var(--accent) 40%, transparent); border-color: color-mix(in srgb, var(--accent) 85%, transparent); }
+  .age-label { font-size: 11px; line-height: 12px; color: var(--muted); text-align: center; white-space: nowrap; }
+  html[data-preset="solid"] .kpi-chart.due { height: 60px; width: 44%; bottom: var(--s3);
+    -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,.5), #000 25%, #000 85%, rgba(0,0,0,.5)); mask-image: linear-gradient(90deg, rgba(0,0,0,.5), #000 25%, #000 85%, rgba(0,0,0,.5)); }
+  html[data-preset="solid"] .kpi-chart.due svg { height: 44px; }
+  .kpi-chart.due rect { fill: color-mix(in srgb, var(--accent) 40%, transparent); stroke: color-mix(in srgb, var(--accent) 85%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .kpi-chart.due .due-base { stroke: color-mix(in srgb, var(--accent) 35%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .kpi-chart.due .due-day { stroke: color-mix(in srgb, var(--accent) 20%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .due-scale { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; line-height: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -882,10 +903,25 @@
     const paidChart = `<span class="kpi-chart" aria-hidden="true">
       <svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none">${bars}
         <path class="trend-line" d="${trend}"/></svg></span>`;
+    // Exploration: ageing columns for "Total outstanding" — open balance by how late it is.
+    const ageB = [0, 0, 0, 0];   // not yet due, 1-30, 31-60, 60+ days late
+    open.forEach(i => { const late = diffDays(TODAY, i.due); ageB[late <= 0 ? 0 : late <= 30 ? 1 : late <= 60 ? 2 : 3] += balance(i); });
+    const amax = Math.max(...ageB) || 1;
+    const ageChart = `<span class="kpi-chart kpi-extra age" aria-hidden="true">` + ['Not due', '1–30', '31–60', '60+'].map((l, k) =>
+      `<span class="age-col a${k}"><span class="age-bar" style="height: ${Math.max(6, ageB[k] / amax * 100)}%"></span><span class="age-label">${l}</span></span>`).join('') + '</span>';
+    // Exploration: due-date strip for "Amount due next month" — one tick per invoice across November.
+    const DIM = 30, dueH = 44;
+    const ticks = nextM.map(i => ({ d: i.due.getDate(), v: balance(i) }));
+    const tmax = Math.max(...ticks.map(t => t.v)) || 1;
+    const dueChart = `<span class="kpi-chart kpi-extra due" aria-hidden="true"><svg viewBox="0 0 ${DIM * 6} ${dueH}" preserveAspectRatio="none">` +
+      `<line class="due-base" x1="0" x2="${DIM * 6}" y1="${dueH - .5}" y2="${dueH - .5}"/>` +
+      Array.from({ length: DIM }, (_, k) => `<line class="due-day" x1="${k * 6 + 3}" x2="${k * 6 + 3}" y1="${dueH - 3}" y2="${dueH}"/>`).join('') +
+      ticks.map(t => { const h = Math.max(8, t.v / tmax * (dueH - 6)); return `<rect x="${(t.d - 1) * 6 + .5}" y="${dueH - h}" width="5" height="${h}" rx="1.5"/>`; }).join('') +
+      `</svg><span class="due-scale"><span>1 Nov</span><span>30 Nov</span></span></span>`;
     const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
     $('#kpis').innerHTML = `
       <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">
-        <span class="kpi-main"><span class="kpi-head"><span class="muted">Total outstanding</span>${go}</span>
+        <span class="kpi-main">${ageChart}<span class="kpi-head"><span class="muted">Total outstanding</span>${go}</span>
         <span class="kpi-value">${money(outstanding)}</span>
         <span class="muted">${plural(open.length, 'open invoice')}</span></span>
         <span class="kpi-split">
@@ -902,7 +938,7 @@
         </span>
       </button>
       <button class="kpi" data-kpi="next" aria-label="View invoices due next month">
-        <span class="kpi-main"><span class="kpi-head"><span class="muted">Amount due next month (Nov)</span>${go}</span>
+        <span class="kpi-main">${dueChart}<span class="kpi-head"><span class="muted">Amount due next month (Nov)</span>${go}</span>
         <span class="kpi-value">${money(nextAmt)}</span>
         <span class="muted">${plural(nextM.length, 'invoice')}</span></span>
         <span class="kpi-split">
@@ -1645,6 +1681,13 @@
       <button class="tab" role="radio" data-preset="glow">Glow pink</button>
     </div>
   </div>
+  <div class="sp-group">
+    <span class="sp-group-title">Other two cards (Solid lime)</span>
+    <div class="tabs" role="radiogroup" aria-label="Other card visuals" id="sp-extras">
+      <button class="tab" role="radio" data-extras="on">Ageing + due strip</button>
+      <button class="tab" role="radio" data-extras="off">Empty</button>
+    </div>
+  </div>
   <div id="sp-controls"></div>
   <div class="sp-group">
     <span class="sp-group-title">Contrast check</span>
@@ -1705,6 +1748,8 @@
   function apply() {
     const s = state, set = (k, v) => root.style.setProperty(k, v);
     root.dataset.preset = s.preset;
+    root.dataset.cardExtras = s.extras || 'on';
+    document.querySelectorAll('#sp-extras [data-extras]').forEach(b => { const on = b.dataset.extras === (s.extras || 'on'); b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });
     document.querySelectorAll('#sp-presets [data-preset]').forEach(b => { const on = b.dataset.preset === s.preset; b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });
     set('--accent-fill-fg', s.accentFg);
     set('--accent', s.accent);
@@ -1759,6 +1804,7 @@
     apply();
   });
   document.getElementById('sp-reset').onclick = () => { state = { ...DEFAULTS_FOR() }; render(); apply(); };
+  document.getElementById('sp-extras').addEventListener('click', e => { const b = e.target.closest('[data-extras]'); if (!b) return; state.extras = b.dataset.extras; apply(); });
   document.getElementById('sp-presets').addEventListener('click', e => { const b = e.target.closest('[data-preset]'); if (!b) return; state = { ...PRESETS[b.dataset.preset] }; render(); apply(); });
   document.getElementById('sp-copy').onclick = async () => {
     const base = DEFAULTS_FOR();

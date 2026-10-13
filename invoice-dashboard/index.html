@@ -179,7 +179,38 @@
   .tab { height: 28px; padding: 0 var(--s3); border: 0; border-radius: 14px; background: none; cursor: pointer; }
   .tab:hover { background: var(--hover); }
   .tab[aria-selected="true"] { background: var(--selected); outline: 1px solid var(--line-strong); }
-  .search { width: 240px; }
+  .search { width: 280px; }
+  .toolbar-right .input, .toolbar-right .btn { height: 40px; border-radius: 20px; }
+  .toolbar-right .input { padding: 0 var(--s4); }
+
+  /* Dual-thumb range slider: two native range inputs over one track */
+  .range { position: relative; height: 32px; margin: 0 var(--s2); }
+  .range-track { position: absolute; left: 10px; right: 10px; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px; background: var(--line-control); }
+  .range-fill { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: var(--fg); }
+  .range input[type="range"] {
+    position: absolute; inset: 0; width: 100%; height: 100%; margin: 0;
+    -webkit-appearance: none; appearance: none; background: none; pointer-events: none; outline: none;
+  }
+  .range input[type="range"]::-webkit-slider-runnable-track { background: none; height: 32px; }
+  .range input[type="range"]::-moz-range-track { background: none; }
+  .range input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; pointer-events: auto; cursor: grab; margin-top: 6px;
+    width: 20px; height: 20px; border-radius: 50%; background: var(--fg); border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line-control);
+  }
+  .range input[type="range"]::-moz-range-thumb {
+    pointer-events: auto; cursor: grab;
+    width: 14px; height: 14px; border-radius: 50%; background: var(--fg); border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line-control);
+  }
+  .range input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--line-strong); }
+  .range input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--line-strong); }
+  .range-values { display: flex; justify-content: space-between; gap: var(--s2); }
+  .range-scale { position: relative; height: 16px; margin: 0 calc(var(--s2) + 10px); font-size: 12px; line-height: 16px; color: var(--muted); }
+  .range-scale span { position: absolute; top: 0; transform: translateX(-50%); }
+  .range-scale span:first-child { transform: none; }
+  .preset-row { display: flex; flex-wrap: wrap; gap: var(--s2); }
+  .preset { height: 28px; padding: 0 var(--s3); border: 1px solid var(--line-control); border-radius: 14px; background: none; cursor: pointer; }
+  .preset:hover { background: var(--hover); }
+  .preset[aria-pressed="true"] { background: var(--primary-bg); color: var(--primary-fg); border-color: var(--primary-bg); }
   .chips { display: flex; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s4); }
   .chip { height: 28px; padding: 0 var(--s3); border: 1px dashed var(--line-strong); border-radius: 14px; background: none; cursor: pointer; }
   .chip:hover { background: var(--hover); }
@@ -380,24 +411,21 @@
 
             <div class="pop-wrap">
               <button class="btn" data-pop="pop-filter" id="btn-filter">Filter</button>
-              <div class="popover" id="pop-filter" style="width: 280px">
+              <div class="popover" id="pop-filter" style="width: 320px">
                 <div class="pop-section">
                   <div class="pop-title">Status</div>
                   <label class="check"><input type="checkbox" id="f-status-all"> All</label>
                   <div id="f-statuses"></div>
                   <div class="row" style="padding-left: var(--s6)">
                     <span class="muted">Due in</span>
-                    <input class="input" id="f-due-days" type="number" min="1" placeholder="any" aria-label="Due within this many days" style="width: 64px" disabled>
+                    <input class="input" id="f-due-days" type="number" min="1" placeholder="any" aria-label="Due within this many days" style="width: 80px" disabled>
                     <span class="muted">days</span>
                   </div>
                 </div>
                 <div class="pop-section">
                   <div class="pop-title">Amount range (<span class="cur-code">USD</span>)</div>
-                  <div class="row">
-                    <input class="input" id="f-amt-min" type="number" min="0" placeholder="Min" aria-label="Minimum amount" style="width: 100%">
-                    <span class="muted">to</span>
-                    <input class="input" id="f-amt-max" type="number" min="0" placeholder="Max" aria-label="Maximum amount" style="width: 100%">
-                  </div>
+                  <div class="range-values"><span id="amt-lo-label"></span><span id="amt-hi-label"></span></div>
+                  <div class="range" id="amt-range"></div>
                 </div>
                 <div class="pop-footer">
                   <button class="btn small" id="f-clear">Clear all</button>
@@ -408,19 +436,19 @@
 
             <div class="pop-wrap">
               <button class="btn" data-pop="pop-date" id="btn-date">Date range: All time</button>
-              <div class="popover" id="pop-date" style="width: 260px">
+              <div class="popover" id="pop-date" style="width: 360px">
                 <div class="pop-section">
-                  <div class="pop-title muted">Issue date</div>
-                  <div id="date-presets"></div>
+                  <div class="pop-title">Issue date</div>
+                  <div class="preset-row" id="date-presets" role="group" aria-label="Quick ranges"></div>
                 </div>
                 <div class="pop-section">
-                  <div class="pop-title">Custom</div>
-                  <label class="row"><span style="width: 40px">From</span><input class="input" id="d-from" type="date" style="flex:1"></label>
-                  <label class="row"><span style="width: 40px">To</span><input class="input" id="d-to" type="date" style="flex:1"></label>
+                  <div class="range-values"><span id="date-lo-label"></span><span id="date-hi-label"></span></div>
+                  <div class="range" id="date-range"></div>
+                  <div class="range-scale" aria-hidden="true" id="date-scale"></div>
                 </div>
                 <div class="pop-footer">
                   <button class="btn small" id="d-clear">Clear</button>
-                  <button class="btn small primary" id="d-apply">Apply</button>
+                  <button class="btn small primary" data-close-pop>Done</button>
                 </div>
               </div>
             </div>
@@ -1142,7 +1170,7 @@
   $('#btn-create').onclick = () => toast('Create invoice — opens new invoice editor');
   const setFlag = () => { $('#currency-flag').innerHTML = FLAGS[state.currency]; };
   setFlag();
-  $('#currency').onchange = e => { state.currency = e.target.value; setFlag(); $$('.cur-code').forEach(x => x.textContent = state.currency); renderKPIs(); renderTable(); refreshDrawer(); };
+  $('#currency').onchange = e => { state.currency = e.target.value; setFlag(); $$('.cur-code').forEach(x => x.textContent = state.currency); renderKPIs(); renderTable(); refreshDrawer(); syncFilterUI(); };
   const NOTIFS = [
     ['Payment received', 'Bluefin Labs paid INV-2026-0042', '2h ago'],
     ['Invoice overdue', 'Oak & Ivy · INV-2026-0017 is 3 days overdue', 'Yesterday'],
@@ -1160,6 +1188,41 @@
   let searchTimer;
   $('#search').oninput = e => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.search = e.target.value; resetAndRender(); }, 150); };
 
+  // Dual-thumb slider. Values are numbers; format() turns them into the visible and spoken label.
+  function dualRange(root, { min, max, step, label, format, onInput }) {
+    root.innerHTML = `<div class="range-track"><div class="range-fill"></div></div>
+      <input type="range" class="lo" min="${min}" max="${max}" step="${step}" aria-label="${label} from">
+      <input type="range" class="hi" min="${min}" max="${max}" step="${step}" aria-label="${label} to">`;
+    const lo = root.querySelector('.lo'), hi = root.querySelector('.hi'), fill = root.querySelector('.range-fill');
+    const paint = () => {
+      const a = +lo.value, b = +hi.value, pct = v => (v - min) / (max - min) * 100;
+      fill.style.left = pct(a) + '%'; fill.style.right = (100 - pct(b)) + '%';
+      lo.setAttribute('aria-valuetext', format(a)); hi.setAttribute('aria-valuetext', format(b));
+      // Keep the low thumb grabbable when both sit at the far right.
+      lo.style.zIndex = a > max - (max - min) * 0.05 ? 2 : 1;
+    };
+    const handle = e => {
+      if (+lo.value > +hi.value) { if (e.target === lo) lo.value = hi.value; else hi.value = lo.value; }
+      paint(); onInput(+lo.value, +hi.value);
+    };
+    lo.addEventListener('input', handle); hi.addEventListener('input', handle);
+    return { set(a, b) { lo.value = a; hi.value = b; paint(); } };
+  }
+
+  // Amount range (stored in USD; labels follow the selected currency)
+  const AMT_MIN = 0;
+  const AMT_MAX = Math.ceil(Math.max(...invoices.map(i => i.total)) / 1000) * 1000;
+  const amtLabels = (a, b) => { $('#amt-lo-label').textContent = money(a); $('#amt-hi-label').textContent = money(b) + (b >= AMT_MAX ? '+' : ''); };
+  const amtSlider = dualRange($('#amt-range'), {
+    min: AMT_MIN, max: AMT_MAX, step: 100, label: 'Amount', format: v => money(v),
+    onInput(a, b) {
+      state.amtMin = a > AMT_MIN ? a : null; state.amtMax = b < AMT_MAX ? b : null;
+      amtLabels(a, b); resetAndRender();
+    }
+  });
+  const _amtSet = amtSlider.set;
+  amtSlider.set = (a, b) => { _amtSet(a, b); amtLabels(a, b); };
+
   // Filter popover
   $('#f-statuses').innerHTML = STATUSES.map(s => `<label class="check"><input type="checkbox" data-fstatus="${s}"> ${s}</label>`).join('');
   function syncFilterUI() {
@@ -1170,8 +1233,7 @@
     const awaiting = state.statuses.has('Awaiting payment');
     $('#f-due-days').disabled = !awaiting;
     $('#f-due-days').value = state.dueWithin || '';
-    $('#f-amt-min').value = state.amtMin != null ? Math.round(state.amtMin * RATES[state.currency]) : '';
-    $('#f-amt-max').value = state.amtMax != null ? Math.round(state.amtMax * RATES[state.currency]) : '';
+    amtSlider.set(state.amtMin ?? AMT_MIN, state.amtMax ?? AMT_MAX);
   }
   $('#pop-filter').addEventListener('change', e => {
     const t = e.target;
@@ -1179,14 +1241,16 @@
     if (t.dataset.fstatus) { t.checked ? state.statuses.add(t.dataset.fstatus) : state.statuses.delete(t.dataset.fstatus); }
     if (!state.statuses.has('Awaiting payment')) state.dueWithin = null;
     if (t.id === 'f-due-days') state.dueWithin = parseInt(t.value) || null;
-    if (t.id === 'f-amt-min') state.amtMin = t.value === '' ? null : toUsd(+t.value);
-    if (t.id === 'f-amt-max') state.amtMax = t.value === '' ? null : toUsd(+t.value);
     syncFilterUI(); resetAndRender();
   });
   function clearFilters() { state.kpi = null; state.statuses.clear(); state.dueWithin = null; state.amtMin = state.amtMax = null; syncFilterUI(); }
   $('#f-clear').onclick = () => { clearFilters(); resetAndRender(); };
 
-  // Date range popover
+  // Date range popover (issue date). Slider works in whole days from 1 Jan 2026 to today.
+  const D0 = new Date(2026, 0, 1);
+  const D_MAX = diffDays(TODAY, D0);
+  const dayToDate = n => addDays(D0, n);
+  const dateToDay = d => Math.max(0, Math.min(D_MAX, diffDays(d, D0)));
   const PRESETS = [
     ['all', 'All time', () => [null, null]],
     ['this-month', 'This month', () => [new Date(2026, 9, 1), TODAY]],
@@ -1194,25 +1258,35 @@
     ['90', 'Last 90 days', () => [addDays(TODAY, -90), TODAY]],
     ['ytd', 'This year', () => [new Date(2026, 0, 1), TODAY]]
   ];
-  $('#date-presets').innerHTML = PRESETS.map(([k, l]) => `<label class="check"><input type="radio" name="preset" value="${k}"${k === 'all' ? ' checked' : ''}> ${l}</label>`).join('');
-  const isoDate = d => d ? d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') : '';
-  const parseIso = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); return new Date(y, m - 1, d); };
+  $('#date-presets').innerHTML = PRESETS.map(([k, l]) => `<button class="preset" data-preset="${k}" aria-pressed="${k === 'all'}">${l}</button>`).join('');
+  $('#date-scale').innerHTML = [0, 3, 6, 9].map(m => `<span style="left: ${dateToDay(new Date(2026, m, 1)) / D_MAX * 100}%">${MONTHS[m]}</span>`).join('');
   function rangeLabel() {
     if (state.range.preset !== 'custom') return PRESETS.find(p => p[0] === state.range.preset)[1];
-    return (state.range.from ? fmtDate(state.range.from) : 'Any') + ' – ' + (state.range.to ? fmtDate(state.range.to) : 'Any');
+    const short = d => d.getDate() + ' ' + MONTHS[d.getMonth()];
+    return (state.range.from ? short(state.range.from) : 'Jan 1') + ' – ' + (state.range.to ? short(state.range.to) : 'Today');
   }
-  $('#date-presets').addEventListener('change', e => {
-    const p = PRESETS.find(x => x[0] === e.target.value);
-    const [f, t] = p[2]();
-    $('#d-from').value = isoDate(f); $('#d-to').value = isoDate(t);
+  function syncDateUI() {
+    const a = state.range.from ? dateToDay(state.range.from) : 0, b = state.range.to ? dateToDay(state.range.to) : D_MAX;
+    dateSlider.set(a, b);
+    $('#date-lo-label').textContent = fmtDate(dayToDate(a));
+    $('#date-hi-label').textContent = b >= D_MAX ? 'Today' : fmtDate(dayToDate(b));
+    $$('[data-preset]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.preset === state.range.preset)));
+  }
+  const dateSlider = dualRange($('#date-range'), {
+    min: 0, max: D_MAX, step: 1, label: 'Issue date', format: n => fmtDate(dayToDate(n)),
+    onInput(a, b) {
+      state.range = (a === 0 && b === D_MAX) ? { preset: 'all', from: null, to: null } : { preset: 'custom', from: a > 0 ? dayToDate(a) : null, to: b < D_MAX ? dayToDate(b) : null };
+      syncDateUI(); resetAndRender();
+    }
   });
-  ['#d-from', '#d-to'].forEach(s => $(s).addEventListener('input', () => $$('[name=preset]').forEach(r => r.checked = false)));
-  $('#d-apply').onclick = () => {
-    const checked = $('[name=preset]:checked');
-    state.range = { preset: checked ? checked.value : 'custom', from: parseIso($('#d-from').value), to: parseIso($('#d-to').value) };
-    $('#pop-date').classList.remove('open'); resetAndRender();
-  };
-  function clearDate() { state.range = { preset: 'all', from: null, to: null }; $('#d-from').value = $('#d-to').value = ''; $$('[name=preset]').forEach(r => r.checked = r.value === 'all'); }
+  $('#date-presets').addEventListener('click', e => {
+    const b = e.target.closest('[data-preset]');
+    if (!b) return;
+    const [f, t] = PRESETS.find(x => x[0] === b.dataset.preset)[2]();
+    state.range = { preset: b.dataset.preset, from: f, to: t };
+    syncDateUI(); resetAndRender();
+  });
+  function clearDate() { state.range = { preset: 'all', from: null, to: null }; syncDateUI(); }
   $('#d-clear').onclick = () => { clearDate(); resetAndRender(); };
 
   // Chips
@@ -1293,6 +1367,7 @@
   renderGroupCounts();
   syncExpanded();
   syncFilterUI();
+  syncDateUI();
   renderKPIs();
   renderTable();
 })();

@@ -244,7 +244,7 @@
   .kpi .kpi-split .muted { color: #a9acb2; font-size: 12px; line-height: 16px; }
   /* Month-over-month change: green when up, red when down (the +/- sign carries it too) */
   .trend.up { color: var(--pill-ok-fg); }
-  .trend.down { color: var(--pill-bad-fg); }
+  .trend.down { color: #ff7070; }   /* vivid red, 5.2:1 on the card */
   /* Soft dark halo around card text so it stays legible on the bright glow */
   .kpi > * { text-shadow: 0 0 2px rgba(18, 18, 22, .9), 0 0 10px rgba(18, 18, 22, .75), 0 0 22px rgba(18, 18, 22, .5); }
   .kpi-split { border-top-color: rgba(255, 255, 255, .12); }
@@ -458,7 +458,9 @@
   html[data-preset="solid"] .table-wrap { border-color: var(--outline); }
   /* lime is much lighter than pink, so selected-row tints stay lower to keep grey captions >= 4.5:1 */
   html[data-preset="solid"] .table-wrap { --row-sel: color-mix(in srgb, var(--accent) 9%, var(--bg)); --row-sel-hover: color-mix(in srgb, var(--accent) 11%, var(--bg)); }
-  html[data-preset="solid"] .dot { box-shadow: none !important; }
+  html[data-preset="solid"] .dot { box-shadow: none !important; width: 10px; height: 10px; border-radius: 3px; }
+  html[data-preset="solid"] .project-cell { grid-template-columns: 10px 1fr; }
+  html[data-preset="solid"] th.th-project { padding-left: calc(var(--s4) + 10px + var(--s2)) !important; }
   html[data-preset="solid"] .nav-item[aria-current="true"] { background: var(--accent); color: var(--accent-fill-fg); }
   html[data-preset="solid"] .nav-item[aria-current="true"] .muted { color: var(--accent-fill-fg); }
   /* summary cards: flat surface, thin outline, no glow / grain / text halo */
@@ -1625,10 +1627,10 @@
   const GLOW = Object.fromEntries(GROUPS.flatMap(([, rows]) => rows.map(r => [r[0], r[3]])));
   const PRESETS = {
     glow: { ...GLOW, preset: 'glow', accentFg: '#2a0a26' },
-    solid: { ...GLOW, preset: 'solid', accentFg: '#1b2100', accent: '#d2f543', g1: '#4fd0ff', g2: '#ffa94d', radius: 6, radiusLg: 8,
+    solid: { ...GLOW, preset: 'solid', accentFg: '#1b2100', accent: '#d2f543', g1: '#7ee3ff', g2: '#ffbe5c', radius: 6, radiusLg: 8,
              glowOp: 0, grain: 0, cast: 0, castSpread: 0 },
   };
-  const KEY = 'style-playground-v3';
+  const KEY = 'style-playground-v4';
   let state = { ...PRESETS.solid };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
   const DEFAULTS_FOR = () => PRESETS[state.preset] || PRESETS.solid;

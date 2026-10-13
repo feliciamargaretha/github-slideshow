@@ -641,10 +641,14 @@
   html[data-preset="midnight"] .flow { display: flex; }
   html[data-preset="midnight"] .flow { flex-direction: column; gap: var(--s4); margin-bottom: var(--s6); padding: var(--s5) var(--s6);
     border-radius: var(--radius-lg); border: 1px solid var(--outline); background: linear-gradient(180deg, #172036, #131a2b); }
-  .f-top { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--s4); flex-wrap: wrap; }
+  .f-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); }
+  .f-stat { display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; padding: var(--s2); margin: calc(-1 * var(--s2)); border-radius: var(--radius); color: var(--fg); }
+  button.f-stat { cursor: pointer; }
+  button.f-stat:hover { background: var(--hover); }
+  .f-note { font-size: 12px; }
+  .f-next { background: transparent; box-shadow: inset 0 0 0 1px var(--muted); }
   .f-eyebrow { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .f-total { font-size: 32px; line-height: 40px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-  .f-side { display: flex; gap: var(--s6); font-size: 13px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
   .f-bar { display: flex; gap: 3px; height: 14px; }
   .f-seg { flex-basis: 0; min-width: 6px; border: 0; padding: 0; border-radius: 3px; cursor: pointer; }
   .f-seg:hover { filter: brightness(1.15); }
@@ -753,6 +757,7 @@
         <section class="flow" id="flow" aria-label="Cash position"></section>
         <div class="kpis" id="kpis" aria-label="Summary"></div>
 
+        <section class="tl" id="timeline" aria-label="Invoices by due date" hidden></section>
         <div class="toolbar">
           <div class="toolbar-left">
             <span id="total-count">0 invoices</span>
@@ -818,7 +823,6 @@
 
         <div class="chips" id="chips"></div>
 
-        <section class="tl" id="timeline" aria-label="Invoices by due date" hidden></section>
         <div class="board" id="board" hidden></div>
         <div class="table-wrap">
           <table aria-label="Invoices">
@@ -1027,28 +1031,32 @@
   // ================= KPIs =================
   // Midnight preset: one cash-position strip instead of three cards.
   function renderFlow(d) {
+    const toCollect = d.notDue + d.overdue;
     const segs = [
-      { k: 'paid', label: 'Collected in Oct', v: d.pt, sub: `${plural(d.paidN, 'invoice')} · <span class="trend ${d.change >= 0 ? 'up' : 'down'}">${d.change >= 0 ? '+' : ''}${d.change}%</span> vs Sep`, cls: 'f-paid' },
-      { k: 'notdue', label: 'Awaiting, not yet due', v: d.notDue, sub: `${plural(d.openN - d.overdueN, 'invoice')}`, cls: 'f-wait' },
-      { k: 'overdue', label: 'Overdue', v: d.overdue, sub: `${plural(d.overdueN, 'invoice')}`, cls: 'f-late' },
+      { k: 'notdue', label: 'Not yet due', v: d.notDue, sub: plural(d.openN - d.overdueN, 'invoice'), cls: 'f-wait' },
+      { k: 'overdue', label: 'Overdue', v: d.overdue, sub: plural(d.overdueN, 'invoice'), cls: 'f-late' },
     ];
-    const tot = segs.reduce((a, x) => a + x.v, 0) || 1;
     $('#flow').innerHTML = `
       <div class="f-top">
-        <div><div class="f-eyebrow">Money in play</div><div class="f-total">${money(tot)}</div></div>
-        <div class="f-side"><span><span class="muted">Due next month</span> ${money(d.nextAmt)} <span class="muted">· ${plural(d.nextN, 'invoice')}</span></span>
-          <span><span class="muted">Avg. days to payment</span> ${d.avgDays}</span></div>
+        <button class="f-stat" data-flow="outstanding"><span class="f-eyebrow">Still to collect</span><span class="f-total">${money(toCollect)}</span>
+          <span class="f-note muted">${plural(d.openN, 'unpaid invoice')}</span></button>
+        <button class="f-stat" data-flow="paid"><span class="f-eyebrow">Collected in Oct</span><span class="f-total">${money(d.pt)}</span>
+          <span class="f-note muted">${plural(d.paidN, 'invoice')} · <span class="trend ${d.change >= 0 ? 'up' : 'down'}">${d.change >= 0 ? '+' : ''}${d.change}%</span> vs Sep</span></button>
+        <div class="f-stat"><span class="f-eyebrow">Avg. days to payment</span><span class="f-total">${d.avgDays} days</span>
+          <span class="f-note muted">from issue date to paid</span></div>
       </div>
       <div class="f-bar" role="img" aria-label="${segs.map(x => `${x.label} ${money(x.v)}`).join(', ')}">
-        ${segs.map(x => `<button class="f-seg ${x.cls}" data-flow="${x.k}" style="flex-grow: ${x.v / tot}" aria-label="Show ${x.label}"></button>`).join('')}
+        ${segs.map(x => `<button class="f-seg ${x.cls}" data-flow="${x.k}" style="flex-grow: ${x.v / (toCollect || 1)}" aria-label="Show ${x.label}"></button>`).join('')}
       </div>
       <div class="f-legend">${segs.map(x => `<button class="f-item" data-flow="${x.k}"><span class="f-key ${x.cls}"></span>
-        <span class="f-lbl">${x.label}</span><span class="f-val">${money(x.v)}</span><span class="f-sub muted">${x.sub}</span></button>`).join('')}</div>`;
+        <span class="f-lbl">${x.label}</span><span class="f-val">${money(x.v)}</span><span class="f-sub muted">${x.sub}</span></button>`).join('')}
+        <button class="f-item" data-flow="next"><span class="f-key f-next"></span><span class="f-lbl">Due next month (Nov)</span>
+          <span class="f-val">${money(d.nextAmt)}</span><span class="f-sub muted">${plural(d.nextN, 'invoice')}</span></button></div>`;
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-flow]'); if (!b) return;
     const k = b.dataset.flow;
-    if (k === 'paid') return document.querySelector('[data-kpi="paid"]').click();
+    if (k === 'paid' || k === 'next' || k === 'outstanding') return document.querySelector(`[data-kpi="${k}"]`).click();
     if (k === 'overdue') return document.querySelector('[data-tab="Overdue"]').click();
     document.querySelector('[data-tab="Awaiting payment"]').click();
   });

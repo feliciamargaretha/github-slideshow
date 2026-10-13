@@ -641,27 +641,23 @@
   html[data-preset="midnight"] .flow { display: flex; }
   html[data-preset="midnight"] .flow { flex-direction: column; gap: var(--s4); margin-bottom: var(--s6); padding: var(--s5) var(--s6);
     border-radius: var(--radius-lg); border: 1px solid var(--outline); background: linear-gradient(180deg, #172036, #131a2b); }
-  .f-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); }
+  .f-top { display: flex; gap: var(--s8); flex-wrap: wrap; }
   .f-stat { display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; padding: var(--s2); margin: calc(-1 * var(--s2)); border-radius: var(--radius); color: var(--fg); }
   button.f-stat { cursor: pointer; }
   button.f-stat:hover { background: var(--hover); }
   .f-note { font-size: 12px; }
-  .f-next { background: transparent; box-shadow: inset 0 0 0 1px var(--muted); }
   .f-eyebrow { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .f-total { font-size: 32px; line-height: 40px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-  .f-bar { display: flex; gap: 3px; height: 14px; }
-  .f-seg { flex-basis: 0; min-width: 6px; border: 0; padding: 0; border-radius: 3px; cursor: pointer; }
-  .f-seg:hover { filter: brightness(1.15); }
-  .f-paid { background: var(--accent); }
-  .f-wait { background: color-mix(in srgb, var(--accent) 30%, #1b2438); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .f-total { font-size: 28px; line-height: 36px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .f-segs { display: flex; gap: 4px; align-items: stretch; }
+  .f-col { flex-basis: 0; min-width: 160px; display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; padding: 0 0 var(--s1); color: var(--fg); cursor: pointer; }
+  .f-col:hover .f-seg { filter: brightness(1.15); }
+  .f-col:hover .f-val { text-decoration: underline; text-underline-offset: 4px; }
+  .f-seg { display: block; height: 16px; border-radius: 4px; margin-bottom: var(--s2); }
   .f-late { background: #ff7a4d; }
-  .f-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); }
-  .f-item { display: grid; grid-template-columns: 10px 1fr; grid-template-rows: auto auto auto; column-gap: var(--s2); text-align: left; background: none; border: 0; padding: var(--s2); margin: calc(-1 * var(--s2)); border-radius: var(--radius); color: var(--fg); cursor: pointer; }
-  .f-item:hover { background: var(--hover); }
-  .f-key { grid-row: 1; width: 10px; height: 10px; border-radius: 2px; margin-top: 3px; }
-  .f-lbl { font-size: 12px; color: var(--muted); }
-  .f-val, .f-sub { grid-column: 2; }
-  .f-val { font-size: 18px; line-height: 26px; font-variant-numeric: tabular-nums; }
+  .f-this { background: #3fa6c4; }   /* solid, blue-tinted */
+  .f-next { background: repeating-linear-gradient(135deg, rgba(94, 231, 255, .30) 0 2px, transparent 2px 6px); box-shadow: inset 0 0 0 1.5px rgba(94, 231, 255, .55); }
+  .f-lbl { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .f-val { font-size: 20px; line-height: 28px; font-variant-numeric: tabular-nums; }
   .f-sub { font-size: 12px; }
 
   html[data-preset="midnight"] .tl:not([hidden]) { display: flex; }
@@ -1006,6 +1002,8 @@
       if (state.tab !== 'all' && inv.status !== state.tab) return false;
       if (state.statuses.size && !state.statuses.has(inv.status)) return false;
       if (state.kpi === 'paid' && !(inv.status === 'Paid' && inv.paidDate.getFullYear() === 2026 && inv.paidDate.getMonth() === 9)) return false;
+      if (state.kpi === 'pastdue' && !(['Awaiting payment', 'Overdue', 'Partially paid'].includes(inv.status) && inv.due < TODAY)) return false;
+      if (state.kpi === 'thismonth' && !(['Awaiting payment', 'Partially paid'].includes(inv.status) && inv.due >= TODAY && inv.due.getFullYear() === 2026 && inv.due.getMonth() === 9)) return false;
       if (state.kpi === 'next' && !(['Awaiting payment', 'Overdue', 'Partially paid'].includes(inv.status) && inv.due.getFullYear() === 2026 && inv.due.getMonth() === 10)) return false;
       if (state.dueWithin && inv.status === 'Awaiting payment' && diffDays(inv.due, TODAY) > state.dueWithin) return false;
       if (state.amtMin != null && inv.total < state.amtMin) return false;
@@ -1031,34 +1029,36 @@
   // ================= KPIs =================
   // Midnight preset: one cash-position strip instead of three cards.
   function renderFlow(d) {
-    const toCollect = d.notDue + d.overdue;
+    // One bar in time order: already late, falls due this month, falls due next month.
+    // Each segment carries its own label and amount underneath, so there is no separate breakdown row.
     const segs = [
-      { k: 'notdue', label: 'Not yet due', v: d.notDue, sub: plural(d.openN - d.overdueN, 'invoice'), cls: 'f-wait' },
-      { k: 'overdue', label: 'Overdue', v: d.overdue, sub: plural(d.overdueN, 'invoice'), cls: 'f-late' },
+      { k: 'overdue', label: 'Overdue', v: d.overdue, n: d.overdueN, cls: 'f-late' },
+      { k: 'thismonth', label: 'Due this month (Oct)', v: d.thisAmt, n: d.thisN, cls: 'f-this' },
+      { k: 'next', label: 'Due next month (Nov)', v: d.nextAmt, n: d.nextN, cls: 'f-next' },
     ];
+    const tot = segs.reduce((a, x) => a + x.v, 0) || 1;
     $('#flow').innerHTML = `
       <div class="f-top">
-        <button class="f-stat" data-flow="outstanding"><span class="f-eyebrow">Still to collect</span><span class="f-total">${money(toCollect)}</span>
-          <span class="f-note muted">${plural(d.openN, 'unpaid invoice')}</span></button>
         <button class="f-stat" data-flow="paid"><span class="f-eyebrow">Collected in Oct</span><span class="f-total">${money(d.pt)}</span>
           <span class="f-note muted">${plural(d.paidN, 'invoice')} · <span class="trend ${d.change >= 0 ? 'up' : 'down'}">${d.change >= 0 ? '+' : ''}${d.change}%</span> vs Sep</span></button>
         <div class="f-stat"><span class="f-eyebrow">Avg. days to payment</span><span class="f-total">${d.avgDays} days</span>
           <span class="f-note muted">from issue date to paid</span></div>
       </div>
-      <div class="f-bar" role="img" aria-label="${segs.map(x => `${x.label} ${money(x.v)}`).join(', ')}">
-        ${segs.map(x => `<button class="f-seg ${x.cls}" data-flow="${x.k}" style="flex-grow: ${x.v / (toCollect || 1)}" aria-label="Show ${x.label}"></button>`).join('')}
-      </div>
-      <div class="f-legend">${segs.map(x => `<button class="f-item" data-flow="${x.k}"><span class="f-key ${x.cls}"></span>
-        <span class="f-lbl">${x.label}</span><span class="f-val">${money(x.v)}</span><span class="f-sub muted">${x.sub}</span></button>`).join('')}
-        <button class="f-item" data-flow="next"><span class="f-key f-next"></span><span class="f-lbl">Due next month (Nov)</span>
-          <span class="f-val">${money(d.nextAmt)}</span><span class="f-sub muted">${plural(d.nextN, 'invoice')}</span></button></div>`;
+      <div class="f-segs">${segs.map(x => `
+        <button class="f-col" data-flow="${x.k}" style="flex-grow: ${x.v / tot}" aria-label="Show ${x.label}: ${money(x.v)}, ${plural(x.n, 'invoice')}">
+          <span class="f-seg ${x.cls}"></span>
+          <span class="f-lbl">${x.label}</span>
+          <span class="f-val">${money(x.v)}</span>
+          <span class="f-sub muted">${plural(x.n, 'invoice')}</span>
+        </button>`).join('')}
+      </div>`;
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-flow]'); if (!b) return;
     const k = b.dataset.flow;
-    if (k === 'paid' || k === 'next' || k === 'outstanding') return document.querySelector(`[data-kpi="${k}"]`).click();
-    if (k === 'overdue') return document.querySelector('[data-tab="Overdue"]').click();
-    document.querySelector('[data-tab="Awaiting payment"]').click();
+    if (k === 'paid' || k === 'next') return document.querySelector(`[data-kpi="${k}"]`).click();
+    document.querySelector('[data-kpi="next"]').click();   // same reset as the card shortcuts, then narrow
+    state.kpi = k === 'overdue' ? 'pastdue' : 'thismonth'; resetAndRender();
   });
 
   function renderKPIs() {
@@ -1118,7 +1118,8 @@
       ticks.map(t => { const h = Math.max(8, t.v / tmax * (dueH - 6)); return `<rect x="${(t.d - 1) * 6 + .5}" y="${dueH - h}" width="5" height="${h}" rx="1.5"/>`; }).join('') +
       `</svg><span class="due-scale"><span>1 Nov</span><span>30 Nov</span></span></span>`;
     const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
-    renderFlow({ pt, pl, change, overdue, notDue: outstanding - overdue, overdueN: overdueList.length, openN: open.length, nextAmt, nextN: nextM.length, avgDays, paidN: thisM.length });
+    const dueThis = open.filter(i => i.due >= TODAY && i.due.getFullYear() === 2026 && i.due.getMonth() === 9);
+    renderFlow({ pt, change, overdue, overdueN: overdueList.length, thisAmt: dueThis.reduce((a, i) => a + balance(i), 0), thisN: dueThis.length, nextAmt, nextN: nextM.length, avgDays, paidN: thisM.length });
     $('#kpis').innerHTML = `
       <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">
         <span class="kpi-main">${ageChart}<span class="kpi-head"><span class="muted">Total outstanding</span>${go}</span>
@@ -1338,6 +1339,8 @@
     const chips = [];
     if (state.kpi === 'paid') chips.push(['kpi', 'Paid this month (Oct)']);
     if (state.kpi === 'next') chips.push(['kpi', 'Due next month (Nov)']);
+    if (state.kpi === 'thismonth') chips.push(['kpi', 'Due this month (Oct)']);
+    if (state.kpi === 'pastdue') chips.push(['kpi', 'Overdue (incl. partly paid)']);
     if (state.statuses.size) chips.push(['status', 'Status: ' + [...state.statuses].join(', ')]);
     if (state.dueWithin) chips.push(['due', 'Awaiting payment due in ≤ ' + state.dueWithin + ' days']);
     if (state.amtMin != null || state.amtMax != null) chips.push(['amount', 'Amount: ' + (state.amtMin != null ? money(state.amtMin) : 'any') + ' – ' + (state.amtMax != null ? money(state.amtMax) : 'any')]);
@@ -2092,7 +2095,7 @@
     const s = state, set = (k, v) => root.style.setProperty(k, v);
     root.dataset.preset = s.preset;
     root.dataset.cardExtras = s.extras || 'on';
-    const tlOn = s.preset === 'midnight' ? 'on' : 'off';
+    const tlOn = 'off';   // due-date dot chart removed from Midnight
     if (root.dataset.timeline !== tlOn) { root.dataset.timeline = tlOn; window.dispatchEvent(new Event('table-style')); }
     const ts = s.table || 'ledger';
     if (root.dataset.table !== ts) { root.dataset.table = ts; window.dispatchEvent(new Event('table-style')); }

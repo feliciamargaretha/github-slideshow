@@ -28,10 +28,10 @@
     --accent-hover: #fa7eea;
     --accent-pressed: #e043cc;
     --accent-fg: #2a0a26;
-    /* Softer pink for filled buttons (same hue, less saturation): dark text 7.7:1 */
-    --accent-fill: #e48bd8;
-    --accent-fill-hover: #eb9fe1;
-    --accent-fill-pressed: #d675c9;
+    /* Pink for filled buttons: between #F85EE4 and a pastel; dark text 7.1:1 */
+    --accent-fill: #ee77de;
+    --accent-fill-hover: #f386e5;
+    --accent-fill-pressed: #e95dd6;
     --accent-text: #ff9cf0;     /* pink text on dark surfaces, >= 6.5:1 */
     --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--bg));
     --accent-soft-hover: color-mix(in srgb, var(--accent) 24%, var(--bg));
@@ -289,24 +289,31 @@
   /* ---------- Table ---------- */
   .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: clip; }
   table { width: 100%; border-collapse: collapse; table-layout: auto; }
+  /* Table: pink header, no row rules, alternating pink-tinted rows.
+     Tints stay <= 18% so grey captions keep >= 4.5:1. */
+  .table-wrap { --row-alt: color-mix(in srgb, var(--accent) 5%, var(--bg)); --row-head: color-mix(in srgb, var(--accent) 10%, var(--bg));
+                --row-hover: color-mix(in srgb, var(--accent) 11%, var(--bg)); --row-sel: color-mix(in srgb, var(--accent) 16%, var(--bg));
+                --row-sel-hover: color-mix(in srgb, var(--accent) 18%, var(--bg)); }
   thead th {
-    position: sticky; top: calc(-1 * var(--s6)); background: var(--surface); z-index: 5;
-    text-align: left; height: 52px; padding: 0 var(--s4); border-bottom: 1px solid var(--line-strong); white-space: nowrap;
+    position: sticky; top: calc(-1 * var(--s6)); background: var(--row-head); color: var(--accent-text); z-index: 5;
+    text-align: left; height: 52px; padding: 0 var(--s4); white-space: nowrap;
   }
-  tbody td { padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); vertical-align: top; font-size: 15px; line-height: 22px; }
+  tbody td { padding: var(--s3) var(--s4); vertical-align: top; font-size: 15px; line-height: 22px; }
   tbody td .muted { font-size: 13px; line-height: 18px; }
   tbody tr { cursor: pointer; }
-  tbody tr:hover { background: var(--hover); }
-  tbody tr.is-selected { background: var(--accent-soft); }
-  tbody tr.is-selected:hover { background: var(--accent-soft-hover); }
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr.is-selected { background: var(--row-sel); }
+  tbody tr.is-selected:hover { background: var(--row-sel-hover); }
   tbody tr.is-open td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
   td.num, th.num { text-align: right; }
   .col-check { width: 48px; padding-right: 0 !important; }
   .col-edit { width: 1%; text-align: right !important; padding-right: var(--s2) !important; }
   thead .col-edit .pop-wrap { vertical-align: middle; }
   .sort-btn { background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; gap: var(--s1); }
-  .sort-btn:hover { color: var(--accent-text); }
-  th[aria-sort] .sort-btn { color: var(--accent-text); }
+  .sort-btn { color: inherit; }
+  .sort-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .sort-btn .muted { color: color-mix(in srgb, var(--accent-text) 75%, var(--row-head)); }
   .cell-stack { display: flex; flex-direction: column; gap: 2px; }
   .project-cell { display: grid; grid-template-columns: 8px 1fr; column-gap: var(--s2); row-gap: 2px; align-items: center; }
   .project-cell > :not(.dot-slot) { grid-column: 2; }

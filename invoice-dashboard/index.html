@@ -12,7 +12,8 @@
   Data is generated locally; nothing is persisted.
 -->
 <style>
-  /* Dark-first. A light palette is kept for data-theme="light". */
+  /* Always dark, regardless of the host or OS theme. The light palette below is
+     kept for later and only applies if .theme-light is added to <html>. */
   :root {
     --bg: #141414;
     --surface: #1c1c1c;
@@ -30,13 +31,13 @@
     --notify: #ff5c5c;
     --shadow: rgba(0, 0, 0, .5);
     --scrim: rgba(0, 0, 0, .55);
-    color-scheme: dark;
+    color-scheme: dark !important;
     --sidebar-w: clamp(200px, 20vw, 264px);
     --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s6: 24px; --s8: 32px;
     --control: 28px;
     --radius: 4px;
   }
-  :root[data-theme="light"] {
+  :root.theme-light {
     --bg: #ffffff; --surface: #ffffff; --sidebar-bg: #fafafa; --fg: #111111; --muted: #666666;
     --line: #cccccc; --line-strong: #111111; --hover: #f2f2f2; --selected: #e6e6e6;
     --primary-bg: #111111; --primary-fg: #ffffff;

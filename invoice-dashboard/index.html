@@ -238,6 +238,9 @@
   /* Bottom row steps down one level from the main figures above it */
   .kpi .kpi-split { color: #c4c7cc; }
   .kpi .kpi-split .muted { color: #a9acb2; font-size: 12px; line-height: 16px; }
+  /* Month-over-month change: green when up, red when down (the +/- sign carries it too) */
+  .trend.up { color: var(--pill-ok-fg); }
+  .trend.down { color: var(--pill-bad-fg); }
   /* Soft dark halo around card text so it stays legible on the bright glow */
   .kpi > * { text-shadow: 0 0 2px rgba(18, 18, 22, .9), 0 0 10px rgba(18, 18, 22, .75), 0 0 22px rgba(18, 18, 22, .5); }
   .kpi-split { border-top-color: rgba(255, 255, 255, .12); }
@@ -787,7 +790,7 @@
         <span class="kpi-value">${money(pt)}</span>
         <span class="muted">${plural(thisM.length, 'invoice')} paid</span>
         <span class="kpi-split">
-          <span><span class="muted">vs. last month (Sep)</span><span>${change >= 0 ? '+' : ''}${change}% (${money(pl)})</span></span>
+          <span><span class="muted">vs. last month (Sep)</span><span><span class="trend ${change >= 0 ? 'up' : 'down'}">${change >= 0 ? '+' : ''}${change}%</span> (${money(pl)})</span></span>
         </span>
       </button>
       <button class="kpi" data-kpi="next" aria-label="View invoices due next month">

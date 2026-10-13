@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice Dashboard</title>
+<!--
+  Invoice dashboard — lo-fi clickable prototype (v0).
+  Constraints: no colour, single font weight, no icons, 4/8px spacing grid,
+  macOS HIG sizing (13px body, 28px controls, 8px control gaps).
+  Data is generated locally; nothing is persisted.
+-->
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --fg: #111111;
+    --muted: #666666;
+    --line: #cccccc;
+    --line-strong: #111111;
+    --hover: #f2f2f2;
+    --selected: #e6e6e6;
+    --primary-bg: #111111;
+    --primary-fg: #ffffff;
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s6: 24px; --s8: 32px;
+    --control: 28px;
+    --radius: 4px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1a1a; --surface: #1a1a1a; --fg: #eeeeee; --muted: #999999;
+      --line: #444444; --line-strong: #eeeeee; --hover: #262626; --selected: #333333;
+      --primary-bg: #eeeeee; --primary-fg: #111111;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1a1a; --surface: #1a1a1a; --fg: #eeeeee; --muted: #999999;
+    --line: #444444; --line-strong: #eeeeee; --hover: #262626; --selected: #333333;
+    --primary-bg: #eeeeee; --primary-fg: #111111;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font: 400 13px/16px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+  }
+  * { font-weight: 400 !important; }
+  h1, h2, h3, p { margin: 0; font-size: inherit; line-height: inherit; }
+  button, input, select { font: inherit; color: inherit; }
+
+  /* ---------- Controls ---------- */
+  .btn {
+    height: var(--control); padding: 0 var(--s3);
+    border: 1px solid var(--line-strong); border-radius: var(--radius);
+    background: var(--surface); cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: var(--s2);
+  }
+  .btn:hover { background: var(--hover); }
+  .btn.primary { background: var(--primary-bg); color: var(--primary-fg); border-color: var(--primary-bg); }
+  .btn.primary:hover { opacity: .85; }
+  .btn.prominent { outline: 2px solid var(--line-strong); outline-offset: 2px; }
+  .btn.ghost { border-color: transparent; background: transparent; }
+  .btn.ghost:hover { background: var(--hover); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn.small { height: 24px; padding: 0 var(--s2); }
+  .link { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: left; }
+  .input {
+    height: var(--control); padding: 0 var(--s2);
+    border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  }
+  .input:focus, .btn:focus-visible, .link:focus-visible { outline: 2px solid var(--line-strong); outline-offset: 1px; }
+  .muted { color: var(--muted); }
+  .small-text { font-size: 11px; line-height: 16px; }
+  .badge {
+    display: inline-block; padding: 0 var(--s2); height: 20px; line-height: 18px;
+    border: 1px solid var(--line-strong); border-radius: 10px; white-space: nowrap; font-size: 11px;
+  }
+  .badge.dashed { border-style: dashed; }
+  .badge.double { border-width: 3px; border-style: double; line-height: 14px; }
+
+  /* ---------- Layout ---------- */
+  .app { display: flex; height: 100vh; }
+  .sidebar {
+    width: 20%; min-width: 200px; border-right: 1px solid var(--line);
+    padding: var(--s4) var(--s2); display: flex; flex-direction: column; gap: var(--s1);
+    overflow-y: auto;
+  }
+  .nav-item {
+    height: var(--control); padding: 0 var(--s2); border: 0; border-radius: var(--radius);
+    background: none; text-align: left; cursor: pointer; display: flex; width: 100%; align-items: center; justify-content: space-between;
+  }
+  .nav-item:hover { background: var(--hover); }
+  .nav-item[aria-current="true"] { background: var(--selected); }
+  .nav-sub { padding-left: var(--s6); }
+  .nav-spacer { flex: 1; }
+  .nav-label { padding: var(--s2) var(--s2) var(--s1); }
+
+  .main { width: 80%; flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar {
+    height: 52px; padding: 0 var(--s6); border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-shrink: 0;
+  }
+  .topbar h1 { font-size: 17px; line-height: 24px; }
+  .topbar-actions { display: flex; align-items: center; gap: var(--s2); }
+  .split { display: inline-flex; position: relative; }
+  .split .btn:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .split .btn:last-child { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 1px solid var(--primary-fg); padding: 0 var(--s2); }
+  .divider-v { width: 1px; height: 20px; background: var(--line); margin: 0 var(--s1); }
+
+  .content { flex: 1; overflow-y: auto; padding: var(--s6); position: relative; }
+
+  /* ---------- KPIs ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); margin-bottom: var(--s8); }
+  .kpi { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s4); display: flex; flex-direction: column; gap: var(--s2); }
+  .kpi-value { font-size: 22px; line-height: 28px; }
+  .kpi-row { display: flex; justify-content: space-between; gap: var(--s2); }
+  .kpi-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s2); }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: var(--s4); margin-bottom: var(--s3); flex-wrap: wrap; }
+  .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
+  .tabs { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); padding: 2px; gap: 2px; }
+  .tab { height: 22px; padding: 0 var(--s2); border: 0; border-radius: 3px; background: none; cursor: pointer; }
+  .tab:hover { background: var(--hover); }
+  .tab[aria-selected="true"] { background: var(--selected); outline: 1px solid var(--line-strong); }
+  .search { width: 200px; }
+  .chips { display: flex; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s3); }
+  .chip { height: 24px; padding: 0 var(--s2); border: 1px dashed var(--line-strong); border-radius: 12px; background: none; cursor: pointer; }
+  .chip:hover { background: var(--hover); }
+
+  /* ---------- Popovers / menus ---------- */
+  .pop-wrap { position: relative; display: inline-flex; }
+  .popover {
+    position: absolute; top: calc(100% + var(--s1)); right: 0; z-index: 30;
+    min-width: 200px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius);
+    padding: var(--s2); display: none; box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  }
+  .popover.open { display: block; }
+  .popover.left { left: 0; right: auto; }
+  .menu-item {
+    display: flex; width: 100%; height: var(--control); align-items: center; justify-content: space-between;
+    padding: 0 var(--s2); border: 0; background: none; border-radius: 3px; cursor: pointer; text-align: left; white-space: nowrap; gap: var(--s4);
+  }
+  .menu-item:hover { background: var(--hover); }
+  .pop-section { padding: var(--s2) 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s2); }
+  .pop-section:last-child { border-bottom: 0; }
+  .pop-title { padding: 0 0 var(--s1); }
+  .check { display: flex; align-items: center; gap: var(--s2); min-height: 24px; cursor: pointer; }
+  .check input { margin: 0; }
+  .row { display: flex; align-items: center; gap: var(--s2); }
+  .pop-footer { display: flex; justify-content: space-between; padding-top: var(--s2); gap: var(--s2); }
+  .notif { padding: var(--s2); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s1); width: 280px; }
+  .notif:last-child { border-bottom: 0; }
+
+  /* ---------- Table ---------- */
+  .table-wrap { border: 1px solid var(--line); border-radius: var(--radius); }
+  table { width: 100%; border-collapse: collapse; table-layout: auto; }
+  thead th {
+    position: sticky; top: calc(-1 * var(--s6)); background: var(--surface); z-index: 5;
+    text-align: left; height: 36px; padding: 0 var(--s3); border-bottom: 1px solid var(--line-strong); white-space: nowrap;
+  }
+  tbody td { padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--hover); }
+  tbody tr.is-selected { background: var(--selected); }
+  tbody tr.is-open td:first-child { box-shadow: inset 3px 0 0 var(--line-strong); }
+  td.num, th.num { text-align: right; }
+  .col-check { width: 40px; padding-right: 0 !important; }
+  .col-edit { width: 1%; text-align: right !important; }
+  .sort-btn { background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; gap: var(--s1); }
+  .sort-btn:hover { text-decoration: underline; }
+  .cell-stack { display: flex; flex-direction: column; gap: 0; }
+  .loader { padding: var(--s4); text-align: center; }
+  .empty { padding: var(--s8); text-align: center; display: flex; flex-direction: column; gap: var(--s2); align-items: center; }
+
+  /* ---------- Bulk action bar ---------- */
+  .bulk {
+    position: fixed; bottom: var(--s6); left: calc(20% + 40%); transform: translateX(-50%); z-index: 40;
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px;
+    padding: var(--s2); display: none; align-items: center; gap: var(--s2); box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+  .bulk.open { display: flex; }
+  .bulk .count { padding: 0 var(--s2); white-space: nowrap; }
+  .bulk .popover { top: auto; bottom: calc(100% + var(--s2)); left: 0; right: auto; }
+
+  /* ---------- Drawer ---------- */
+  .drawer {
+    position: fixed; top: var(--s2); right: var(--s2); bottom: var(--s2); width: 400px; z-index: 50;
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px;
+    display: none; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,.12);
+  }
+  .drawer.open { display: flex; }
+  .drawer-head { padding: var(--s4); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s2); }
+  .drawer-head-row { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
+  .drawer-title { font-size: 17px; line-height: 24px; }
+  .drawer-body { flex: 1; overflow-y: auto; }
+  .d-section { padding: var(--s4); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s2); }
+  .d-section:last-child { border-bottom: 0; }
+  .d-label { color: var(--muted); }
+  .kv { display: flex; justify-content: space-between; gap: var(--s4); }
+  .kv.total { border-top: 1px solid var(--line-strong); padding-top: var(--s2); }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+  .stat { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s2); display: flex; flex-direction: column; gap: var(--s1); }
+  .stat-value { font-size: 15px; line-height: 20px; }
+  .actions-row { display: flex; flex-wrap: wrap; gap: var(--s2); }
+  .lines { width: 100%; border-collapse: collapse; }
+  .lines th, .lines td { padding: var(--s1) 0; text-align: left; border-bottom: 1px solid var(--line); position: static; height: auto; }
+  .lines th { color: var(--muted); border-bottom-color: var(--line); }
+  .lines .num { text-align: right; padding-left: var(--s2); }
+  .timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .timeline li { padding: 0 0 var(--s3) var(--s4); border-left: 1px solid var(--line); position: relative; display: flex; flex-direction: column; }
+  .timeline li::before { content: ""; position: absolute; left: -4px; top: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); }
+  .timeline li:last-child { padding-bottom: 0; }
+  .mini-list { display: flex; flex-direction: column; }
+  .mini-row { display: grid; grid-template-columns: 1fr auto; gap: var(--s1) var(--s2); padding: var(--s2) 0; border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; cursor: pointer; }
+  .mini-row:hover { background: var(--hover); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+  .form-grid label { display: flex; flex-direction: column; gap: var(--s1); }
+
+  /* ---------- Toast / dialog / placeholder ---------- */
+  .toast {
+    position: fixed; top: var(--s4); left: 50%; transform: translateX(-50%); z-index: 70;
+    background: var(--primary-bg); color: var(--primary-fg); padding: var(--s2) var(--s4); border-radius: var(--radius); display: none;
+  }
+  .toast.open { display: block; }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 60; display: none; align-items: center; justify-content: center; }
+  .scrim.open { display: flex; }
+  .dialog { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: var(--s6); width: 360px; display: flex; flex-direction: column; gap: var(--s4); }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: var(--s2); }
+  .placeholder { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: var(--s8); display: flex; flex-direction: column; gap: var(--s2); align-items: flex-start; }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: 1fr; }
+    .sidebar { min-width: 160px; }
+    .drawer { width: calc(100% - var(--s4)); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== Sidebar (20%) ===== -->
+  <nav class="sidebar" aria-label="Main">
+    <div class="nav-label muted">Invoicing app</div>
+    <button class="nav-item" id="nav-invoices" data-nav="invoices" data-group="all" aria-current="true">
+      <span>Invoice List</span><span id="nav-caret" aria-hidden="true">v</span>
+    </button>
+    <div id="nav-groups">
+      <button class="nav-item nav-sub" data-nav="invoices" data-group="Studio Retainers"><span>Studio Retainers</span><span class="muted" data-group-count="Studio Retainers"></span></button>
+      <button class="nav-item nav-sub" data-nav="invoices" data-group="Freelance Projects"><span>Freelance Projects</span><span class="muted" data-group-count="Freelance Projects"></span></button>
+    </div>
+    <button class="nav-item" data-nav="clients">Client List</button>
+    <button class="nav-item" data-nav="analytics">Analytics</button>
+    <div class="nav-spacer"></div>
+    <button class="nav-item" data-nav="settings">Settings</button>
+    <button class="nav-item" data-nav="account">Account</button>
+  </nav>
+
+  <!-- ===== Main (80%) ===== -->
+  <div class="main">
+    <header class="topbar">
+      <h1 id="page-title">Invoice List</h1>
+      <div class="topbar-actions">
+        <div class="split">
+          <button class="btn primary" id="btn-create">Create invoice</button>
+          <button class="btn primary" data-pop="pop-create" aria-label="More create options" aria-haspopup="menu">v</button>
+          <div class="popover" id="pop-create" role="menu">
+            <button class="menu-item" role="menuitem" data-toast="Import invoice — opens import flow (CSV / PDF)">Import invoice</button>
+          </div>
+        </div>
+        <div class="divider-v"></div>
+        <label class="muted" for="currency">Currency</label>
+        <select class="input" id="currency" aria-label="Currency">
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="IDR">IDR</option>
+        </select>
+        <div class="pop-wrap">
+          <button class="btn" data-pop="pop-notif" aria-haspopup="dialog"><span>Notifications (<span id="notif-count">3</span>)</span></button>
+          <div class="popover" id="pop-notif">
+            <div id="notif-list"></div>
+            <div class="pop-footer"><button class="btn small ghost" id="notif-read">Mark all as read</button><button class="btn small ghost" data-toast="Opens notification centre">View all</button></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+      <!-- Dashboard view -->
+      <section id="view-invoices">
+        <div class="kpis" id="kpis" aria-label="Summary"></div>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <span id="total-count">0 invoices</span>
+            <div class="tabs" role="tablist" aria-label="Status">
+              <button class="tab" role="tab" data-tab="all" aria-selected="true">All</button>
+              <button class="tab" role="tab" data-tab="Awaiting payment" aria-selected="false">Awaiting payment</button>
+              <button class="tab" role="tab" data-tab="Paid" aria-selected="false">Paid</button>
+              <button class="tab" role="tab" data-tab="Overdue" aria-selected="false">Overdue</button>
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <input class="input search" id="search" type="search" placeholder="Search invoice, project, client" aria-label="Search">
+
+            <div class="pop-wrap">
+              <button class="btn" data-pop="pop-filter" id="btn-filter">Filter</button>
+              <div class="popover" id="pop-filter" style="width: 280px">
+                <div class="pop-section">
+                  <div class="pop-title">Status</div>
+                  <label class="check"><input type="checkbox" id="f-status-all"> All</label>
+                  <div id="f-statuses"></div>
+                  <div class="row" style="padding-left: var(--s6)">
+                    <span class="muted">Due in</span>
+                    <input class="input" id="f-due-days" type="number" min="1" placeholder="any" style="width: 64px" disabled>
+                    <span class="muted">days</span>
+                  </div>
+                </div>
+                <div class="pop-section">
+                  <div class="pop-title">Amount range (<span class="cur-code">USD</span>)</div>
+                  <div class="row">
+                    <input class="input" id="f-amt-min" type="number" min="0" placeholder="Min" style="width: 100%">
+                    <span class="muted">to</span>
+                    <input class="input" id="f-amt-max" type="number" min="0" placeholder="Max" style="width: 100%">
+                  </div>
+                </div>
+                <div class="pop-footer">
+                  <button class="btn small" id="f-clear">Clear all</button>
+                  <button class="btn small primary" data-close-pop>Done</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pop-wrap">
+              <button class="btn" data-pop="pop-date" id="btn-date">Date range: All time</button>
+              <div class="popover" id="pop-date" style="width: 260px">
+                <div class="pop-section">
+                  <div class="pop-title muted">Issue date</div>
+                  <div id="date-presets"></div>
+                </div>
+                <div class="pop-section">
+                  <div class="pop-title">Custom</div>
+                  <label class="row"><span style="width: 40px">From</span><input class="input" id="d-from" type="date" style="flex:1"></label>
+                  <label class="row"><span style="width: 40px">To</span><input class="input" id="d-to" type="date" style="flex:1"></label>
+                </div>
+                <div class="pop-footer">
+                  <button class="btn small" id="d-clear">Clear</button>
+                  <button class="btn small primary" id="d-apply">Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chips" id="chips"></div>
+
+        <div class="table-wrap">
+          <table aria-label="Invoices">
+            <thead><tr id="thead-row"></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <div id="sentinel" class="loader muted"></div>
+        </div>
+        <div style="height: 80px"></div>
+      </section>
+
+      <!-- Placeholder views -->
+      <section id="view-placeholder" hidden>
+        <div class="placeholder">
+          <div id="ph-title">Page</div>
+          <div class="muted" id="ph-body">Out of scope for this version.</div>
+          <button class="btn" id="ph-back">Back to Invoice List</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Bulk action bar -->
+<div class="bulk" id="bulk" role="toolbar" aria-label="Bulk actions">
+  <span class="count" id="bulk-count">0 selected</span>
+  <div class="divider-v"></div>
+  <button class="btn" data-bulk="send">Send</button>
+  <div class="pop-wrap">
+    <button class="btn" data-pop="pop-bulk-status">Update status &gt;</button>
+    <div class="popover" id="pop-bulk-status"></div>
+  </div>
+  <button class="btn" data-bulk="export">Export</button>
+  <button class="btn" data-bulk="duplicate">Duplicate</button>
+  <button class="btn" data-bulk="delete">Delete</button>
+  <div class="divider-v"></div>
+  <button class="btn ghost" data-bulk="clear">Clear selection</button>
+</div>
+
+<!-- Drawer (invoice / client preview) -->
+<aside class="drawer" id="drawer" aria-label="Preview"></aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="scrim" id="scrim"><div class="dialog" role="alertdialog" aria-modal="true" id="dialog"></div></div>
+
+<script>
+(() => {
+  // ================= Data =================
+  const TODAY = new Date(2026, 9, 13);
+  const DAY = 86400000;
+  const STATUSES = ['Draft', 'Awaiting payment', 'Overdue', 'Partially paid', 'Paid', 'Cancelled'];
+  const STATUS_ORDER = { 'Overdue': 0, 'Partially paid': 1, 'Awaiting payment': 2, 'Draft': 3, 'Paid': 4, 'Cancelled': 5 };
+  const BADGE_STYLE = { 'Draft': 'dashed', 'Overdue': 'double', 'Cancelled': 'dashed' };
+  const RATES = { USD: 1, EUR: 0.92, IDR: 16300 };
+  const METHODS = ['Bank transfer', 'Card', 'PayPal', 'Wise'];
+  const GROUPS = ['Studio Retainers', 'Freelance Projects'];
+
+  let seed = 7;
+  const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const addDays = (d, n) => new Date(d.getTime() + n * DAY);
+  const diffDays = (a, b) => Math.round((a - b) / DAY);
+
+  const CLIENTS = [
+    ['Northwind Studio', 'Aino Virtanen'], ['Helsinki Coffee Co.', 'Mikko Laine'], ['Bluefin Labs', 'Sara Lindqvist'],
+    ['Kirana Digital', 'Putri Santoso'], ['Oak & Ivy', 'James Porter'], ['Lumen Health', 'Dr. Ana Ruiz'],
+    ['Polar Logistics', 'Eero Mäkinen'], ['Sakura Foods', 'Yuki Tanaka'], ['Brightpath Edu', 'Leah Cohen'],
+    ['Tampere Makers', 'Ville Koskinen'], ['Atlas Ventures', 'Omar Haddad'], ['Mosaic Records', 'Nina Berg']
+  ].map(([name, pic], i) => ({ id: 'c' + i, name, pic, email: pic.toLowerCase().replace(/[^a-z ]/g, '').trim().split(' ').join('.') + '@' + name.toLowerCase().replace(/[^a-z]/g, '') + '.com' }));
+
+  const PROJECTS = ['Website redesign', 'Brand refresh', 'Monthly retainer', 'UX audit', 'Mobile app MVP', 'Usability testing', 'Design system', 'Content strategy', 'Onboarding flow', 'Landing page', 'Research sprint', 'Packaging design'];
+  const ITEMS = [['Discovery workshop', 1200], ['UX research', 95], ['Wireframes', 85], ['Visual design', 90], ['Prototype', 90], ['Usability test session', 400], ['Design QA', 75], ['Copywriting', 70], ['Project management', 60], ['Illustration set', 650]];
+
+  function makeInvoice(n, overrides = {}) {
+    const client = pick(CLIENTS);
+    const issue = addDays(new Date(2026, 3, 1), Math.floor(rnd() * 195));
+    const termsDays = pick([14, 30, 30, 45]);
+    const due = addDays(issue, termsDays);
+    const lineCount = 1 + Math.floor(rnd() * 7);
+    const lines = Array.from({ length: lineCount }, () => {
+      const [desc, rate] = pick(ITEMS);
+      const qty = rate > 300 ? 1 + Math.floor(rnd() * 2) : 4 + Math.floor(rnd() * 30);
+      return { desc, qty, rate, amount: qty * rate };
+    });
+    const subtotal = lines.reduce((s, l) => s + l.amount, 0);
+    const discount = rnd() < 0.25 ? Math.round(subtotal * 0.05) : 0;
+    const tax = Math.round((subtotal - discount) * 0.1);
+    const total = subtotal - discount + tax;
+
+    let status, paid = 0, paidDate = null, method = null;
+    const r = rnd();
+    if (diffDays(TODAY, issue) < 10 && r < 0.35) status = 'Draft';
+    else if (r < 0.05) status = 'Cancelled';
+    else if (due < TODAY) {
+      const r2 = rnd();
+      if (r2 < 0.8) status = 'Paid'; else if (r2 < 0.88) status = 'Partially paid'; else status = 'Overdue';
+    } else {
+      const r2 = rnd();
+      if (r2 < 0.3) status = 'Paid'; else if (r2 < 0.4) status = 'Partially paid'; else status = 'Awaiting payment';
+    }
+    if (status === 'Paid') {
+      const latest = Math.min(diffDays(TODAY, issue), termsDays + 20);
+      paidDate = addDays(issue, 1 + Math.floor(rnd() * Math.max(1, latest)));
+      if (paidDate > TODAY) paidDate = TODAY;
+      paid = total; method = pick(METHODS);
+    }
+    if (status === 'Partially paid') { paid = Math.round(total * (0.3 + rnd() * 0.4)); method = pick(METHODS); paidDate = addDays(issue, 3 + Math.floor(rnd() * 10)); if (paidDate > TODAY) paidDate = TODAY; }
+
+    const inv = {
+      id: 'i' + n, no: 'INV-2026-' + String(n).padStart(4, '0'), group: rnd() < 0.45 ? GROUPS[0] : GROUPS[1],
+      project: pick(PROJECTS), client, issue, due, termsDays, lines, subtotal, discount, tax, total, paid,
+      status, paidDate, method,
+      notes: rnd() < 0.5 ? 'Thank you for your business. Please include the invoice number in the payment reference.' : '',
+      activity: []
+    };
+    Object.assign(inv, overrides);
+    buildActivity(inv);
+    return inv;
+  }
+
+  function buildActivity(inv) {
+    const a = [{ date: inv.issue, text: 'Invoice created' }];
+    if (inv.status !== 'Draft') {
+      a.push({ date: inv.issue, text: 'Sent to ' + inv.client.email });
+      a.push({ date: addDays(inv.issue, 1), text: 'Viewed by client' });
+    }
+    if (inv.status === 'Overdue') a.push({ date: addDays(inv.due, 1), text: 'Automatic reminder sent' });
+    if (inv.status === 'Partially paid') a.push({ date: inv.paidDate, text: 'Partial payment received (' + inv.method + ')', amount: inv.paid });
+    if (inv.status === 'Paid') a.push({ date: inv.paidDate, text: 'Paid in full (' + inv.method + ')', amount: inv.total });
+    if (inv.status === 'Cancelled') a.push({ date: addDays(inv.issue, 2), text: 'Invoice voided' });
+    inv.activity = a;
+  }
+
+  let nextNo = 1;
+  let invoices = Array.from({ length: 180 }, () => makeInvoice(nextNo++));
+
+  // ================= State =================
+  const state = {
+    view: 'invoices', group: 'all', tab: 'all', search: '',
+    statuses: new Set(), dueWithin: null, amtMin: null, amtMax: null,
+    range: { preset: 'all', from: null, to: null },
+    sort: { key: 'issue', dir: 'desc' },
+    selected: new Set(), shown: 40, currency: 'USD',
+    cols: { project: true, client: true, amount: true, status: true, due: true, issue: true },
+    drawer: null, // {type:'invoice'|'client', id}
+    showAllLines: false, recordPayment: false
+  };
+
+  // ================= Helpers =================
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fmtDate = d => d ? d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() : '—';
+  const money = usd => new Intl.NumberFormat('en-US', { style: 'currency', currency: state.currency, maximumFractionDigits: state.currency === 'IDR' ? 0 : 2, minimumFractionDigits: state.currency === 'IDR' ? 0 : 2 }).format(usd * RATES[state.currency]);
+  const toUsd = v => v / RATES[state.currency];
+  const balance = inv => inv.status === 'Cancelled' ? 0 : inv.total - inv.paid;
+  const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+  function relDue(inv) {
+    const d = diffDays(inv.due, TODAY);
+    if (d === 0) return 'due today';
+    return d > 0 ? 'in ' + plural(d, 'day') : plural(-d, 'day') + ' overdue';
+  }
+  let toastTimer;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('open'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('open'), 2400); }
+  const badge = s => `<span class="badge ${BADGE_STYLE[s] || ''}">${esc(s)}</span>`;
+
+  // ================= Filtering =================
+  function inGroup(inv) { return state.group === 'all' || inv.group === state.group; }
+  function filtered() {
+    const q = state.search.trim().toLowerCase();
+    let list = invoices.filter(inv => {
+      if (!inGroup(inv)) return false;
+      if (state.tab !== 'all' && inv.status !== state.tab) return false;
+      if (state.statuses.size && !state.statuses.has(inv.status)) return false;
+      if (state.dueWithin && inv.status === 'Awaiting payment' && diffDays(inv.due, TODAY) > state.dueWithin) return false;
+      if (state.amtMin != null && inv.total < state.amtMin) return false;
+      if (state.amtMax != null && inv.total > state.amtMax) return false;
+      if (state.range.from && inv.issue < state.range.from) return false;
+      if (state.range.to && inv.issue > state.range.to) return false;
+      if (q && ![inv.no, inv.project, inv.client.name, inv.client.pic].some(v => v.toLowerCase().includes(q))) return false;
+      return true;
+    });
+    const { key, dir } = state.sort;
+    const m = dir === 'asc' ? 1 : -1;
+    const dateCol = inv => inv.status === 'Paid' ? inv.paidDate : inv.due;
+    const cmp = {
+      client: (a, b) => a.client.name.localeCompare(b.client.name),
+      status: (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
+      due: (a, b) => dateCol(a) - dateCol(b),
+      issue: (a, b) => a.issue - b.issue,
+      amount: (a, b) => a.total - b.total
+    }[key];
+    return list.sort((a, b) => m * cmp(a, b) || b.issue - a.issue);
+  }
+
+  // ================= KPIs =================
+  function renderKPIs() {
+    const list = invoices.filter(inGroup);
+    const open = list.filter(i => ['Awaiting payment', 'Overdue', 'Partially paid'].includes(i.status));
+    const outstanding = open.reduce((s, i) => s + balance(i), 0);
+    const overdueList = open.filter(i => i.due < TODAY);
+    const overdue = overdueList.reduce((s, i) => s + balance(i), 0);
+    const dueSoon = open.filter(i => i.due >= TODAY);
+
+    const paidIn = (y, m) => list.filter(i => i.paidDate && i.status === 'Paid' && i.paidDate.getFullYear() === y && i.paidDate.getMonth() === m);
+    const thisM = paidIn(2026, 9), lastM = paidIn(2026, 8);
+    const sum = a => a.reduce((s, i) => s + i.total, 0);
+    const pt = sum(thisM), pl = sum(lastM);
+    const change = pl ? Math.round((pt - pl) / pl * 100) : 0;
+    // Month-to-date comparison: same day range last month
+    const lastMtd = sum(lastM.filter(i => i.paidDate.getDate() <= TODAY.getDate()));
+    const mtdChange = lastMtd ? Math.round((pt - lastMtd) / lastMtd * 100) : 0;
+
+    const nextM = open.filter(i => i.due.getFullYear() === 2026 && i.due.getMonth() === 10);
+    const nextAmt = nextM.reduce((s, i) => s + balance(i), 0);
+    const paidAll = list.filter(i => i.status === 'Paid');
+    const avgDays = paidAll.length ? Math.round(paidAll.reduce((s, i) => s + diffDays(i.paidDate, i.issue), 0) / paidAll.length) : 0;
+
+    $('#kpis').innerHTML = `
+      <div class="kpi">
+        <div class="muted">Total outstanding</div>
+        <div class="kpi-value">${money(outstanding)}</div>
+        <div class="muted">${plural(open.length, 'open invoice')}</div>
+        <div class="kpi-split">
+          <div><div class="muted">Overdue amount</div><div>${money(overdue)}</div></div>
+          <div><div class="muted">Due invoices</div><div>${dueSoon.length} due · ${overdueList.length} overdue</div></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="muted">Paid this month (Oct)</div>
+        <div class="kpi-value">${money(pt)}</div>
+        <div class="muted">${plural(thisM.length, 'invoice')} paid</div>
+        <div class="kpi-split">
+          <div><div class="muted">vs. Sep (same period)</div><div>${mtdChange >= 0 ? '+' : ''}${mtdChange}% (${money(lastMtd)})</div></div>
+          <div><div class="muted">vs. Sep (full month)</div><div>${change >= 0 ? '+' : ''}${change}% (${money(pl)})</div></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="muted">Amount due next month (Nov)</div>
+        <div class="kpi-value">${money(nextAmt)}</div>
+        <div class="muted">${plural(nextM.length, 'invoice')}</div>
+        <div class="kpi-split">
+          <div><div class="muted">Avg. days to payment</div><div>${avgDays} days</div></div>
+          <div><div class="muted">Based on</div><div>${plural(paidAll.length, 'paid invoice')}</div></div>
+        </div>
+      </div>`;
+  }
+
+  // ================= Table =================
+  const COLS = [
+    { key: 'project', label: 'Project / Invoice no.' },
+    { key: 'client', label: 'Client / PIC', sort: 'client' },
+    { key: 'amount', label: 'Amount', sort: 'amount', num: true },
+    { key: 'status', label: 'Status', sort: 'status' },
+    { key: 'due', label: 'Due date / Paid', sort: 'due' },
+    { key: 'issue', label: 'Issue date', sort: 'issue' }
+  ];
+
+  function renderHead(list) {
+    const visibleIds = list.map(i => i.id);
+    const selCount = visibleIds.filter(id => state.selected.has(id)).length;
+    const sortMark = k => state.sort.key !== k ? '<span class="muted">↕</span>' : (state.sort.dir === 'asc' ? '↑' : '↓');
+    $('#thead-row').innerHTML =
+      `<th class="col-check"><input type="checkbox" id="check-all" aria-label="Select all"${selCount && selCount === visibleIds.length ? ' checked' : ''}></th>` +
+      COLS.filter(c => state.cols[c.key]).map(c => `<th class="${c.num ? 'num' : ''}">${c.sort ? `<button class="sort-btn" data-sort="${c.sort}">${c.label} ${sortMark(c.sort)}</button>` : c.label}</th>`).join('') +
+      `<th class="col-edit"><div class="pop-wrap"><button class="btn small ghost" data-pop="pop-cols" aria-label="Edit columns">Edit columns</button>
+        <div class="popover" id="pop-cols">${COLS.map(c => `<label class="check"><input type="checkbox" data-col="${c.key}"${state.cols[c.key] ? ' checked' : ''}${c.key === 'project' ? ' disabled' : ''}> ${c.label}</label>`).join('')}</div></div></th>`;
+    const ca = $('#check-all');
+    ca.indeterminate = selCount > 0 && selCount < visibleIds.length;
+  }
+
+  function cellFor(c, inv) {
+    switch (c.key) {
+      case 'project': return `<td><div class="cell-stack"><span>${esc(inv.project)}</span><span class="muted">${inv.no}</span></div></td>`;
+      case 'client': return `<td><div class="cell-stack"><button class="link" data-client="${inv.client.id}">${esc(inv.client.name)}</button><span class="muted">${esc(inv.client.pic)}</span></div></td>`;
+      case 'amount': return `<td class="num"><div class="cell-stack"><span>${money(inv.total)}</span>${inv.status === 'Partially paid' ? `<span class="muted">${money(balance(inv))} left</span>` : ''}</div></td>`;
+      case 'status': return `<td>${badge(inv.status)}</td>`;
+      case 'due':
+        if (inv.status === 'Paid') return `<td><div class="cell-stack"><span>Paid ${fmtDate(inv.paidDate)}</span><span class="muted">${esc(inv.method)}</span></div></td>`;
+        if (inv.status === 'Cancelled') return `<td><span class="muted">—</span></td>`;
+        if (inv.status === 'Draft') return `<td><div class="cell-stack"><span>${fmtDate(inv.due)}</span><span class="muted">Not sent</span></div></td>`;
+        return `<td><div class="cell-stack"><span>${fmtDate(inv.due)}</span><span class="muted">${relDue(inv)}</span></div></td>`;
+      case 'issue': return `<td>${fmtDate(inv.issue)}</td>`;
+    }
+  }
+
+  function renderTable() {
+    const list = filtered();
+    $('#total-count').textContent = (isFiltering() ? plural(list.length, 'result') + ' of ' + invoices.filter(inGroup).length : plural(list.length, 'invoice'));
+    renderHead(list);
+    const visCols = COLS.filter(c => state.cols[c.key]);
+    const slice = list.slice(0, state.shown);
+    if (!list.length) {
+      $('#tbody').innerHTML = `<tr><td colspan="${visCols.length + 2}"><div class="empty"><div>No invoices match these filters</div><button class="btn" id="empty-clear">Clear all filters</button></div></td></tr>`;
+    } else {
+      $('#tbody').innerHTML = slice.map(inv => `
+        <tr data-id="${inv.id}" class="${state.selected.has(inv.id) ? 'is-selected' : ''} ${state.drawer && state.drawer.type === 'invoice' && state.drawer.id === inv.id ? 'is-open' : ''}">
+          <td class="col-check"><input type="checkbox" data-check="${inv.id}" aria-label="Select ${inv.no}"${state.selected.has(inv.id) ? ' checked' : ''}></td>
+          ${visCols.map(c => cellFor(c, inv)).join('')}
+          <td class="col-edit"></td>
+        </tr>`).join('');
+    }
+    $('#sentinel').textContent = list.length > state.shown ? 'Loading more…' : (list.length ? 'End of list · ' + plural(list.length, 'invoice') : '');
+    renderChips();
+    renderBulk();
+  }
+
+  function isFiltering() {
+    return state.tab !== 'all' || state.statuses.size || state.dueWithin || state.amtMin != null || state.amtMax != null || state.range.from || state.range.to || state.search.trim();
+  }
+
+  function renderChips() {
+    const chips = [];
+    if (state.statuses.size) chips.push(['status', 'Status: ' + [...state.statuses].join(', ')]);
+    if (state.dueWithin) chips.push(['due', 'Awaiting payment due in ≤ ' + state.dueWithin + ' days']);
+    if (state.amtMin != null || state.amtMax != null) chips.push(['amount', 'Amount: ' + (state.amtMin != null ? money(state.amtMin) : 'any') + ' – ' + (state.amtMax != null ? money(state.amtMax) : 'any')]);
+    if (state.range.from || state.range.to) chips.push(['date', 'Issued: ' + rangeLabel()]);
+    $('#chips').innerHTML = chips.map(([k, l]) => `<button class="chip" data-chip="${k}" aria-label="Remove filter ${esc(l)}">${esc(l)} ×</button>`).join('') +
+      (chips.length > 1 ? `<button class="btn small ghost" id="chips-clear">Clear all</button>` : '');
+    const n = (state.statuses.size ? 1 : 0) + (state.dueWithin ? 1 : 0) + (state.amtMin != null || state.amtMax != null ? 1 : 0);
+    $('#btn-filter').textContent = n ? 'Filter (' + n + ')' : 'Filter';
+    $('#btn-date').textContent = 'Date range: ' + rangeLabel();
+  }
+
+  // ================= Infinite scroll =================
+  new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && filtered().length > state.shown) { state.shown += 30; renderTable(); }
+  }, { root: $('#content'), rootMargin: '200px' }).observe($('#sentinel'));
+
+  function resetAndRender() { state.shown = 40; renderTable(); }
+
+  // ================= Bulk actions =================
+  function renderBulk() {
+    const n = state.selected.size;
+    $('#bulk').classList.toggle('open', n > 0);
+    $('#bulk-count').textContent = n + ' selected';
+  }
+  $('#pop-bulk-status').innerHTML = STATUSES.map(s => `<button class="menu-item" data-bulk-status="${s}">${s}</button>`).join('');
+
+  function selectedInvoices() { return invoices.filter(i => state.selected.has(i.id)); }
+
+  function confirmDialog(title, body, confirmLabel, onConfirm) {
+    $('#dialog').innerHTML = `<div>${esc(title)}</div><div class="muted">${esc(body)}</div>
+      <div class="dialog-actions"><button class="btn" id="dlg-cancel">Cancel</button><button class="btn primary" id="dlg-ok">${esc(confirmLabel)}</button></div>`;
+    $('#scrim').classList.add('open');
+    $('#dlg-ok').focus();
+    $('#dlg-cancel').onclick = closeDialog;
+    $('#dlg-ok').onclick = () => { closeDialog(); onConfirm(); };
+  }
+  function closeDialog() { $('#scrim').classList.remove('open'); }
+
+  function duplicate(inv) {
+    const n = nextNo++;
+    const copy = Object.assign({}, inv, {
+      id: 'i' + n, no: 'INV-2026-' + String(n).padStart(4, '0'), status: 'Draft', issue: TODAY, due: addDays(TODAY, inv.termsDays),
+      paid: 0, paidDate: null, method: null, lines: inv.lines.map(l => ({ ...l }))
+    });
+    buildActivity(copy);
+    copy.activity.push({ date: TODAY, text: 'Duplicated from ' + inv.no });
+    invoices.unshift(copy);
+    return copy;
+  }
+
+  function setStatus(inv, s) {
+    if (inv.status === s) return;
+    inv.status = s;
+    if (s === 'Paid') { inv.paid = inv.total; inv.paidDate = TODAY; inv.method = inv.method || 'Bank transfer'; }
+    if (['Draft', 'Awaiting payment', 'Overdue'].includes(s)) { inv.paid = 0; inv.paidDate = null; inv.method = null; }
+    inv.activity.push({ date: TODAY, text: 'Status changed to ' + s });
+  }
+
+  function bulk(action) {
+    const sel = selectedInvoices();
+    if (action === 'clear') { state.selected.clear(); renderTable(); return; }
+    if (action === 'send') {
+      const sendable = sel.filter(i => i.status !== 'Paid' && i.status !== 'Cancelled');
+      sendable.forEach(i => { if (i.status === 'Draft') i.status = 'Awaiting payment'; i.activity.push({ date: TODAY, text: 'Sent to ' + i.client.email }); });
+      toast('Sent ' + plural(sendable.length, 'invoice') + (sel.length - sendable.length ? ' · ' + (sel.length - sendable.length) + ' skipped (paid or cancelled)' : ''));
+    }
+    if (action === 'export') toast('Exported ' + plural(sel.length, 'invoice') + ' as CSV');
+    if (action === 'duplicate') { sel.forEach(duplicate); toast('Created ' + plural(sel.length, 'draft') + ' from selection'); }
+    if (action === 'delete') {
+      confirmDialog('Delete ' + plural(sel.length, 'invoice') + '?', 'This can’t be undone. Sent invoices should be voided instead so the client record stays accurate.', 'Delete', () => {
+        invoices = invoices.filter(i => !state.selected.has(i.id));
+        if (state.drawer && state.drawer.type === 'invoice' && state.selected.has(state.drawer.id)) closeDrawer();
+        toast('Deleted ' + plural(sel.length, 'invoice'));
+        state.selected.clear(); renderKPIs(); renderTable(); renderGroupCounts();
+      });
+      return;
+    }
+    state.selected.clear(); renderKPIs(); renderTable(); renderGroupCounts(); refreshDrawer();
+  }
+
+  // ================= Drawer: invoice preview =================
+  function openInvoice(id) { state.drawer = { type: 'invoice', id }; state.showAllLines = false; state.recordPayment = false; renderDrawer(); renderTable(); }
+  function openClient(id) { state.drawer = { type: 'client', id }; renderDrawer(); renderTable(); }
+  function closeDrawer() { state.drawer = null; $('#drawer').classList.remove('open'); renderTable(); }
+  function refreshDrawer() { if (state.drawer) renderDrawer(); }
+
+  function primaryAction(inv) {
+    return {
+      'Draft': ['send', 'Send invoice', ''],
+      'Awaiting payment': ['remind', 'Send reminder', ''],
+      'Overdue': ['remind', 'Send reminder', 'prominent'],
+      'Partially paid': ['record', 'Record payment', ''],
+      'Paid': ['receipt', 'Download receipt', '']
+    }[inv.status];
+  }
+
+  function renderInvoiceDrawer(inv) {
+    const pa = primaryAction(inv);
+    const days = diffDays(inv.due, TODAY);
+    const dueLine = inv.status === 'Paid' ? `Paid ${fmtDate(inv.paidDate)} via ${esc(inv.method)}`
+      : inv.status === 'Cancelled' ? 'Voided — no payment due'
+      : `Due ${fmtDate(inv.due)} · ${days === 0 ? 'due today' : days > 0 ? plural(days, 'day') + ' until due' : plural(-days, 'day') + ' overdue'}`;
+    const lines = state.showAllLines ? inv.lines : inv.lines.slice(0, 3);
+    const clientInvoices = invoices.filter(i => i.client.id === inv.client.id);
+
+    return `
+      <div class="drawer-head">
+        <div class="drawer-head-row">
+          <div class="row"><span class="drawer-title">${inv.no}</span>${badge(inv.status)}</div>
+          <div class="row">
+            <button class="btn small ghost" data-act="full">Open full invoice</button>
+            <button class="btn small ghost" data-act="close" aria-label="Close preview">Close</button>
+          </div>
+        </div>
+        <div class="row"><button class="link" data-client="${inv.client.id}">${esc(inv.client.name)}</button><span class="muted">· ${esc(inv.project)}</span></div>
+      </div>
+      <div class="drawer-body">
+        <div class="d-section">
+          <div class="d-label">Total amount</div>
+          <div class="kpi-value">${money(inv.total)}</div>
+          <div class="kv"><span class="muted">Amount paid</span><span>${money(inv.paid)}</span></div>
+          <div class="kv"><span class="muted">Balance remaining</span><span>${money(balance(inv))}</span></div>
+          <div class="kv"><span class="muted">${inv.status === 'Paid' ? 'Payment' : 'Due date'}</span><span>${dueLine}</span></div>
+        </div>
+
+        <div class="d-section">
+          ${pa ? `<button class="btn primary ${pa[2]}" data-act="${pa[0]}" style="justify-content:center">${pa[1]}${pa[2] ? ' — ' + plural(-days, 'day') + ' overdue' : ''}</button>` : `<div class="muted">No actions — invoice is voided.</div>`}
+          ${state.recordPayment ? `
+            <div class="form-grid" style="margin-top: var(--s2)">
+              <label><span class="muted">Amount (${state.currency})</span><input class="input" id="rp-amount" type="number" value="${Math.round(balance(inv) * RATES[state.currency] * 100) / 100}"></label>
+              <label><span class="muted">Method</span><select class="input" id="rp-method">${METHODS.map(m => `<option>${m}</option>`).join('')}</select></label>
+            </div>
+            <div class="row" style="justify-content:flex-end"><button class="btn small" data-act="record-cancel">Cancel</button><button class="btn small primary" data-act="record-save">Save payment</button></div>` : ''}
+          <div class="actions-row">
+            <button class="btn small" data-act="pdf">Download PDF</button>
+            <button class="btn small" data-act="link"${inv.status === 'Cancelled' || inv.status === 'Draft' ? ' disabled' : ''}>Copy payment link</button>
+            ${inv.status === 'Draft' ? '<button class="btn small" data-act="edit">Edit</button>' : ''}
+            <button class="btn small" data-act="duplicate">Duplicate</button>
+            <button class="btn small" data-act="void"${inv.status === 'Cancelled' || inv.status === 'Paid' ? ' disabled' : ''}>Void</button>
+          </div>
+        </div>
+
+        <div class="d-section">
+          <div class="d-label">Invoice details</div>
+          <div class="kv"><span class="muted">Issue date</span><span>${fmtDate(inv.issue)}</span></div>
+          <div class="kv"><span class="muted">Payment terms</span><span>Net ${inv.termsDays}</span></div>
+          <div class="kv"><span class="muted">Group</span><span>${esc(inv.group)}</span></div>
+          <table class="lines" style="margin-top: var(--s2)">
+            <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr></thead>
+            <tbody>${lines.map(l => `<tr><td>${esc(l.desc)}</td><td class="num">${l.qty}</td><td class="num">${money(l.rate)}</td><td class="num">${money(l.amount)}</td></tr>`).join('')}</tbody>
+          </table>
+          ${inv.lines.length > 3 ? `<button class="link" data-act="lines">${state.showAllLines ? 'Show fewer' : 'Show all ' + inv.lines.length + ' line items'}</button>` : ''}
+          <div class="kv"><span class="muted">Subtotal</span><span>${money(inv.subtotal)}</span></div>
+          ${inv.discount ? `<div class="kv"><span class="muted">Discount (5%)</span><span>−${money(inv.discount)}</span></div>` : ''}
+          <div class="kv"><span class="muted">Tax (10%)</span><span>${money(inv.tax)}</span></div>
+          <div class="kv total"><span>Total</span><span>${money(inv.total)}</span></div>
+          <div class="d-label" style="margin-top: var(--s2)">Notes to client</div>
+          <div>${inv.notes ? esc(inv.notes) : '<span class="muted">No notes</span>'}</div>
+        </div>
+
+        <div class="d-section">
+          <div class="d-label">Client</div>
+          <div>${esc(inv.client.pic)}</div>
+          <div class="muted">${esc(inv.client.email)}</div>
+          <button class="link" data-client="${inv.client.id}">View client profile (${plural(clientInvoices.length, 'invoice')})</button>
+        </div>
+
+        <div class="d-section">
+          <div class="d-label">Activity</div>
+          <ul class="timeline">${[...inv.activity].reverse().map(a => `<li><span>${esc(a.text)}${a.amount ? ' · ' + money(a.amount) : ''}</span><span class="muted small-text">${fmtDate(a.date)}</span></li>`).join('')}</ul>
+        </div>
+      </div>`;
+  }
+
+  // ================= Drawer: client preview =================
+  function clientStats(c) {
+    const list = invoices.filter(i => i.client.id === c.id);
+    const billed = list.filter(i => i.status !== 'Draft' && i.status !== 'Cancelled');
+    const paidList = list.filter(i => i.status === 'Paid');
+    const outstanding = list.filter(i => ['Awaiting payment', 'Overdue', 'Partially paid'].includes(i.status));
+    const overdue = outstanding.filter(i => i.due < TODAY);
+    const avg = paidList.length ? Math.round(paidList.reduce((s, i) => s + diffDays(i.paidDate, i.issue), 0) / paidList.length) : null;
+    const onTime = paidList.length ? Math.round(paidList.filter(i => i.paidDate <= i.due).length / paidList.length * 100) : null;
+    const first = list.reduce((m, i) => !m || i.issue < m ? i.issue : m, null);
+    return {
+      list, billed,
+      lifetime: billed.reduce((s, i) => s + i.total, 0),
+      collected: list.reduce((s, i) => s + (i.status === 'Cancelled' ? 0 : i.paid), 0),
+      outstanding: outstanding.reduce((s, i) => s + balance(i), 0), outstandingN: outstanding.length,
+      overdue: overdue.reduce((s, i) => s + balance(i), 0), overdueN: overdue.length,
+      avg, onTime, first,
+      avgInvoice: billed.length ? billed.reduce((s, i) => s + i.total, 0) / billed.length : 0
+    };
+  }
+
+  function renderClientDrawer(c) {
+    const s = clientStats(c);
+    const recent = [...s.list].sort((a, b) => b.issue - a.issue);
+    const timeline = s.list.flatMap(i => i.activity.map(a => ({ ...a, no: i.no, id: i.id }))).sort((a, b) => b.date - a.date).slice(0, 8);
+    return `
+      <div class="drawer-head">
+        <div class="drawer-head-row">
+          <span class="drawer-title">${esc(c.name)}</span>
+          <div class="row">
+            <button class="btn small ghost" data-act="client-full">Open client page</button>
+            <button class="btn small ghost" data-act="close" aria-label="Close preview">Close</button>
+          </div>
+        </div>
+        <div>${esc(c.pic)} <span class="muted">· PIC</span></div>
+        <div class="muted">${esc(c.email)}</div>
+        <div class="actions-row"><button class="btn small primary" data-act="client-new">New invoice for client</button><button class="btn small" data-act="client-statement">Send statement</button></div>
+      </div>
+      <div class="drawer-body">
+        <div class="d-section">
+          <div class="d-label">Statistics</div>
+          <div class="stat-grid">
+            <div class="stat"><span class="muted">Outstanding</span><span class="stat-value">${money(s.outstanding)}</span><span class="muted small-text">${plural(s.outstandingN, 'invoice')}</span></div>
+            <div class="stat"><span class="muted">Overdue</span><span class="stat-value">${money(s.overdue)}</span><span class="muted small-text">${plural(s.overdueN, 'invoice')}</span></div>
+            <div class="stat"><span class="muted">Lifetime billed</span><span class="stat-value">${money(s.lifetime)}</span><span class="muted small-text">${money(s.collected)} collected</span></div>
+            <div class="stat"><span class="muted">Avg. invoice</span><span class="stat-value">${money(s.avgInvoice)}</span><span class="muted small-text">${plural(s.billed.length, 'sent invoice')}</span></div>
+            <div class="stat"><span class="muted">Avg. days to pay</span><span class="stat-value">${s.avg == null ? '—' : s.avg + ' days'}</span><span class="muted small-text">your average: ${avgAll()} days</span></div>
+            <div class="stat"><span class="muted">Paid on time</span><span class="stat-value">${s.onTime == null ? '—' : s.onTime + '%'}</span><span class="muted small-text">client since ${s.first ? MONTHS[s.first.getMonth()] + ' ' + s.first.getFullYear() : '—'}</span></div>
+          </div>
+        </div>
+        <div class="d-section">
+          <div class="d-label">Recent invoices</div>
+          <div class="mini-list">${recent.slice(0, 5).map(i => `
+            <button class="mini-row" data-open-invoice="${i.id}">
+              <span>${esc(i.project)} <span class="muted">· ${i.no}</span></span><span>${money(i.total)}</span>
+              <span class="muted">${fmtDate(i.issue)}</span><span>${badge(i.status)}</span>
+            </button>`).join('')}</div>
+          ${recent.length > 5 ? `<button class="link" data-act="client-all">View all ${recent.length} invoices in table</button>` : ''}
+        </div>
+        <div class="d-section">
+          <div class="d-label">Invoice timeline</div>
+          <ul class="timeline">${timeline.map(a => `<li><span>${esc(a.text)}${a.amount ? ' · ' + money(a.amount) : ''}</span><span class="muted small-text">${fmtDate(a.date)} · <button class="link" data-open-invoice="${a.id}">${a.no}</button></span></li>`).join('')}</ul>
+        </div>
+      </div>`;
+  }
+  function avgAll() {
+    const p = invoices.filter(i => i.status === 'Paid');
+    return p.length ? Math.round(p.reduce((s, i) => s + diffDays(i.paidDate, i.issue), 0) / p.length) : 0;
+  }
+
+  function renderDrawer() {
+    const d = $('#drawer');
+    if (!state.drawer) { d.classList.remove('open'); return; }
+    if (state.drawer.type === 'invoice') {
+      const inv = invoices.find(i => i.id === state.drawer.id);
+      if (!inv) return closeDrawer();
+      d.innerHTML = renderInvoiceDrawer(inv);
+    } else {
+      d.innerHTML = renderClientDrawer(CLIENTS.find(c => c.id === state.drawer.id));
+    }
+    d.classList.add('open');
+  }
+
+  $('#drawer').addEventListener('click', e => {
+    const oi = e.target.closest('[data-open-invoice]');
+    if (oi) return openInvoice(oi.dataset.openInvoice);
+    const cl = e.target.closest('[data-client]');
+    if (cl) return openClient(cl.dataset.client);
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    const inv = state.drawer.type === 'invoice' ? invoices.find(i => i.id === state.drawer.id) : null;
+    const client = state.drawer.type === 'client' ? CLIENTS.find(c => c.id === state.drawer.id) : null;
+    const after = () => { renderKPIs(); renderTable(); renderDrawer(); };
+    switch (act) {
+      case 'close': return closeDrawer();
+      case 'full': return showPlaceholder('Full invoice page — ' + inv.no, 'Opens the full invoice editor/viewer. Out of scope for this version.');
+      case 'client-full': return showPlaceholder('Client page — ' + client.name, 'Full client profile. Out of scope for this version.');
+      case 'client-new': return toast('New invoice for ' + client.name + ' — opens create flow');
+      case 'client-statement': return toast('Statement sent to ' + client.email);
+      case 'client-all': closeDrawer(); state.search = client.name; $('#search').value = client.name; return resetAndRender();
+      case 'send': inv.status = 'Awaiting payment'; inv.activity.push({ date: TODAY, text: 'Sent to ' + inv.client.email }); toast(inv.no + ' sent'); return after();
+      case 'remind': inv.activity.push({ date: TODAY, text: 'Reminder sent to ' + inv.client.email }); toast('Reminder sent to ' + inv.client.pic); return after();
+      case 'record': state.recordPayment = true; return renderDrawer();
+      case 'record-cancel': state.recordPayment = false; return renderDrawer();
+      case 'record-save': {
+        const amt = Math.min(balance(inv), toUsd(parseFloat($('#rp-amount').value) || 0));
+        if (amt <= 0) return toast('Enter an amount');
+        inv.paid += amt; inv.method = $('#rp-method').value; inv.paidDate = TODAY;
+        inv.activity.push({ date: TODAY, text: 'Payment recorded (' + inv.method + ')', amount: amt });
+        if (inv.paid >= inv.total - 0.01) { inv.paid = inv.total; inv.status = 'Paid'; }
+        else inv.status = 'Partially paid';
+        state.recordPayment = false; toast('Payment recorded'); return after();
+      }
+      case 'receipt': return toast('Downloading receipt for ' + inv.no);
+      case 'pdf': return toast('Downloading ' + inv.no + '.pdf');
+      case 'link': return toast('Payment link copied');
+      case 'edit': return showPlaceholder('Edit draft — ' + inv.no, 'Opens the invoice editor. Out of scope for this version.');
+      case 'duplicate': { const c = duplicate(inv); toast('Duplicated as ' + c.no); renderKPIs(); renderGroupCounts(); return openInvoice(c.id); }
+      case 'void': return confirmDialog('Void ' + inv.no + '?', 'The client will no longer be able to pay this invoice. It stays in your records as Cancelled.', 'Void invoice', () => { setStatus(inv, 'Cancelled'); toast(inv.no + ' voided'); after(); });
+      case 'lines': state.showAllLines = !state.showAllLines; return renderDrawer();
+    }
+  });
+
+  // ================= Navigation / views =================
+  function renderGroupCounts() { GROUPS.forEach(g => { $(`[data-group-count="${g}"]`).textContent = invoices.filter(i => i.group === g).length; }); }
+
+  function showPlaceholder(title, body) {
+    closeDrawer();
+    state.selected.clear(); renderBulk();
+    $('#view-invoices').hidden = true; $('#view-placeholder').hidden = false;
+    $('#ph-title').textContent = title; $('#ph-body').textContent = body;
+    $('#page-title').textContent = title.split(' — ')[0];
+  }
+  function showInvoices() {
+    $('#view-invoices').hidden = false; $('#view-placeholder').hidden = true;
+    $('#page-title').textContent = state.group === 'all' ? 'Invoice List' : state.group;
+    $$('.nav-item').forEach(n => n.setAttribute('aria-current', String(n.dataset.nav === 'invoices' && n.dataset.group === state.group)));
+  }
+  let groupsOpen = true;
+  $('.sidebar').addEventListener('click', e => {
+    const n = e.target.closest('.nav-item');
+    if (!n) return;
+    if (n.dataset.nav === 'invoices') {
+      // Clicking the parent while it is already active toggles the group list.
+      if (n.id === 'nav-invoices' && state.group === 'all' && !$('#view-invoices').hidden) {
+        groupsOpen = !groupsOpen;
+        $('#nav-groups').hidden = !groupsOpen;
+        $('#nav-caret').textContent = groupsOpen ? 'v' : '>';
+        return;
+      }
+      state.group = n.dataset.group; state.selected.clear();
+      showInvoices(); renderKPIs(); resetAndRender();
+      return;
+    }
+    const names = { clients: 'Client List', analytics: 'Analytics', settings: 'Settings', account: 'Account' };
+    showPlaceholder(names[n.dataset.nav], 'Out of scope for this version.');
+    $$('.nav-item').forEach(x => x.setAttribute('aria-current', String(x === n)));
+  });
+  $('#ph-back').onclick = () => { state.group = 'all'; showInvoices(); renderKPIs(); resetAndRender(); };
+
+  // ================= Popovers =================
+  document.addEventListener('click', e => {
+    const trigger = e.target.closest('[data-pop]');
+    if (trigger) {
+      const pop = document.getElementById(trigger.dataset.pop);
+      const wasOpen = pop.classList.contains('open');
+      $$('.popover.open').forEach(p => p.classList.remove('open'));
+      if (!wasOpen) pop.classList.add('open');
+      return;
+    }
+    if (e.target.closest('[data-close-pop]')) { $$('.popover.open').forEach(p => p.classList.remove('open')); return; }
+    if (!e.target.closest('.popover')) $$('.popover.open').forEach(p => p.classList.remove('open'));
+  });
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-toast]');
+    if (t) { toast(t.dataset.toast); $$('.popover.open').forEach(p => p.classList.remove('open')); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if ($('#scrim').classList.contains('open')) return closeDialog();
+    const open = $$('.popover.open');
+    if (open.length) return open.forEach(p => p.classList.remove('open'));
+    if (state.drawer) closeDrawer();
+  });
+
+  // ================= Top bar =================
+  $('#btn-create').onclick = () => toast('Create invoice — opens new invoice editor');
+  $('#currency').onchange = e => { state.currency = e.target.value; $$('.cur-code').forEach(x => x.textContent = state.currency); renderKPIs(); renderTable(); refreshDrawer(); };
+  const NOTIFS = [
+    ['Payment received', 'Bluefin Labs paid INV-2026-0042', '2h ago'],
+    ['Invoice overdue', 'Oak & Ivy · INV-2026-0017 is 3 days overdue', 'Yesterday'],
+    ['Invoice viewed', 'Lumen Health viewed INV-2026-0088', '2 days ago']
+  ];
+  $('#notif-list').innerHTML = NOTIFS.map(([t, b, w]) => `<div class="notif"><span>${t}</span><span class="muted">${b}</span><span class="muted small-text">${w}</span></div>`).join('');
+  $('#notif-read').onclick = () => { $('#notif-count').textContent = '0'; toast('All notifications marked as read'); };
+
+  // ================= Toolbar =================
+  $$('.tab').forEach(t => t.onclick = () => {
+    state.tab = t.dataset.tab;
+    $$('.tab').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+    resetAndRender();
+  });
+  let searchTimer;
+  $('#search').oninput = e => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.search = e.target.value; resetAndRender(); }, 150); };
+
+  // Filter popover
+  $('#f-statuses').innerHTML = STATUSES.map(s => `<label class="check"><input type="checkbox" data-fstatus="${s}"> ${s}</label>`).join('');
+  function syncFilterUI() {
+    $$('[data-fstatus]').forEach(c => c.checked = state.statuses.has(c.dataset.fstatus));
+    const all = $('#f-status-all');
+    all.checked = state.statuses.size === STATUSES.length;
+    all.indeterminate = state.statuses.size > 0 && state.statuses.size < STATUSES.length;
+    const awaiting = state.statuses.has('Awaiting payment');
+    $('#f-due-days').disabled = !awaiting;
+    $('#f-due-days').value = state.dueWithin || '';
+    $('#f-amt-min').value = state.amtMin != null ? Math.round(state.amtMin * RATES[state.currency]) : '';
+    $('#f-amt-max').value = state.amtMax != null ? Math.round(state.amtMax * RATES[state.currency]) : '';
+  }
+  $('#pop-filter').addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'f-status-all') { state.statuses = t.checked ? new Set(STATUSES) : new Set(); }
+    if (t.dataset.fstatus) { t.checked ? state.statuses.add(t.dataset.fstatus) : state.statuses.delete(t.dataset.fstatus); }
+    if (!state.statuses.has('Awaiting payment')) state.dueWithin = null;
+    if (t.id === 'f-due-days') state.dueWithin = parseInt(t.value) || null;
+    if (t.id === 'f-amt-min') state.amtMin = t.value === '' ? null : toUsd(+t.value);
+    if (t.id === 'f-amt-max') state.amtMax = t.value === '' ? null : toUsd(+t.value);
+    syncFilterUI(); resetAndRender();
+  });
+  function clearFilters() { state.statuses.clear(); state.dueWithin = null; state.amtMin = state.amtMax = null; syncFilterUI(); }
+  $('#f-clear').onclick = () => { clearFilters(); resetAndRender(); };
+
+  // Date range popover
+  const PRESETS = [
+    ['all', 'All time', () => [null, null]],
+    ['this-month', 'This month', () => [new Date(2026, 9, 1), TODAY]],
+    ['last-month', 'Last month', () => [new Date(2026, 8, 1), new Date(2026, 8, 30)]],
+    ['90', 'Last 90 days', () => [addDays(TODAY, -90), TODAY]],
+    ['ytd', 'This year', () => [new Date(2026, 0, 1), TODAY]]
+  ];
+  $('#date-presets').innerHTML = PRESETS.map(([k, l]) => `<label class="check"><input type="radio" name="preset" value="${k}"${k === 'all' ? ' checked' : ''}> ${l}</label>`).join('');
+  const isoDate = d => d ? d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') : '';
+  const parseIso = v => { if (!v) return null; const [y, m, d] = v.split('-').map(Number); return new Date(y, m - 1, d); };
+  function rangeLabel() {
+    if (state.range.preset !== 'custom') return PRESETS.find(p => p[0] === state.range.preset)[1];
+    return (state.range.from ? fmtDate(state.range.from) : 'Any') + ' – ' + (state.range.to ? fmtDate(state.range.to) : 'Any');
+  }
+  $('#date-presets').addEventListener('change', e => {
+    const p = PRESETS.find(x => x[0] === e.target.value);
+    const [f, t] = p[2]();
+    $('#d-from').value = isoDate(f); $('#d-to').value = isoDate(t);
+  });
+  ['#d-from', '#d-to'].forEach(s => $(s).addEventListener('input', () => $$('[name=preset]').forEach(r => r.checked = false)));
+  $('#d-apply').onclick = () => {
+    const checked = $('[name=preset]:checked');
+    state.range = { preset: checked ? checked.value : 'custom', from: parseIso($('#d-from').value), to: parseIso($('#d-to').value) };
+    $('#pop-date').classList.remove('open'); resetAndRender();
+  };
+  function clearDate() { state.range = { preset: 'all', from: null, to: null }; $('#d-from').value = $('#d-to').value = ''; $$('[name=preset]').forEach(r => r.checked = r.value === 'all'); }
+  $('#d-clear').onclick = () => { clearDate(); resetAndRender(); };
+
+  // Chips
+  $('#chips').addEventListener('click', e => {
+    if (e.target.id === 'chips-clear') { clearFilters(); clearDate(); return resetAndRender(); }
+    const c = e.target.closest('[data-chip]');
+    if (!c) return;
+    const k = c.dataset.chip;
+    if (k === 'status') { state.statuses.clear(); state.dueWithin = null; }
+    if (k === 'due') state.dueWithin = null;
+    if (k === 'amount') state.amtMin = state.amtMax = null;
+    if (k === 'date') clearDate();
+    syncFilterUI(); resetAndRender();
+  });
+
+  // ================= Table interactions =================
+  $('table').addEventListener('click', e => {
+    if (e.target.id === 'empty-clear') {
+      clearFilters(); clearDate(); state.search = ''; $('#search').value = ''; state.tab = 'all';
+      $$('.tab').forEach(x => x.setAttribute('aria-selected', String(x.dataset.tab === 'all')));
+      return resetAndRender();
+    }
+    const sb = e.target.closest('[data-sort]');
+    if (sb) {
+      const k = sb.dataset.sort;
+      state.sort = state.sort.key === k ? { key: k, dir: state.sort.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: k === 'client' || k === 'status' ? 'asc' : 'desc' };
+      return resetAndRender();
+    }
+    if (e.target.closest('thead')) return;
+    const cl = e.target.closest('[data-client]');
+    if (cl) { e.stopPropagation(); return openClient(cl.dataset.client); }
+    if (e.target.matches('input[type=checkbox]') || e.target.closest('.col-check')) return;
+    const tr = e.target.closest('tr[data-id]');
+    if (tr) openInvoice(tr.dataset.id);
+  });
+  $('table').addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'check-all') {
+      const ids = filtered().map(i => i.id);
+      ids.forEach(id => t.checked ? state.selected.add(id) : state.selected.delete(id));
+      return renderTable();
+    }
+    if (t.dataset.check) { t.checked ? state.selected.add(t.dataset.check) : state.selected.delete(t.dataset.check); return renderTable(); }
+    if (t.dataset.col) { state.cols[t.dataset.col] = t.checked; renderTable(); $('#pop-cols').classList.add('open'); }
+  });
+
+  $('#bulk').addEventListener('click', e => {
+    const b = e.target.closest('[data-bulk]');
+    if (b) return bulk(b.dataset.bulk);
+    const s = e.target.closest('[data-bulk-status]');
+    if (s) {
+      const sel = selectedInvoices();
+      sel.forEach(i => setStatus(i, s.dataset.bulkStatus));
+      toast(plural(sel.length, 'invoice') + ' marked as ' + s.dataset.bulkStatus);
+      $('#pop-bulk-status').classList.remove('open');
+      state.selected.clear(); renderKPIs(); renderTable(); refreshDrawer();
+    }
+  });
+
+  // ================= Init =================
+  renderGroupCounts();
+  syncFilterUI();
+  renderKPIs();
+  renderTable();
+})();
+</script>
+</body>
+</html>

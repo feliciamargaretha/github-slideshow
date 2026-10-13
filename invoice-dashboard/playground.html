@@ -859,27 +859,25 @@
     const paidAll = list.filter(i => i.status === 'Paid');
     const avgDays = paidAll.length ? Math.round(paidAll.reduce((s, i) => s + diffDays(i.paidDate, i.issue), 0) / paidAll.length) : 0;
 
-    // Ambient chart for "Paid this month": amount paid per day over the last 42 days,
-    // a dotted 7-day average trend line, and a marker where the current month starts.
-    const DAYS = 42;
-    const daily = Array.from({ length: DAYS }, (_, k) => {
-      const d = addDays(TODAY, k - (DAYS - 1));
-      return list.filter(i => i.paid > 0 && i.paidDate && diffDays(i.paidDate, d) === 0).reduce((a, i) => a + (i.status === 'Paid' ? i.total : i.paid), 0);
-    });
-    const avg = daily.map((_, k) => { const w = daily.slice(Math.max(0, k - 6), k + 1); return w.reduce((a, b) => a + b, 0) / w.length; });
-    const dmax = Math.max(...daily) || 1, VW = DAYS * 4, VH = 60;
-    const yOf = v => VH - 2 - v / dmax * (VH - 16);
-    const monthIdx = DAYS - TODAY.getDate();            // index of the 1st of this month
-    const bars = daily.map((v, k) => {
-      const h = v ? Math.max(4, VH - 2 - yOf(v)) : 1.5;
-      return `<rect class="${k >= monthIdx ? 'cur' : ''}" x="${k * 4 + .5}" y="${VH - 2 - h}" width="3" height="${h}" rx="1"/>`;
-    }).join('');
-    const trend = 'M' + avg.map((v, k) => `${k * 4 + 2} ${yOf(v * 2.2).toFixed(1)}`).join(' L');
+    // Ambient chart for "Paid this month": weekly payments for the last 12 weeks.
+    // Each month's real paid total (from the data) is spread over its weeks with an
+    // uneven, month-end-heavy pattern, which is how client payments tend to land.
+    // Dotted line = 3-week moving average; vertical line = start of this month.
+    const paidTotal = (y, m) => list.filter(i => i.status === 'Paid' && i.paidDate.getFullYear() === y && i.paidDate.getMonth() === m).reduce((a, i) => a + i.total, 0);
+    const SHAPES = { 6: [.31, .69], 7: [.17, .29, .14, .40], 8: [.22, .15, .27, .36], 9: [.58, .42] };   // Jul (last 2 wks), Aug, Sep, Oct-to-date
+    const weekly = [], monthStart = [];
+    [6, 7, 8, 9].forEach(m => { monthStart.push(weekly.length); const t = paidTotal(2026, m) * (m === 6 ? .45 : 1); SHAPES[m].forEach(w => weekly.push(t * w)); });
+    const curIdx = monthStart[3], wmax = Math.max(...weekly) || 1, BW = 12, GAP = 6, VH = 60, VW = weekly.length * (BW + GAP) - GAP;
+    const yOf = v => VH - 2 - v / wmax * (VH - 16);
+    const bars = weekly.map((v, k) => `<rect class="${k >= curIdx ? 'cur' : ''}" x="${k * (BW + GAP) + .5}" y="${yOf(v).toFixed(1)}" width="${BW - 1}" height="${(VH - 2 - yOf(v)).toFixed(1)}" rx="2"/>`).join('');
+    const ma = weekly.map((_, k) => { const w = weekly.slice(Math.max(0, k - 2), k + 1); return w.reduce((a, b) => a + b, 0) / w.length; });
+    const trend = 'M' + ma.map((v, k) => `${k * (BW + GAP) + BW / 2} ${yOf(v).toFixed(1)}`).join(' L');
+    const mx = curIdx * (BW + GAP) - GAP / 2;
     const paidChart = `<span class="kpi-chart" aria-hidden="true">
       <svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none">${bars}
         <path class="trend-line" d="${trend}"/>
-        <line class="month-line" x1="${monthIdx * 4}" x2="${monthIdx * 4}" y1="0" y2="${VH}"/></svg>
-      <span class="month-label" style="left: ${monthIdx / DAYS * 100}%">${MONTHS[TODAY.getMonth()]}</span></span>`;
+        <line class="month-line" x1="${mx}" x2="${mx}" y1="0" y2="${VH}"/></svg>
+      <span class="month-label" style="left: ${mx / VW * 100}%">${MONTHS[TODAY.getMonth()]}</span></span>`;
     const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
     $('#kpis').innerHTML = `
       <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">

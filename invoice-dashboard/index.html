@@ -208,27 +208,27 @@
   .kpi-split > span { display: flex; flex-direction: column; gap: var(--s1); }
 
   /* ---------- KPI cards: soft, out-of-focus colour field ----------
-     A horizontal pink smear and a milky white haze are painted on a layer
-     behind the content and blurred for real (filter: blur), so there are no
-     edges at all. Grain + dither sit above the blur, below the text.
-     Each card shifts the smear slightly. Card text is near-white; a pixel
+     A broad pink glow on the right side with a milky white haze above it,
+     painted on a layer behind the content and blurred for real (filter: blur),
+     so there are no edges. Grain + dither sit above the blur, below the text.
+     Each card shifts the glow slightly. Card text is near-white; a pixel
      check of the rendered cards keeps it >= 4.5:1. */
   .kpis { --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); --dither: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   .kpi { position: relative; overflow: hidden; isolation: isolate; background-color: var(--surface); }
   .kpi::before, .kpi::after { content: ""; position: absolute; pointer-events: none; z-index: -1; }
   .kpi::before {
-    --y: 58%; --x: 55%;
+    --x: 92%; --y: 55%;
     inset: -30%;
     background:
-      radial-gradient(45% 12% at var(--x) var(--y), rgba(255, 150, 238, .70), transparent 100%),
-      radial-gradient(65% 18% at calc(var(--x) - 10%) calc(var(--y) + 5%), rgba(248, 94, 228, .54), transparent 100%),
-      radial-gradient(70% 22% at 38% 28%, rgba(255, 255, 255, .16), transparent 100%),
-      radial-gradient(80% 20% at 62% 86%, rgba(255, 225, 250, .14), transparent 100%);
-    filter: blur(26px);
+      radial-gradient(34% 40% at var(--x) var(--y), rgba(255, 150, 238, .55), transparent 100%),
+      radial-gradient(46% 55% at calc(var(--x) - 6%) calc(var(--y) + 8%), rgba(248, 94, 228, .48), transparent 100%),
+      radial-gradient(30% 34% at calc(var(--x) - 4%) calc(var(--y) - 18%), rgba(255, 255, 255, .16), transparent 100%),
+      radial-gradient(60% 30% at 30% 85%, rgba(255, 225, 250, .07), transparent 100%);
+    filter: blur(30px);
   }
   .kpi::after { inset: 0; background-image: var(--grain), var(--dither); }
-  .kpi:nth-child(2)::before { --x: 45%; --y: 52%; }
-  .kpi:nth-child(3)::before { --x: 60%; --y: 62%; }
+  .kpi:nth-child(2)::before { --x: 88%; --y: 45%; }
+  .kpi:nth-child(3)::before { --x: 95%; --y: 62%; }
   .kpi:hover { background-color: var(--hover); }
   .kpi .muted, .kpi .kpi-go { color: #eef0f2; }
   .kpi-split { border-top-color: rgba(255, 255, 255, .12); }

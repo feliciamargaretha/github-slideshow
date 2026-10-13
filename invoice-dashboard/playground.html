@@ -462,8 +462,8 @@
   html[data-preset="solid"] .dot { box-shadow: none !important; width: 10px; height: 10px; border-radius: 3px; }
   html[data-preset="solid"] .project-cell { grid-template-columns: 10px 1fr; }
   html[data-preset="solid"] th.th-project { padding-left: calc(var(--s4) + 10px + var(--s2)) !important; }
-  html[data-preset="solid"] .nav-item[aria-current="true"] { background: var(--accent); color: var(--accent-fill-fg); }
-  html[data-preset="solid"] .nav-item[aria-current="true"] .muted { color: var(--accent-fill-fg); }
+  html[data-preset="solid"] .nav-item[aria-current="true"] { background: color-mix(in srgb, var(--accent) 14%, var(--sidebar-bg)); color: var(--accent); }
+  html[data-preset="solid"] .nav-item[aria-current="true"] .muted { color: var(--accent); }
   /* summary cards: flat surface, thin outline, no glow / grain / text halo */
   html[data-preset="solid"] .kpi { border-color: var(--outline); background-color: var(--surface); }
   html[data-preset="solid"] .kpi::before, html[data-preset="solid"] .kpi::after { display: none; }
@@ -491,22 +491,26 @@
   html[data-preset="solid"] .kpi:hover .kpi-split { border-color: var(--accent); }
   html[data-preset="solid"] .kpi:hover .kpi-split { border-top-color: var(--outline); }
 
-  /* Ambient weekly bar chart in the "Paid this month" card (Solid lime only).
-     Faint lime fill + thin lime outline, faded out toward the left and top so
-     it melts into the card. Decorative: the figures beside it carry the data. */
+  /* Ambient chart in the "Paid this month" card (Solid lime only): daily paid
+     bars (this month brighter), a dotted 7-day trend line and a marker at the
+     start of the month. Lime with a soft glow, faded toward the left/top so it
+     melts into the card. Decorative: the figures beside it carry the data. */
   .kpi-chart { display: none; }
   html[data-preset="solid"] .kpi-main { position: relative; }
   html[data-preset="solid"] .kpi-main > :not(.kpi-chart) { position: relative; }
   html[data-preset="solid"] .kpi-chart {
-    display: block; position: absolute; right: var(--s6); bottom: var(--s4); width: 46%; height: 64px; pointer-events: none;
-    -webkit-mask-image: radial-gradient(130% 150% at 100% 100%, #000 30%, transparent 85%);
-            mask-image: radial-gradient(130% 150% at 100% 100%, #000 30%, transparent 85%);
+    display: block; position: absolute; right: var(--s6); bottom: var(--s4); width: 44%; height: 60px; pointer-events: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, #000 70%);
+            mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, #000 70%);
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 35%, transparent));
   }
-  html[data-preset="solid"] .kpi-chart rect {
-    fill: color-mix(in srgb, var(--accent) 14%, transparent);
-    stroke: color-mix(in srgb, var(--accent) 45%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke;
-  }
-  html[data-preset="solid"] .kpi:hover .kpi-chart rect { fill: color-mix(in srgb, var(--accent) 20%, transparent); }
+  html[data-preset="solid"] .kpi-chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  html[data-preset="solid"] .kpi-chart rect { fill: color-mix(in srgb, var(--accent) 22%, transparent); stroke: color-mix(in srgb, var(--accent) 50%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  html[data-preset="solid"] .kpi-chart rect.cur { fill: color-mix(in srgb, var(--accent) 48%, transparent); stroke: color-mix(in srgb, var(--accent) 85%, transparent); }
+  html[data-preset="solid"] .kpi-chart .trend-line { fill: none; stroke: var(--accent); stroke-opacity: .8; stroke-width: 1.5; stroke-dasharray: 2 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  html[data-preset="solid"] .kpi-chart .month-line { stroke: var(--accent); stroke-opacity: .55; stroke-width: 1; vector-effect: non-scaling-stroke; }
+  html[data-preset="solid"] .kpi-chart .month-label { position: absolute; top: 0; transform: translateX(4px); font-size: 11px; line-height: 12px; color: color-mix(in srgb, var(--accent) 80%, var(--surface)); }
+  html[data-preset="solid"] .kpi:hover .kpi-chart { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 50%, transparent)); }
 </style>
 </head>
 <body>
@@ -855,14 +859,27 @@
     const paidAll = list.filter(i => i.status === 'Paid');
     const avgDays = paidAll.length ? Math.round(paidAll.reduce((s, i) => s + diffDays(i.paidDate, i.issue), 0) / paidAll.length) : 0;
 
-    // Ambient chart for "Paid this month": amount paid per week, last 10 weeks (this week on the right).
-    const weeks = Array.from({ length: 10 }, (_, k) => {
-      const end = addDays(TODAY, -7 * (9 - k)), start = addDays(end, -6);
-      return list.filter(i => i.status === 'Paid' && i.paidDate >= start && i.paidDate <= end).reduce((a, i) => a + i.total, 0);
+    // Ambient chart for "Paid this month": amount paid per day over the last 42 days,
+    // a dotted 7-day average trend line, and a marker where the current month starts.
+    const DAYS = 42;
+    const daily = Array.from({ length: DAYS }, (_, k) => {
+      const d = addDays(TODAY, k - (DAYS - 1));
+      return list.filter(i => i.paid > 0 && i.paidDate && diffDays(i.paidDate, d) === 0).reduce((a, i) => a + (i.status === 'Paid' ? i.total : i.paid), 0);
     });
-    const wmax = Math.max(...weeks) || 1, BW = 12, GAP = 6, H = 64;
-    const paidChart = `<svg class="kpi-chart" viewBox="0 0 ${weeks.length * (BW + GAP) - GAP} ${H}" preserveAspectRatio="none" aria-hidden="true">` +
-      weeks.map((v, k) => { const h = Math.max(3, v / wmax * (H - 4)); return `<rect x="${k * (BW + GAP) + .5}" y="${H - h + .5}" width="${BW - 1}" height="${h - 1}" rx="2"/>`; }).join('') + '</svg>';
+    const avg = daily.map((_, k) => { const w = daily.slice(Math.max(0, k - 6), k + 1); return w.reduce((a, b) => a + b, 0) / w.length; });
+    const dmax = Math.max(...daily) || 1, VW = DAYS * 4, VH = 60;
+    const yOf = v => VH - 2 - v / dmax * (VH - 16);
+    const monthIdx = DAYS - TODAY.getDate();            // index of the 1st of this month
+    const bars = daily.map((v, k) => {
+      const h = v ? Math.max(4, VH - 2 - yOf(v)) : 1.5;
+      return `<rect class="${k >= monthIdx ? 'cur' : ''}" x="${k * 4 + .5}" y="${VH - 2 - h}" width="3" height="${h}" rx="1"/>`;
+    }).join('');
+    const trend = 'M' + avg.map((v, k) => `${k * 4 + 2} ${yOf(v * 2.2).toFixed(1)}`).join(' L');
+    const paidChart = `<span class="kpi-chart" aria-hidden="true">
+      <svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none">${bars}
+        <path class="trend-line" d="${trend}"/>
+        <line class="month-line" x1="${monthIdx * 4}" x2="${monthIdx * 4}" y1="0" y2="${VH}"/></svg>
+      <span class="month-label" style="left: ${monthIdx / DAYS * 100}%">${MONTHS[TODAY.getMonth()]}</span></span>`;
     const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
     $('#kpis').innerHTML = `
       <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">

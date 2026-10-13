@@ -50,8 +50,8 @@
     --selected: #33363b;
     --primary-bg: #ececec;
     --primary-fg: #141414;
-    --group-1: #6f9cf0;
-    --group-2: #eba94f;
+    --group-1: #a77bff;   /* warm violet */
+    --group-2: #ff9157;   /* coral */
     --notify: #ff5c5c;
     --shadow: rgba(0, 0, 0, .5);
     --scrim: rgba(0, 0, 0, .55);
@@ -73,7 +73,7 @@
     --pill-bad-bg: #fbe0e0; --pill-bad-fg: #8a1c1c; --hist: #d0d0d0;
     --control-fill: #ececee; --control-fill-hover: #e2e2e5; --hover: #f2f2f2; --selected: #e6e6e6;
     --primary-bg: #111111; --primary-fg: #ffffff;
-    --group-1: #2f6bd8; --group-2: #d4851c; --notify: #e5484d;
+    --group-1: #7a3cff; --group-2: #d9541a; --notify: #e5484d;
     --shadow: rgba(0, 0, 0, .1); --scrim: rgba(0, 0, 0, .3);
     color-scheme: light;
   }
@@ -197,7 +197,7 @@
     display: flex; flex-direction: column; gap: var(--s2);
     background: var(--surface); text-align: left; cursor: pointer; position: relative; width: 100%;
   }
-  .kpi:hover { background: var(--hover); border-color: var(--muted); }
+  .kpi:hover { border-color: var(--muted); }
   .kpi:focus-visible { outline: 2px solid var(--line-strong); outline-offset: 2px; }
   .kpi-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
   .kpi-go { display: inline-flex; align-items: center; gap: var(--s1); color: var(--muted); font-size: 13px; }
@@ -207,35 +207,32 @@
   .kpi-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s1); }
   .kpi-split > span { display: flex; flex-direction: column; gap: var(--s1); }
 
-  /* ---------- KPI card explorations (switch with the "Card style" control) ----------
-     Pink tints stay <= 20% and card captions lighten to #c6c8cc so they keep
-     >= 5:1 even on the strongest tint plus grain. */
-  .kpi-explore { display: flex; justify-content: flex-end; align-items: center; gap: var(--s2); margin-bottom: var(--s3); }
-  .kpi-explore .tabs { background: var(--control-fill); }
-  .kpis { --kpi-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); --kpi-noise-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-  .kpis:not([data-style="current"]) .kpi .muted, .kpis:not([data-style="current"]) .kpi-go { color: #c6c8cc; }
-  /* 1. Tinted footer: the comparison row becomes its own band */
-  .kpis[data-style="footer"] .kpi, .kpis[data-style="all"] .kpi { overflow: hidden; }
-  .kpis[data-style="footer"] .kpi-split, .kpis[data-style="all"] .kpi-split {
-    border-top: 0; margin: var(--s2) calc(-1 * var(--s6)) calc(-1 * var(--s5)); padding: var(--s4) var(--s6) var(--s5);
+  /* ---------- KPI cards: pink mesh gradient + white sheen + grain/dither ----------
+     Each card places its blobs differently. Peaks are capped (pink <= 20%,
+     white <= 6%, grain <= 5%) and card captions are #d4d6da, so captions keep
+     >= 5.2:1 even where every layer overlaps. */
+  .kpis {
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --dither: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --blob-pink: color-mix(in srgb, var(--accent) 20%, transparent);
+    --blob-deep: color-mix(in srgb, var(--accent-pressed) 14%, transparent);
+    --blob-white: rgba(255, 255, 255, .06);
   }
-  .kpis[data-style="footer"] .kpi-split { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
-  .kpis[data-style="footer"] .kpi:hover .kpi-split { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
-  /* 2. Gradient: pink glow from the top-right corner fading into the card */
-  .kpis[data-style="gradient"] .kpi, .kpis[data-style="all"] .kpi {
+  .kpi {
+    --p: 100% 0%; --w: 18% 0%; --d: 0% 100%;
+    background-color: var(--surface);
     background-image:
-      radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 20%, transparent) 0%, transparent 65%),
-      linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--accent) 6%, transparent));
+      var(--grain), var(--dither),
+      radial-gradient(55% 75% at var(--w), var(--blob-white), transparent 70%),
+      radial-gradient(70% 95% at var(--p), var(--blob-pink), transparent 70%),
+      radial-gradient(80% 90% at var(--d), var(--blob-deep), transparent 72%),
+      linear-gradient(160deg, transparent 30%, color-mix(in srgb, var(--accent) 5%, transparent) 100%);
   }
-  /* 3. Texture: fine grain over the card */
-  .kpis[data-style="texture"] .kpi { background-image: var(--kpi-noise-strong); }
-  /* All three: gradient + grain, footer as a darker translucent band */
-  .kpis[data-style="all"] .kpi {
-    background-image: var(--kpi-noise),
-      radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 20%, transparent) 0%, transparent 65%),
-      linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--accent) 6%, transparent));
-  }
-  .kpis[data-style="all"] .kpi-split { background: rgba(0, 0, 0, .28); }
+  .kpi:nth-child(2) { --p: 0% 0%; --w: 85% 10%; --d: 100% 100%; }
+  .kpi:nth-child(3) { --p: 70% 100%; --w: 10% 20%; --d: 100% 0%; }
+  .kpi:hover { background-color: var(--hover); }
+  .kpi .muted, .kpi .kpi-go { color: #d4d6da; }
+  .kpi-split { border-top-color: rgba(255, 255, 255, .12); }
 
   /* ---------- Toolbar ---------- */
   .toolbar { display: flex; justify-content: space-between; align-items: center; gap: var(--s4); margin-bottom: var(--s4); flex-wrap: wrap; }
@@ -476,17 +473,7 @@
     <main class="content" id="content">
       <!-- Dashboard view -->
       <section id="view-invoices">
-        <div class="kpi-explore">
-          <span class="muted" id="kpi-style-label">Card style (exploration)</span>
-          <div class="tabs" role="radiogroup" aria-labelledby="kpi-style-label" id="kpi-style">
-            <button class="tab" role="radio" data-kpi-style="current" aria-checked="true" aria-selected="true">Current</button>
-            <button class="tab" role="radio" data-kpi-style="footer" aria-checked="false" aria-selected="false">1. Tinted footer</button>
-            <button class="tab" role="radio" data-kpi-style="gradient" aria-checked="false" aria-selected="false">2. Gradient</button>
-            <button class="tab" role="radio" data-kpi-style="texture" aria-checked="false" aria-selected="false">3. Texture</button>
-            <button class="tab" role="radio" data-kpi-style="all" aria-checked="false" aria-selected="false">All three</button>
-          </div>
-        </div>
-        <div class="kpis" id="kpis" aria-label="Summary" data-style="current"></div>
+        <div class="kpis" id="kpis" aria-label="Summary"></div>
 
         <div class="toolbar">
           <div class="toolbar-left">
@@ -1428,15 +1415,6 @@
   });
 
   // ================= KPI cards =================
-  // Exploration switcher. The choice is remembered in this browser only.
-  function setKpiStyle(v) {
-    $('#kpis').dataset.style = v;
-    $$('[data-kpi-style]').forEach(b => { const on = b.dataset.kpiStyle === v; b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });
-    try { localStorage.setItem('kpi-style', v); } catch (e) {}
-  }
-  $('#kpi-style').addEventListener('click', e => { const b = e.target.closest('[data-kpi-style]'); if (b) setKpiStyle(b.dataset.kpiStyle); });
-  try { const v = localStorage.getItem('kpi-style'); if (v && document.querySelector(`[data-kpi-style="${v}"]`)) setKpiStyle(v); } catch (e) {}
-
   $('#kpis').addEventListener('click', e => {
     const card = e.target.closest('[data-kpi]');
     if (!card) return;

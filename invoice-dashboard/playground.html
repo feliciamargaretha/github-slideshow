@@ -474,22 +474,22 @@
   html[data-preset="solid"] .kpi:hover { box-shadow: none; border-color: var(--accent); background-color: var(--surface); }
   html[data-preset="solid"] .kpi:hover .kpi-go { color: var(--accent); }
 
-  /* Solid lime: each summary card is two stacked containers. The headline figure
-     sits in the main card; the comparison row is its own attached panel just
-     below (4px gap, tighter inner corners, a darker inset fill). One button, so
-     hover/focus treat them as one. */
-  html[data-preset="solid"] .kpi { border: 0; padding: 0; background: transparent; gap: 4px; overflow: visible; }
+  /* Solid lime: the comparison row is an extension of the card: no gap, one
+     continuous outline, and a darker inset tray joined to the card by a
+     hairline. One button, so hover/focus treat them as one. */
+  html[data-preset="solid"] .kpi { border: 0; padding: 0; background: transparent; gap: 0; overflow: visible; }
   html[data-preset="solid"] .kpi:hover { border: 0; background: transparent; }
   html[data-preset="solid"] .kpi-main {
     flex: 1; padding: var(--s5) var(--s6); background: var(--surface);
-    border: 1px solid var(--outline); border-radius: var(--radius-lg) var(--radius-lg) 4px 4px;
+    border: 1px solid var(--outline); border-bottom: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
   html[data-preset="solid"] .kpi .kpi-split {
-    margin: 0; padding: var(--s3) var(--s6); background: color-mix(in srgb, #000 30%, var(--surface));
-    border: 1px solid var(--outline); border-radius: 4px 4px var(--radius-lg) var(--radius-lg);
+    margin: 0; padding: var(--s3) var(--s6) var(--s4); background: color-mix(in srgb, #000 28%, var(--surface));
+    border: 1px solid var(--outline); border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   }
   html[data-preset="solid"] .kpi:hover .kpi-main,
   html[data-preset="solid"] .kpi:hover .kpi-split { border-color: var(--accent); }
+  html[data-preset="solid"] .kpi:hover .kpi-split { border-top-color: var(--outline); }
 </style>
 </head>
 <body>

@@ -330,7 +330,7 @@
   .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: clip; }
   table { width: 100%; border-collapse: collapse; table-layout: auto; }
   /* Table: pink column names on the page background; neutral zebra rows, no row rules. */
-  .table-wrap { --row-alt: color-mix(in srgb, var(--fg) 3%, var(--bg)); --row-head: var(--bg); /* header row has no fill of its own; stays opaque for sticky scrolling */
+  .table-wrap { --row-alt: color-mix(in srgb, var(--fg) 3%, var(--bg)); --row-head: color-mix(in srgb, #000 22%, var(--bg)); /* slightly darker than the page; opaque for sticky scrolling */
                 --row-hover: color-mix(in srgb, var(--fg) 7%, var(--bg)); --row-sel: color-mix(in srgb, var(--accent) 14%, var(--bg));
                 --row-sel-hover: color-mix(in srgb, var(--accent) 17%, var(--bg)); }
   thead th {

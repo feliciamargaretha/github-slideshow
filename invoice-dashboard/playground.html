@@ -639,7 +639,7 @@
   html[data-preset="midnight"] .kpis { display: none; }
   .flow, .tl { display: none; }
   html[data-preset="midnight"] .flow { display: flex; }
-  html[data-preset="midnight"] .flow { flex-direction: column; gap: var(--s4); margin-bottom: var(--s6); padding: var(--s5) var(--s6);
+  html[data-preset="midnight"] .flow { flex-direction: column; gap: var(--s4); margin-bottom: var(--s6); padding: var(--s5) var(--s6) var(--s8);
     border-radius: var(--radius-lg); border: 1px solid var(--outline); background: linear-gradient(180deg, #172036, #131a2b); }
   .f-top { display: flex; gap: 64px; flex-wrap: wrap; }
   .f-stat { display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; padding: var(--s2); margin: calc(-1 * var(--s2)); border-radius: var(--radius); color: var(--fg); }
@@ -648,7 +648,10 @@
   .f-note { font-size: 12px; }
   .f-eyebrow { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .f-total { font-size: 28px; line-height: 36px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-  .f-segs { display: flex; gap: 4px; align-items: stretch; }
+  .f-segs { display: flex; gap: 4px; align-items: stretch; margin-top: var(--s4); }
+  .f-key-row { display: flex; gap: var(--s5); flex-wrap: wrap; font-size: 12px; line-height: 16px; color: var(--muted); margin-top: calc(-1 * var(--s1)); }
+  .f-key-row span { display: inline-flex; align-items: center; gap: 6px; }
+  .f-key-row .f-key { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
   .f-col { flex-basis: 0; min-width: 8px; position: relative; display: block; text-align: left; background: none; border: 0; padding: 0; color: var(--fg); cursor: pointer; border-radius: 4px; }
   .f-col:hover .f-seg { filter: brightness(1.15); }
   /* Breakdown appears only on hover / keyboard focus, in a small dark container under the segment */
@@ -1055,7 +1058,8 @@
           <span class="f-seg ${x.cls}"></span>
           <span class="f-tip" aria-hidden="true"><span class="f-lbl">${x.label}</span><span class="f-val">${money(x.v)}</span><span class="f-sub">${plural(x.n, 'invoice')} · ${Math.round(x.v / tot * 100)}%</span></span>
         </button>`).join('')}
-      </div>`;
+      </div>
+      <div class="f-key-row" aria-hidden="true">${segs.map(x => `<span><i class="f-key ${x.cls}"></i>${x.label}</span>`).join('')}</div>`;
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-flow]'); if (!b) return;

@@ -289,13 +289,13 @@
   /* ---------- Table ---------- */
   .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: clip; }
   table { width: 100%; border-collapse: collapse; table-layout: auto; }
-  /* Table: pink header, no row rules, alternating pink-tinted rows.
-     Tints stay <= 18% so grey captions keep >= 4.5:1. */
-  .table-wrap { --row-alt: color-mix(in srgb, var(--accent) 5%, var(--bg)); --row-head: color-mix(in srgb, var(--accent) 10%, var(--bg));
-                --row-hover: color-mix(in srgb, var(--accent) 11%, var(--bg)); --row-sel: color-mix(in srgb, var(--accent) 16%, var(--bg));
-                --row-sel-hover: color-mix(in srgb, var(--accent) 18%, var(--bg)); }
+  /* Table: neutral header and zebra rows, no row rules. Pink is reserved for
+     state: the sorted column, selected rows, the open row and checkboxes. */
+  .table-wrap { --row-alt: color-mix(in srgb, var(--fg) 3%, var(--bg)); --row-head: color-mix(in srgb, var(--fg) 5%, var(--bg));
+                --row-hover: color-mix(in srgb, var(--fg) 7%, var(--bg)); --row-sel: color-mix(in srgb, var(--accent) 14%, var(--bg));
+                --row-sel-hover: color-mix(in srgb, var(--accent) 17%, var(--bg)); }
   thead th {
-    position: sticky; top: calc(-1 * var(--s6)); background: var(--row-head); color: var(--accent-text); z-index: 5;
+    position: sticky; top: calc(-1 * var(--s6)); background: var(--row-head); color: var(--muted); z-index: 5;
     text-align: left; height: 52px; padding: 0 var(--s4); white-space: nowrap;
   }
   tbody td { padding: var(--s3) var(--s4); vertical-align: top; font-size: 15px; line-height: 22px; }
@@ -313,7 +313,8 @@
   .sort-btn { background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; gap: var(--s1); }
   .sort-btn { color: inherit; }
   .sort-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .sort-btn .muted { color: color-mix(in srgb, var(--accent-text) 75%, var(--row-head)); }
+  .sort-btn .muted { color: var(--muted); }
+  th[aria-sort] .sort-btn { color: var(--accent-text); }
   .cell-stack { display: flex; flex-direction: column; gap: 2px; }
   .project-cell { display: grid; grid-template-columns: 8px 1fr; column-gap: var(--s2); row-gap: 2px; align-items: center; }
   .project-cell > :not(.dot-slot) { grid-column: 2; }

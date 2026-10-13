@@ -28,10 +28,11 @@
     --accent-hover: #fa7eea;
     --accent-pressed: #e043cc;
     --accent-fg: #2a0a26;
-    /* Pink for filled buttons: between #F85EE4 and a pastel; dark text 7.1:1 */
-    --accent-fill: #ee77de;
-    --accent-fill-hover: #f386e5;
-    --accent-fill-pressed: #e95dd6;
+    /* CTA: vivid magenta fill with light-pink text (>= 4.66:1 in every state) */
+    --accent-fill: #c20aa9;
+    --accent-fill-hover: #cb0bb2;
+    --accent-fill-pressed: #ba08a2;
+    --accent-fill-fg: #fff5fd;
     --accent-text: #ff9cf0;     /* pink text on dark surfaces, >= 6.5:1 */
     --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--bg));
     --accent-soft-hover: color-mix(in srgb, var(--accent) 24%, var(--bg));
@@ -65,7 +66,7 @@
     --bg: #ffffff; --surface: #ffffff; --sidebar-bg: #fafafa; --fg: #111111; --muted: #666666;
     --line: #cccccc; --line-strong: #111111; --line-control: #8a8a8a;
     --accent: #f85ee4; --accent-hover: #e043cc; --accent-pressed: #c22aae; --accent-fg: #2a0a26; --accent-text: #a3168f;
-    --accent-fill: #e48bd8; --accent-fill-hover: #d675c9; --accent-fill-pressed: #c560b7;
+    --accent-fill: #c20aa9; --accent-fill-hover: #ba08a2; --accent-fill-pressed: #a50790; --accent-fill-fg: #fff5fd;
     --pill-bg: #e6e7e9; --pill-fg: #111111; --pill-dim-bg: #f0f0f1; --pill-dim-fg: #555555;
     --pill-ok-bg: #dcf3e5; --pill-ok-fg: #14532d; --pill-warn-bg: #fbedd5; --pill-warn-fg: #6b4300;
     --pill-bad-bg: #fbe0e0; --pill-bad-fg: #8a1c1c; --hist: #d0d0d0;
@@ -94,7 +95,7 @@
     display: inline-flex; align-items: center; gap: var(--s2);
   }
   .btn:hover { background: var(--hover); }
-  .btn.primary { background: var(--accent-fill); color: var(--accent-fg); border-color: var(--accent-fill); }
+  .btn.primary { background: var(--accent-fill); color: var(--accent-fill-fg); border-color: var(--accent-fill); }
   .btn.primary:hover { background: var(--accent-fill-hover); border-color: var(--accent-fill-hover); }
   .btn.primary:active { background: var(--accent-fill-pressed); border-color: var(--accent-fill-pressed); }
   .btn.prominent { outline: 2px solid var(--line-strong); outline-offset: 2px; }
@@ -165,7 +166,7 @@
   .topbar-actions { display: flex; align-items: center; gap: var(--s2); }
   .split {
     display: inline-flex; align-items: stretch; position: relative; height: var(--control);
-    background: var(--accent-fill); color: var(--accent-fg); border-radius: var(--radius);
+    background: var(--accent-fill); color: var(--accent-fill-fg); border-radius: var(--radius);
   }
   .split > button {
     background: none; border: 0; color: inherit; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap;
@@ -175,7 +176,7 @@
   .split > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .split-main { padding: 0 var(--s3) 0 var(--s4); border-radius: var(--radius) 0 0 var(--radius); }
   .split-caret { padding: 0 var(--s3) 0 var(--s2); border-radius: 0 var(--radius) var(--radius) 0; }
-  .split-divider { width: 1px; margin: var(--s1) 0; background: color-mix(in srgb, var(--accent-fg) 30%, transparent); }
+  .split-divider { width: 1px; margin: var(--s1) 0; background: color-mix(in srgb, var(--accent-fill-fg) 40%, transparent); }
   .currency-field { position: relative; display: inline-flex; align-items: center; }
   .currency-field .flag {
     position: absolute; left: var(--s3); width: 16px; height: 16px; border-radius: 50%; overflow: hidden; pointer-events: none;
@@ -251,7 +252,7 @@
   .preset-row { display: flex; flex-wrap: wrap; gap: var(--s2); }
   .preset { height: 28px; padding: 0 var(--s3); border: 1px solid var(--line-control); border-radius: 14px; background: none; cursor: pointer; }
   .preset:hover { background: var(--hover); }
-  .preset[aria-pressed="true"] { background: var(--accent-fill); color: var(--accent-fg); border-color: var(--accent-fill); }
+  .preset[aria-pressed="true"] { background: var(--accent-fill); color: var(--accent-fill-fg); border-color: var(--accent-fill); }
   .chips { display: flex; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s4); }
   .chip { height: 28px; padding: 0 var(--s3); border: 1px solid var(--accent-line); border-radius: 14px; background: var(--accent-soft); color: var(--accent-text); cursor: pointer; }
   .chip:hover { background: var(--accent-soft-hover); }
@@ -289,13 +290,12 @@
   /* ---------- Table ---------- */
   .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: clip; }
   table { width: 100%; border-collapse: collapse; table-layout: auto; }
-  /* Table: neutral header and zebra rows, no row rules. Pink is reserved for
-     state: the sorted column, selected rows, the open row and checkboxes. */
-  .table-wrap { --row-alt: color-mix(in srgb, var(--fg) 3%, var(--bg)); --row-head: color-mix(in srgb, var(--fg) 5%, var(--bg));
+  /* Table: muted-pink header with pink column names; neutral zebra rows, no row rules. */
+  .table-wrap { --row-alt: color-mix(in srgb, var(--fg) 3%, var(--bg)); --row-head: color-mix(in srgb, var(--accent) 12%, var(--bg));
                 --row-hover: color-mix(in srgb, var(--fg) 7%, var(--bg)); --row-sel: color-mix(in srgb, var(--accent) 14%, var(--bg));
                 --row-sel-hover: color-mix(in srgb, var(--accent) 17%, var(--bg)); }
   thead th {
-    position: sticky; top: calc(-1 * var(--s6)); background: var(--row-head); color: var(--muted); z-index: 5;
+    position: sticky; top: calc(-1 * var(--s6)); background: var(--row-head); color: var(--accent-text); z-index: 5;
     text-align: left; height: 52px; padding: 0 var(--s4); white-space: nowrap;
   }
   tbody td { padding: var(--s3) var(--s4); vertical-align: top; font-size: 15px; line-height: 22px; }
@@ -313,8 +313,7 @@
   .sort-btn { background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; gap: var(--s1); }
   .sort-btn { color: inherit; }
   .sort-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .sort-btn .muted { color: var(--muted); }
-  th[aria-sort] .sort-btn { color: var(--accent-text); }
+  .sort-btn .muted { color: color-mix(in srgb, var(--accent-text) 80%, var(--row-head)); }
   .cell-stack { display: flex; flex-direction: column; gap: 2px; }
   .project-cell { display: grid; grid-template-columns: 8px 1fr; column-gap: var(--s2); row-gap: 2px; align-items: center; }
   .project-cell > :not(.dot-slot) { grid-column: 2; }

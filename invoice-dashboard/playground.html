@@ -641,7 +641,8 @@
   html[data-preset="midnight"] .flow { display: flex; }
   html[data-preset="midnight"] .flow { flex-direction: column; gap: var(--s4); margin-bottom: var(--s6); padding: var(--s5) var(--s6) var(--s8);
     border-radius: var(--radius-lg); border: 1px solid var(--outline); background: linear-gradient(180deg, #172036, #131a2b); }
-  .f-top { display: flex; gap: 64px; flex-wrap: wrap; }
+  .f-top { display: flex; justify-content: space-between; gap: 64px; flex-wrap: wrap; }
+  .f-top > .f-stat:last-child { text-align: right; align-items: flex-end; }
   .f-stat { display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; padding: var(--s2); margin: calc(-1 * var(--s2)); border-radius: var(--radius); color: var(--fg); }
   button.f-stat { cursor: pointer; }
   button.f-stat:hover { background: var(--hover); }

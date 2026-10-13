@@ -12,36 +12,37 @@
   Data is generated locally; nothing is persisted.
 -->
 <style>
+  /* Dark-first. A light palette is kept for data-theme="light". */
   :root {
-    --bg: #ffffff;
-    --surface: #ffffff;
-    --fg: #111111;
-    --muted: #666666;
-    --line: #cccccc;
-    --line-strong: #111111;
-    --hover: #f2f2f2;
-    --selected: #e6e6e6;
-    --primary-bg: #111111;
-    --primary-fg: #ffffff;
-    --group-1: #2f6bd8;
-    --group-2: #d4851c;
+    --bg: #141414;
+    --surface: #1c1c1c;
+    --sidebar-bg: #181818;
+    --fg: #ececec;
+    --muted: #9a9a9a;
+    --line: #333333;
+    --line-strong: #d6d6d6;
+    --hover: #242424;
+    --selected: #2e2e2e;
+    --primary-bg: #ececec;
+    --primary-fg: #141414;
+    --group-1: #6f9cf0;
+    --group-2: #eba94f;
+    --notify: #ff5c5c;
+    --shadow: rgba(0, 0, 0, .5);
+    --scrim: rgba(0, 0, 0, .55);
+    color-scheme: dark;
+    --sidebar-w: clamp(200px, 20vw, 264px);
     --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s6: 24px; --s8: 32px;
     --control: 28px;
     --radius: 4px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #1a1a1a; --surface: #1a1a1a; --fg: #eeeeee; --muted: #999999;
-      --line: #444444; --line-strong: #eeeeee; --hover: #262626; --selected: #333333;
-      --primary-bg: #eeeeee; --primary-fg: #111111;
-      --group-1: #6f9cf0; --group-2: #eba94f;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #1a1a1a; --surface: #1a1a1a; --fg: #eeeeee; --muted: #999999;
-    --line: #444444; --line-strong: #eeeeee; --hover: #262626; --selected: #333333;
-    --primary-bg: #eeeeee; --primary-fg: #111111;
-    --group-1: #6f9cf0; --group-2: #eba94f;
+  :root[data-theme="light"] {
+    --bg: #ffffff; --surface: #ffffff; --sidebar-bg: #fafafa; --fg: #111111; --muted: #666666;
+    --line: #cccccc; --line-strong: #111111; --hover: #f2f2f2; --selected: #e6e6e6;
+    --primary-bg: #111111; --primary-fg: #ffffff;
+    --group-1: #2f6bd8; --group-2: #d4851c; --notify: #e5484d;
+    --shadow: rgba(0, 0, 0, .1); --scrim: rgba(0, 0, 0, .3);
+    color-scheme: light;
   }
 
   * { box-sizing: border-box; }
@@ -98,7 +99,7 @@
   /* ---------- Layout ---------- */
   .app { display: flex; height: 100vh; }
   .sidebar {
-    width: 20%; min-width: 200px; border-right: 1px solid var(--line);
+    width: var(--sidebar-w); flex-shrink: 0; background: var(--sidebar-bg); border-right: 1px solid var(--line);
     padding: var(--s4) var(--s2); display: flex; flex-direction: column; gap: var(--s1);
     overflow-y: auto;
   }
@@ -114,7 +115,7 @@
   .nav-spacer { flex: 1; }
   .nav-label { padding: var(--s2) var(--s2) var(--s1); }
 
-  .main { width: 80%; flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .topbar {
     height: 52px; padding: 0 var(--s6); border-bottom: 1px solid var(--line);
     display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-shrink: 0;
@@ -169,7 +170,7 @@
   .popover {
     position: absolute; top: calc(100% + var(--s1)); right: 0; z-index: 30;
     min-width: 200px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius);
-    padding: var(--s2); display: none; box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    padding: var(--s2); display: none; box-shadow: 0 4px 16px var(--shadow);
   }
   .popover.open { display: block; }
   .popover.left { left: 0; right: auto; }
@@ -185,6 +186,11 @@
   .check input { margin: 0; }
   .row { display: flex; align-items: center; gap: var(--s2); }
   .pop-footer { display: flex; justify-content: space-between; padding-top: var(--s2); gap: var(--s2); }
+  .icon-btn { width: var(--control); padding: 0; justify-content: center; position: relative; }
+  .notify-dot {
+    position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--notify); box-shadow: 0 0 0 2px var(--bg);
+  }
   .notif { padding: var(--s2); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s1); width: 280px; }
   .notif:last-child { border-bottom: 0; }
 
@@ -218,9 +224,9 @@
 
   /* ---------- Bulk action bar ---------- */
   .bulk {
-    position: fixed; bottom: var(--s6); left: calc(20% + 40%); transform: translateX(-50%); z-index: 40;
+    position: fixed; bottom: var(--s6); left: calc(var(--sidebar-w) + (100vw - var(--sidebar-w)) / 2); transform: translateX(-50%); z-index: 40;
     background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px;
-    padding: var(--s2); display: none; align-items: center; gap: var(--s2); box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    padding: var(--s2); display: none; align-items: center; gap: var(--s2); box-shadow: 0 8px 24px var(--shadow);
   }
   .bulk.open { display: flex; }
   .bulk .count { padding: 0 var(--s2); white-space: nowrap; }
@@ -230,7 +236,7 @@
   .drawer {
     position: fixed; top: var(--s2); right: var(--s2); bottom: var(--s2); width: calc(50% - var(--s2)); z-index: 50;
     background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px;
-    display: none; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,.12);
+    display: none; flex-direction: column; box-shadow: -8px 0 32px var(--shadow);
   }
   .drawer.open { display: flex; }
   .drawer-head { padding: var(--s4); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s2); }
@@ -266,7 +272,7 @@
     background: var(--primary-bg); color: var(--primary-fg); padding: var(--s2) var(--s4); border-radius: var(--radius); display: none;
   }
   .toast.open { display: block; }
-  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 60; display: none; align-items: center; justify-content: center; }
+  .scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 60; display: none; align-items: center; justify-content: center; }
   .scrim.open { display: flex; }
   .dialog { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: var(--s6); width: 360px; display: flex; flex-direction: column; gap: var(--s4); }
   .dialog-actions { display: flex; justify-content: flex-end; gap: var(--s2); }
@@ -274,7 +280,6 @@
 
   @media (max-width: 900px) {
     .kpis { grid-template-columns: 1fr; }
-    .sidebar { min-width: 160px; }
     .drawer { width: calc(100% - var(--s4)); }
   }
 </style>
@@ -323,7 +328,7 @@
           <svg class="icon icon-sm select-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
         </div>
         <div class="pop-wrap">
-          <button class="btn" data-pop="pop-notif" aria-haspopup="dialog"><span>Notifications (<span id="notif-count">3</span>)</span></button>
+          <button class="btn ghost icon-btn" id="btn-notif" data-pop="pop-notif" aria-haspopup="dialog" aria-label="Notifications, 3 new" title="Notifications"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6.5a4 4 0 0 1 8 0c0 3 1.5 4.5 1.5 4.5h-11S4 9.5 4 6.5z"/><path d="M6.5 13.5a1.5 1.5 0 0 0 3 0"/></svg><span class="notify-dot" id="notif-dot"></span></button>
           <div class="popover" id="pop-notif">
             <div id="notif-list"></div>
             <div class="pop-footer"><button class="btn small ghost" id="notif-read">Mark all as read</button><button class="btn small ghost" data-toast="Opens notification centre">View all</button></div>
@@ -1093,7 +1098,7 @@
     ['Invoice viewed', 'Lumen Health viewed INV-2026-0088', '2 days ago']
   ];
   $('#notif-list').innerHTML = NOTIFS.map(([t, b, w]) => `<div class="notif"><span>${t}</span><span class="muted">${b}</span><span class="muted small-text">${w}</span></div>`).join('');
-  $('#notif-read').onclick = () => { $('#notif-count').textContent = '0'; toast('All notifications marked as read'); };
+  $('#notif-read').onclick = () => { $('#notif-dot').hidden = true; $('#btn-notif').setAttribute('aria-label', 'Notifications, none new'); toast('All notifications marked as read'); };
 
   // ================= Toolbar =================
   $$('.tab').forEach(t => t.onclick = () => {

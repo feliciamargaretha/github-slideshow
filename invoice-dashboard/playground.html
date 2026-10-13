@@ -430,6 +430,46 @@
     .kpis { grid-template-columns: 1fr; }
     .drawer { width: calc(100% - var(--s4)); }
   }
+
+  /* ============ Preset: Solid lime ============
+     Flat solid fills, 1px outlines everywhere, small radii (4-8px).
+     Applied when <html data-preset="solid">. */
+  html[data-preset="solid"] { --outline: #46494f; --accent-fill-fg: #1b2100; }
+  html[data-preset="solid"] .btn.primary,
+  html[data-preset="solid"] .split,
+  html[data-preset="solid"] .preset[aria-pressed="true"] { color: var(--accent-fill-fg); }
+  html[data-preset="solid"] .split-divider { background: color-mix(in srgb, var(--accent-fill-fg) 25%, transparent); }
+  /* small radii on the pill-shaped bits */
+  html[data-preset="solid"] .badge,
+  html[data-preset="solid"] .tab,
+  html[data-preset="solid"] .chip,
+  html[data-preset="solid"] .preset,
+  html[data-preset="solid"] .toolbar-right > .input,
+  html[data-preset="solid"] .toolbar-right > .pop-wrap > .btn,
+  html[data-preset="solid"] .notify-dot ~ *,
+  html[data-preset="solid"] .bulk .btn { border-radius: var(--radius); }
+  html[data-preset="solid"] .tabs { border-radius: var(--radius-lg); }
+  /* thin outlines instead of fills / glows */
+  html[data-preset="solid"] .tabs,
+  html[data-preset="solid"] .toolbar-right > .pop-wrap > .btn { border: 1px solid var(--outline); background: transparent; }
+  html[data-preset="solid"] .toolbar-right > .pop-wrap > .btn:hover { background: var(--hover); }
+  html[data-preset="solid"] .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-fill-fg); box-shadow: none; }
+  html[data-preset="solid"] .chip { background: transparent; border-color: var(--accent); color: var(--accent); }
+  html[data-preset="solid"] .table-wrap { border-color: var(--outline); }
+  /* lime is much lighter than pink, so selected-row tints stay lower to keep grey captions >= 4.5:1 */
+  html[data-preset="solid"] .table-wrap { --row-sel: color-mix(in srgb, var(--accent) 9%, var(--bg)); --row-sel-hover: color-mix(in srgb, var(--accent) 11%, var(--bg)); }
+  html[data-preset="solid"] .dot { box-shadow: none !important; }
+  html[data-preset="solid"] .nav-item[aria-current="true"] { background: var(--accent); color: var(--accent-fill-fg); }
+  html[data-preset="solid"] .nav-item[aria-current="true"] .muted { color: var(--accent-fill-fg); }
+  /* summary cards: flat surface, thin outline, no glow / grain / text halo */
+  html[data-preset="solid"] .kpi { border-color: var(--outline); background-color: var(--surface); }
+  html[data-preset="solid"] .kpi::before, html[data-preset="solid"] .kpi::after { display: none; }
+  html[data-preset="solid"] .kpi > * { text-shadow: none; }
+  html[data-preset="solid"] .kpi .muted, html[data-preset="solid"] .kpi .kpi-go { color: var(--muted); }
+  html[data-preset="solid"] .kpi .kpi-split { color: var(--fg); border-top-color: var(--outline); }
+  html[data-preset="solid"] .kpi .kpi-split .muted { color: var(--muted); }
+  html[data-preset="solid"] .kpi:hover { box-shadow: none; border-color: var(--accent); background-color: var(--surface); }
+  html[data-preset="solid"] .kpi:hover .kpi-go { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -1534,6 +1574,13 @@
 <button class="sp-toggle" id="sp-toggle" aria-expanded="false" aria-controls="sp-panel">Style</button>
 <section class="sp-panel" id="sp-panel" aria-label="Style playground" hidden>
   <div class="sp-head"><span class="sp-title">Style playground</span><button class="btn small ghost" id="sp-close">Close</button></div>
+  <div class="sp-group">
+    <span class="sp-group-title">Preset</span>
+    <div class="tabs" role="radiogroup" aria-label="Preset" id="sp-presets">
+      <button class="tab" role="radio" data-preset="solid">Solid lime</button>
+      <button class="tab" role="radio" data-preset="glow">Glow pink</button>
+    </div>
+  </div>
   <div id="sp-controls"></div>
   <div class="sp-group">
     <span class="sp-group-title">Contrast check</span>
@@ -1551,7 +1598,7 @@
   // [id, label, kind, default, extra]
   const GROUPS = [
     ['Colours', [
-      ['accent', 'Accent (pink)', 'color', '#f85ee4'],
+      ['accent', 'Accent', 'color', '#f85ee4'],
       ['bg', 'Page background', 'color', '#1f2124'],
       ['surface', 'Card and panel surface', 'color', '#26282c'],
       ['sidebar', 'Sidebar background', 'color', '#161719'],
@@ -1575,10 +1622,16 @@
       ['zebra', 'Alternate row tint', 'range', 3, { min: 0, max: 12, step: 1, unit: '%' }],
     ]],
   ];
-  const DEFAULTS = Object.fromEntries(GROUPS.flatMap(([, rows]) => rows.map(r => [r[0], r[3]])));
-  const KEY = 'style-playground-v1';
-  let state = { ...DEFAULTS };
+  const GLOW = Object.fromEntries(GROUPS.flatMap(([, rows]) => rows.map(r => [r[0], r[3]])));
+  const PRESETS = {
+    glow: { ...GLOW, preset: 'glow', accentFg: '#2a0a26' },
+    solid: { ...GLOW, preset: 'solid', accentFg: '#1b2100', accent: '#d2f543', radius: 6, radiusLg: 8,
+             glowOp: 0, grain: 0, cast: 0, castSpread: 0 },
+  };
+  const KEY = 'style-playground-v2';
+  let state = { ...PRESETS.solid };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  const DEFAULTS_FOR = () => PRESETS[state.preset] || PRESETS.solid;
 
   const root = document.documentElement;
   const mix = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const x = p(a), y = p(b); return '#' + x.map((v, i) => Math.round(v * t + y[i] * (1 - t)).toString(16).padStart(2, '0')).join(''); };
@@ -1587,6 +1640,9 @@
 
   function apply() {
     const s = state, set = (k, v) => root.style.setProperty(k, v);
+    root.dataset.preset = s.preset;
+    document.querySelectorAll('#sp-presets [data-preset]').forEach(b => { const on = b.dataset.preset === s.preset; b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });
+    set('--accent-fill-fg', s.accentFg);
     set('--accent', s.accent);
     set('--accent-fill', s.accent);
     set('--accent-fill-hover', mix('#ffffff', s.accent, .15));
@@ -1605,8 +1661,8 @@
   function checks() {
     const s = state, accentText = mix('#ffffff', s.accent, .45), head = mix('#000000', s.bg, s.headDark / 100);
     const rows = [
-      ['Button text on accent', ratio('#2a0a26', s.accent), 4.5],
-      ['Pink text on page', ratio(accentText, s.bg), 4.5],
+      ['Button text on accent', ratio(s.accentFg, s.accent), 4.5],
+      ['Accent text on page', ratio(accentText, s.bg), 4.5],
       ['Column names on header row', ratio(accentText, head), 4.5],
       ['Main text on page', ratio('#ececed', s.bg), 4.5],
       ['Grey caption on page', ratio('#9d9fa4', s.bg), 4.5],
@@ -1614,7 +1670,7 @@
     ];
     document.getElementById('sp-checks').innerHTML = rows.map(([l, r, need]) =>
       `<span class="${r >= need ? 'ok' : 'bad'}">${r >= need ? 'Pass' : 'Fail'} ${r.toFixed(2)}:1 · ${l}</span>`).join('') +
-      '<span>Card text over the glow is not measured here.</span>';
+      (s.preset === 'glow' ? '<span>Card text over the glow is not measured here.</span>' : '');
   }
 
   function render() {
@@ -1638,10 +1694,12 @@
     if (out) { const unit = GROUPS.flatMap(g => g[1]).find(r => r[0] === k)[4].unit; out.textContent = state[k] + unit; }
     apply();
   });
-  document.getElementById('sp-reset').onclick = () => { state = { ...DEFAULTS }; render(); apply(); };
+  document.getElementById('sp-reset').onclick = () => { state = { ...DEFAULTS_FOR() }; render(); apply(); };
+  document.getElementById('sp-presets').addEventListener('click', e => { const b = e.target.closest('[data-preset]'); if (!b) return; state = { ...PRESETS[b.dataset.preset] }; render(); apply(); });
   document.getElementById('sp-copy').onclick = async () => {
-    const changed = Object.fromEntries(Object.entries(state).filter(([k, v]) => v !== DEFAULTS[k]));
-    const text = 'Style playground settings (changed from default):\n' + JSON.stringify(changed, null, 2);
+    const base = DEFAULTS_FOR();
+    const changed = Object.fromEntries(Object.entries(state).filter(([k, v]) => v !== base[k]));
+    const text = `Style playground settings (preset: ${state.preset}; changed from that preset):\n` + JSON.stringify(changed, null, 2);
     const box = document.getElementById('sp-export');
     try { await navigator.clipboard.writeText(text); box.hidden = true; document.getElementById('sp-copy').textContent = 'Copied'; setTimeout(() => document.getElementById('sp-copy').textContent = 'Copy settings', 1500); }
     catch (e) { box.hidden = false; box.value = text; box.focus(); box.select(); }

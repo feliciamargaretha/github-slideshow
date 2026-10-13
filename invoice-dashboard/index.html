@@ -28,11 +28,12 @@
     --accent-hover: #fa7eea;
     --accent-pressed: #e043cc;
     --accent-fg: #2a0a26;
-    /* CTA: vivid magenta fill with light-pink text (>= 4.66:1 in every state) */
-    --accent-fill: #c20aa9;
-    --accent-fill-hover: #cb0bb2;
-    --accent-fill-pressed: #ba08a2;
-    --accent-fill-fg: #fff5fd;
+    /* CTA: brand pink fill. Light text cannot reach 4.5:1 on a true pink
+       (white is 2.6:1), so the label is dark plum: 6.6:1 / 7.9:1 / 6.0:1. */
+    --accent-fill: #f85ee4;
+    --accent-fill-hover: #fa7eea;
+    --accent-fill-pressed: #e95dd6;
+    --accent-fill-fg: #2a0a26;
     --accent-text: #ff9cf0;     /* pink text on dark surfaces, >= 6.5:1 */
     --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--bg));
     --accent-soft-hover: color-mix(in srgb, var(--accent) 24%, var(--bg));
@@ -66,7 +67,7 @@
     --bg: #ffffff; --surface: #ffffff; --sidebar-bg: #fafafa; --fg: #111111; --muted: #666666;
     --line: #cccccc; --line-strong: #111111; --line-control: #8a8a8a;
     --accent: #f85ee4; --accent-hover: #e043cc; --accent-pressed: #c22aae; --accent-fg: #2a0a26; --accent-text: #a3168f;
-    --accent-fill: #c20aa9; --accent-fill-hover: #ba08a2; --accent-fill-pressed: #a50790; --accent-fill-fg: #fff5fd;
+    --accent-fill: #f85ee4; --accent-fill-hover: #e95dd6; --accent-fill-pressed: #d946c4; --accent-fill-fg: #2a0a26;
     --pill-bg: #e6e7e9; --pill-fg: #111111; --pill-dim-bg: #f0f0f1; --pill-dim-fg: #555555;
     --pill-ok-bg: #dcf3e5; --pill-ok-fg: #14532d; --pill-warn-bg: #fbedd5; --pill-warn-fg: #6b4300;
     --pill-bad-bg: #fbe0e0; --pill-bad-fg: #8a1c1c; --hist: #d0d0d0;
@@ -176,7 +177,7 @@
   .split > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .split-main { padding: 0 var(--s3) 0 var(--s4); border-radius: var(--radius) 0 0 var(--radius); }
   .split-caret { padding: 0 var(--s3) 0 var(--s2); border-radius: 0 var(--radius) var(--radius) 0; }
-  .split-divider { width: 1px; margin: var(--s1) 0; background: color-mix(in srgb, var(--accent-fill-fg) 40%, transparent); }
+  .split-divider { width: 1px; margin: var(--s1) 0; background: color-mix(in srgb, var(--accent-fill-fg) 30%, transparent); }
   .currency-field { position: relative; display: inline-flex; align-items: center; }
   .currency-field .flag {
     position: absolute; left: var(--s3); width: 16px; height: 16px; border-radius: 50%; overflow: hidden; pointer-events: none;

@@ -862,7 +862,7 @@
     // Ambient chart for "Paid this month": weekly payments for the last 12 weeks.
     // Each month's real paid total (from the data) is spread over its weeks with an
     // uneven, month-end-heavy pattern, which is how client payments tend to land.
-    // Dotted line = 3-week moving average; vertical line = start of this month.
+    // Dotted line = smoothed 3-week moving average. This month's bars are brighter.
     const paidTotal = (y, m) => list.filter(i => i.status === 'Paid' && i.paidDate.getFullYear() === y && i.paidDate.getMonth() === m).reduce((a, i) => a + i.total, 0);
     const SHAPES = { 6: [.31, .69], 7: [.17, .29, .14, .40], 8: [.22, .15, .27, .36], 9: [.58, .42] };   // Jul (last 2 wks), Aug, Sep, Oct-to-date
     const weekly = [], monthStart = [];
@@ -871,13 +871,17 @@
     const yOf = v => VH - 2 - v / wmax * (VH - 16);
     const bars = weekly.map((v, k) => `<rect class="${k >= curIdx ? 'cur' : ''}" x="${k * (BW + GAP) + .5}" y="${yOf(v).toFixed(1)}" width="${BW - 1}" height="${(VH - 2 - yOf(v)).toFixed(1)}" rx="2"/>`).join('');
     const ma = weekly.map((_, k) => { const w = weekly.slice(Math.max(0, k - 2), k + 1); return w.reduce((a, b) => a + b, 0) / w.length; });
-    const trend = 'M' + ma.map((v, k) => `${k * (BW + GAP) + BW / 2} ${yOf(v).toFixed(1)}`).join(' L');
-    const mx = curIdx * (BW + GAP) - GAP / 2;
+    // Smooth curve through the moving-average points (Catmull-Rom converted to cubic Béziers).
+    const pts = ma.map((v, k) => [k * (BW + GAP) + BW / 2, yOf(v)]);
+    const trend = pts.reduce((d, p, k) => {
+      if (!k) return `M${p[0]} ${p[1].toFixed(1)}`;
+      const p0 = pts[k - 2] || pts[k - 1], p1 = pts[k - 1], p3 = pts[k + 1] || p;
+      const c1 = [p1[0] + (p[0] - p0[0]) / 6, p1[1] + (p[1] - p0[1]) / 6], c2 = [p[0] - (p3[0] - p1[0]) / 6, p[1] - (p3[1] - p1[1]) / 6];
+      return d + ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p[0]} ${p[1].toFixed(1)}`;
+    }, '');
     const paidChart = `<span class="kpi-chart" aria-hidden="true">
       <svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none">${bars}
-        <path class="trend-line" d="${trend}"/>
-        <line class="month-line" x1="${mx}" x2="${mx}" y1="0" y2="${VH}"/></svg>
-      <span class="month-label" style="left: ${mx / VW * 100}%">${MONTHS[TODAY.getMonth()]}</span></span>`;
+        <path class="trend-line" d="${trend}"/></svg></span>`;
     const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
     $('#kpis').innerHTML = `
       <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">

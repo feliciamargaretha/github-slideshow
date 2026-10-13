@@ -210,6 +210,7 @@
   .kpi-row { display: flex; justify-content: space-between; gap: var(--s2); }
   .kpi-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s1); }
   .kpi-split > span { display: flex; flex-direction: column; gap: var(--s1); }
+  .kpi-main { display: flex; flex-direction: column; gap: var(--s2); }
 
   /* ---------- KPI cards: soft, out-of-focus colour field ----------
      Each card has one simple abstract shape on its right side (ring, slanted
@@ -472,6 +473,23 @@
   html[data-preset="solid"] .kpi .kpi-split .muted { color: var(--muted); }
   html[data-preset="solid"] .kpi:hover { box-shadow: none; border-color: var(--accent); background-color: var(--surface); }
   html[data-preset="solid"] .kpi:hover .kpi-go { color: var(--accent); }
+
+  /* Solid lime: each summary card is two stacked containers. The headline figure
+     sits in the main card; the comparison row is its own attached panel just
+     below (4px gap, tighter inner corners, a darker inset fill). One button, so
+     hover/focus treat them as one. */
+  html[data-preset="solid"] .kpi { border: 0; padding: 0; background: transparent; gap: 4px; overflow: visible; }
+  html[data-preset="solid"] .kpi:hover { border: 0; background: transparent; }
+  html[data-preset="solid"] .kpi-main {
+    flex: 1; padding: var(--s5) var(--s6); background: var(--surface);
+    border: 1px solid var(--outline); border-radius: var(--radius-lg) var(--radius-lg) 4px 4px;
+  }
+  html[data-preset="solid"] .kpi .kpi-split {
+    margin: 0; padding: var(--s3) var(--s6); background: color-mix(in srgb, #000 30%, var(--surface));
+    border: 1px solid var(--outline); border-radius: 4px 4px var(--radius-lg) var(--radius-lg);
+  }
+  html[data-preset="solid"] .kpi:hover .kpi-main,
+  html[data-preset="solid"] .kpi:hover .kpi-split { border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -823,26 +841,26 @@
     const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
     $('#kpis').innerHTML = `
       <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">
-        <span class="kpi-head"><span class="muted">Total outstanding</span>${go}</span>
+        <span class="kpi-main"><span class="kpi-head"><span class="muted">Total outstanding</span>${go}</span>
         <span class="kpi-value">${money(outstanding)}</span>
-        <span class="muted">${plural(open.length, 'open invoice')}</span>
+        <span class="muted">${plural(open.length, 'open invoice')}</span></span>
         <span class="kpi-split">
           <span><span class="muted">Overdue amount</span><span>${money(overdue)}</span></span>
           <span><span class="muted">Overdue invoices</span><span>${overdueList.length} overdue</span></span>
         </span>
       </button>
       <button class="kpi" data-kpi="paid" aria-label="View invoices paid this month">
-        <span class="kpi-head"><span class="muted">Paid this month (Oct)</span>${go}</span>
+        <span class="kpi-main"><span class="kpi-head"><span class="muted">Paid this month (Oct)</span>${go}</span>
         <span class="kpi-value">${money(pt)}</span>
-        <span class="muted">${plural(thisM.length, 'invoice')} paid</span>
+        <span class="muted">${plural(thisM.length, 'invoice')} paid</span></span>
         <span class="kpi-split">
           <span><span class="muted">vs. last month (Sep)</span><span><span class="trend ${change >= 0 ? 'up' : 'down'}">${change >= 0 ? '+' : ''}${change}%</span> (${money(pl)})</span></span>
         </span>
       </button>
       <button class="kpi" data-kpi="next" aria-label="View invoices due next month">
-        <span class="kpi-head"><span class="muted">Amount due next month (Nov)</span>${go}</span>
+        <span class="kpi-main"><span class="kpi-head"><span class="muted">Amount due next month (Nov)</span>${go}</span>
         <span class="kpi-value">${money(nextAmt)}</span>
-        <span class="muted">${plural(nextM.length, 'invoice')}</span>
+        <span class="muted">${plural(nextM.length, 'invoice')}</span></span>
         <span class="kpi-split">
           <span><span class="muted">Avg. days to payment</span><span>${avgDays} days</span></span>
         </span>

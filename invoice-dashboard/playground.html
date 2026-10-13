@@ -2067,10 +2067,13 @@
                 g1: '#b39bff', g2: '#ffb86b', radius: 8, radiusLg: 14, glowOp: 0, grain: 0, cast: 0, castSpread: 0, headDark: 0, zebra: 0,
                 table: 'ledger', extras: 'off' },
   };
-  const KEY = 'style-playground-v4';
-  let state = { ...PRESETS.solid };
+  const KEY = 'style-playground-v5';
+  let state = { ...PRESETS.midnight };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
-  const DEFAULTS_FOR = () => PRESETS[state.preset] || PRESETS.solid;
+  // Direct links: #midnight, #lime, #pink open that look regardless of what was saved.
+  const HASH = { midnight: 'midnight', lime: 'solid', pink: 'glow' }[(location.hash || '').slice(1)];
+  if (HASH) state = { ...PRESETS[HASH] };
+  const DEFAULTS_FOR = () => PRESETS[state.preset] || PRESETS.midnight;
 
   const root = document.documentElement;
   const mix = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const x = p(a), y = p(b); return '#' + x.map((v, i) => Math.round(v * t + y[i] * (1 - t)).toString(16).padStart(2, '0')).join(''); };

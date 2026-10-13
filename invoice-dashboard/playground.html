@@ -1625,10 +1625,10 @@
   const GLOW = Object.fromEntries(GROUPS.flatMap(([, rows]) => rows.map(r => [r[0], r[3]])));
   const PRESETS = {
     glow: { ...GLOW, preset: 'glow', accentFg: '#2a0a26' },
-    solid: { ...GLOW, preset: 'solid', accentFg: '#1b2100', accent: '#d2f543', radius: 6, radiusLg: 8,
+    solid: { ...GLOW, preset: 'solid', accentFg: '#1b2100', accent: '#d2f543', g1: '#4fd0ff', g2: '#ffa94d', radius: 6, radiusLg: 8,
              glowOp: 0, grain: 0, cast: 0, castSpread: 0 },
   };
-  const KEY = 'style-playground-v2';
+  const KEY = 'style-playground-v3';
   let state = { ...PRESETS.solid };
   try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
   const DEFAULTS_FOR = () => PRESETS[state.preset] || PRESETS.solid;

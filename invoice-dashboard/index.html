@@ -28,6 +28,10 @@
     --accent-hover: #fa7eea;
     --accent-pressed: #e043cc;
     --accent-fg: #2a0a26;
+    /* Softer pink for filled buttons (same hue, less saturation): dark text 7.7:1 */
+    --accent-fill: #e48bd8;
+    --accent-fill-hover: #eb9fe1;
+    --accent-fill-pressed: #d675c9;
     --accent-text: #ff9cf0;     /* pink text on dark surfaces, >= 6.5:1 */
     --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--bg));
     --accent-soft-hover: color-mix(in srgb, var(--accent) 24%, var(--bg));
@@ -61,6 +65,7 @@
     --bg: #ffffff; --surface: #ffffff; --sidebar-bg: #fafafa; --fg: #111111; --muted: #666666;
     --line: #cccccc; --line-strong: #111111; --line-control: #8a8a8a;
     --accent: #f85ee4; --accent-hover: #e043cc; --accent-pressed: #c22aae; --accent-fg: #2a0a26; --accent-text: #a3168f;
+    --accent-fill: #e48bd8; --accent-fill-hover: #d675c9; --accent-fill-pressed: #c560b7;
     --pill-bg: #e6e7e9; --pill-fg: #111111; --pill-dim-bg: #f0f0f1; --pill-dim-fg: #555555;
     --pill-ok-bg: #dcf3e5; --pill-ok-fg: #14532d; --pill-warn-bg: #fbedd5; --pill-warn-fg: #6b4300;
     --pill-bad-bg: #fbe0e0; --pill-bad-fg: #8a1c1c; --hist: #d0d0d0;
@@ -89,9 +94,9 @@
     display: inline-flex; align-items: center; gap: var(--s2);
   }
   .btn:hover { background: var(--hover); }
-  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-  .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-  .btn.primary:active { background: var(--accent-pressed); border-color: var(--accent-pressed); }
+  .btn.primary { background: var(--accent-fill); color: var(--accent-fg); border-color: var(--accent-fill); }
+  .btn.primary:hover { background: var(--accent-fill-hover); border-color: var(--accent-fill-hover); }
+  .btn.primary:active { background: var(--accent-fill-pressed); border-color: var(--accent-fill-pressed); }
   .btn.prominent { outline: 2px solid var(--line-strong); outline-offset: 2px; }
   .btn.ghost { border-color: transparent; background: transparent; }
   .btn.ghost:hover { background: var(--hover); }
@@ -160,13 +165,13 @@
   .topbar-actions { display: flex; align-items: center; gap: var(--s2); }
   .split {
     display: inline-flex; align-items: stretch; position: relative; height: var(--control);
-    background: var(--accent); color: var(--accent-fg); border-radius: var(--radius);
+    background: var(--accent-fill); color: var(--accent-fg); border-radius: var(--radius);
   }
   .split > button {
     background: none; border: 0; color: inherit; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap;
   }
-  .split > button:hover { background: var(--accent-hover); }
-  .split > button:active { background: var(--accent-pressed); }
+  .split > button:hover { background: var(--accent-fill-hover); }
+  .split > button:active { background: var(--accent-fill-pressed); }
   .split > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .split-main { padding: 0 var(--s3) 0 var(--s4); border-radius: var(--radius) 0 0 var(--radius); }
   .split-caret { padding: 0 var(--s3) 0 var(--s2); border-radius: 0 var(--radius) var(--radius) 0; }
@@ -246,7 +251,7 @@
   .preset-row { display: flex; flex-wrap: wrap; gap: var(--s2); }
   .preset { height: 28px; padding: 0 var(--s3); border: 1px solid var(--line-control); border-radius: 14px; background: none; cursor: pointer; }
   .preset:hover { background: var(--hover); }
-  .preset[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .preset[aria-pressed="true"] { background: var(--accent-fill); color: var(--accent-fg); border-color: var(--accent-fill); }
   .chips { display: flex; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s4); }
   .chip { height: 28px; padding: 0 var(--s3); border: 1px solid var(--accent-line); border-radius: 14px; background: var(--accent-soft); color: var(--accent-text); cursor: pointer; }
   .chip:hover { background: var(--accent-soft-hover); }

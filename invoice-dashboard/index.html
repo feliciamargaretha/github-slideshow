@@ -151,7 +151,16 @@
 
   /* ---------- KPIs ---------- */
   .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s5); margin-bottom: var(--s8); }
-  .kpi { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--s5) var(--s6); display: flex; flex-direction: column; gap: var(--s2); }
+  .kpi {
+    border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--s5) var(--s6);
+    display: flex; flex-direction: column; gap: var(--s2);
+    background: var(--surface); text-align: left; cursor: pointer; position: relative; width: 100%;
+  }
+  .kpi:hover { background: var(--hover); border-color: var(--muted); }
+  .kpi:focus-visible { outline: 2px solid var(--line-strong); outline-offset: 2px; }
+  .kpi-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
+  .kpi-go { display: inline-flex; align-items: center; gap: var(--s1); color: var(--muted); font-size: 12px; }
+  .kpi:hover .kpi-go { color: var(--fg); }
   .kpi-value { font-size: 22px; line-height: 28px; }
   .kpi-row { display: flex; justify-content: space-between; gap: var(--s2); }
   .kpi-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s1); }
@@ -547,7 +556,7 @@
   // ================= State =================
   const state = {
     view: 'invoices', group: 'all', tab: 'all', search: '',
-    statuses: new Set(), dueWithin: null, amtMin: null, amtMax: null,
+    statuses: new Set(), dueWithin: null, kpi: null, amtMin: null, amtMax: null,
     range: { preset: 'all', from: null, to: null },
     sort: { key: 'issue', dir: 'desc' },
     selected: new Set(), shown: 40, currency: 'USD',
@@ -591,6 +600,8 @@
       if (!inGroup(inv)) return false;
       if (state.tab !== 'all' && inv.status !== state.tab) return false;
       if (state.statuses.size && !state.statuses.has(inv.status)) return false;
+      if (state.kpi === 'paid' && !(inv.status === 'Paid' && inv.paidDate.getFullYear() === 2026 && inv.paidDate.getMonth() === 9)) return false;
+      if (state.kpi === 'next' && !(['Awaiting payment', 'Overdue', 'Partially paid'].includes(inv.status) && inv.due.getFullYear() === 2026 && inv.due.getMonth() === 10)) return false;
       if (state.dueWithin && inv.status === 'Awaiting payment' && diffDays(inv.due, TODAY) > state.dueWithin) return false;
       if (state.amtMin != null && inv.total < state.amtMin) return false;
       if (state.amtMax != null && inv.total > state.amtMax) return false;
@@ -619,50 +630,45 @@
     const outstanding = open.reduce((s, i) => s + balance(i), 0);
     const overdueList = open.filter(i => i.due < TODAY);
     const overdue = overdueList.reduce((s, i) => s + balance(i), 0);
-    const dueSoon = open.filter(i => i.due >= TODAY);
 
     const paidIn = (y, m) => list.filter(i => i.paidDate && i.status === 'Paid' && i.paidDate.getFullYear() === y && i.paidDate.getMonth() === m);
     const thisM = paidIn(2026, 9), lastM = paidIn(2026, 8);
     const sum = a => a.reduce((s, i) => s + i.total, 0);
     const pt = sum(thisM), pl = sum(lastM);
     const change = pl ? Math.round((pt - pl) / pl * 100) : 0;
-    // Month-to-date comparison: same day range last month
-    const lastMtd = sum(lastM.filter(i => i.paidDate.getDate() <= TODAY.getDate()));
-    const mtdChange = lastMtd ? Math.round((pt - lastMtd) / lastMtd * 100) : 0;
 
     const nextM = open.filter(i => i.due.getFullYear() === 2026 && i.due.getMonth() === 10);
     const nextAmt = nextM.reduce((s, i) => s + balance(i), 0);
     const paidAll = list.filter(i => i.status === 'Paid');
     const avgDays = paidAll.length ? Math.round(paidAll.reduce((s, i) => s + diffDays(i.paidDate, i.issue), 0) / paidAll.length) : 0;
 
+    const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
     $('#kpis').innerHTML = `
-      <div class="kpi">
-        <div class="muted">Total outstanding</div>
-        <div class="kpi-value">${money(outstanding)}</div>
-        <div class="muted">${plural(open.length, 'open invoice')}</div>
-        <div class="kpi-split">
-          <div><div class="muted">Overdue amount</div><div>${money(overdue)}</div></div>
-          <div><div class="muted">Due invoices</div><div>${dueSoon.length} due · ${overdueList.length} overdue</div></div>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="muted">Paid this month (Oct)</div>
-        <div class="kpi-value">${money(pt)}</div>
-        <div class="muted">${plural(thisM.length, 'invoice')} paid</div>
-        <div class="kpi-split">
-          <div><div class="muted">vs. Sep (same period)</div><div>${mtdChange >= 0 ? '+' : ''}${mtdChange}% (${money(lastMtd)})</div></div>
-          <div><div class="muted">vs. Sep (full month)</div><div>${change >= 0 ? '+' : ''}${change}% (${money(pl)})</div></div>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="muted">Amount due next month (Nov)</div>
-        <div class="kpi-value">${money(nextAmt)}</div>
-        <div class="muted">${plural(nextM.length, 'invoice')}</div>
-        <div class="kpi-split">
-          <div><div class="muted">Avg. days to payment</div><div>${avgDays} days</div></div>
-          <div><div class="muted">Based on</div><div>${plural(paidAll.length, 'paid invoice')}</div></div>
-        </div>
-      </div>`;
+      <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">
+        <span class="kpi-head"><span class="muted">Total outstanding</span>${go}</span>
+        <span class="kpi-value">${money(outstanding)}</span>
+        <span class="muted">${plural(open.length, 'open invoice')}</span>
+        <span class="kpi-split">
+          <span><span class="muted">Overdue amount</span><br>${money(overdue)}</span>
+          <span><span class="muted">Overdue invoices</span><br>${overdueList.length} overdue</span>
+        </span>
+      </button>
+      <button class="kpi" data-kpi="paid" aria-label="View invoices paid this month">
+        <span class="kpi-head"><span class="muted">Paid this month (Oct)</span>${go}</span>
+        <span class="kpi-value">${money(pt)}</span>
+        <span class="muted">${plural(thisM.length, 'invoice')} paid</span>
+        <span class="kpi-split">
+          <span><span class="muted">vs. last month (Sep)</span><br>${change >= 0 ? '+' : ''}${change}% (${money(pl)})</span>
+        </span>
+      </button>
+      <button class="kpi" data-kpi="next" aria-label="View invoices due next month">
+        <span class="kpi-head"><span class="muted">Amount due next month (Nov)</span>${go}</span>
+        <span class="kpi-value">${money(nextAmt)}</span>
+        <span class="muted">${plural(nextM.length, 'invoice')}</span>
+        <span class="kpi-split">
+          <span><span class="muted">Avg. days to payment</span><br>${avgDays} days</span>
+        </span>
+      </button>`;
   }
 
   // ================= Table =================
@@ -725,11 +731,13 @@
   }
 
   function isFiltering() {
-    return state.tab !== 'all' || state.statuses.size || state.dueWithin || state.amtMin != null || state.amtMax != null || state.range.from || state.range.to || state.search.trim();
+    return state.tab !== 'all' || state.kpi || state.statuses.size || state.dueWithin || state.amtMin != null || state.amtMax != null || state.range.from || state.range.to || state.search.trim();
   }
 
   function renderChips() {
     const chips = [];
+    if (state.kpi === 'paid') chips.push(['kpi', 'Paid this month (Oct)']);
+    if (state.kpi === 'next') chips.push(['kpi', 'Due next month (Nov)']);
     if (state.statuses.size) chips.push(['status', 'Status: ' + [...state.statuses].join(', ')]);
     if (state.dueWithin) chips.push(['due', 'Awaiting payment due in ≤ ' + state.dueWithin + ' days']);
     if (state.amtMin != null || state.amtMax != null) chips.push(['amount', 'Amount: ' + (state.amtMin != null ? money(state.amtMin) : 'any') + ' – ' + (state.amtMax != null ? money(state.amtMax) : 'any')]);
@@ -1135,7 +1143,7 @@
     if (t.id === 'f-amt-max') state.amtMax = t.value === '' ? null : toUsd(+t.value);
     syncFilterUI(); resetAndRender();
   });
-  function clearFilters() { state.statuses.clear(); state.dueWithin = null; state.amtMin = state.amtMax = null; syncFilterUI(); }
+  function clearFilters() { state.kpi = null; state.statuses.clear(); state.dueWithin = null; state.amtMin = state.amtMax = null; syncFilterUI(); }
   $('#f-clear').onclick = () => { clearFilters(); resetAndRender(); };
 
   // Date range popover
@@ -1175,9 +1183,26 @@
     const k = c.dataset.chip;
     if (k === 'status') { state.statuses.clear(); state.dueWithin = null; }
     if (k === 'due') state.dueWithin = null;
+    if (k === 'kpi') state.kpi = null;
     if (k === 'amount') state.amtMin = state.amtMax = null;
     if (k === 'date') clearDate();
     syncFilterUI(); resetAndRender();
+  });
+
+  // ================= KPI cards =================
+  $('#kpis').addEventListener('click', e => {
+    const card = e.target.closest('[data-kpi]');
+    if (!card) return;
+    const k = card.dataset.kpi;
+    clearFilters(); clearDate();
+    state.search = ''; $('#search').value = '';
+    state.tab = k === 'paid' ? 'Paid' : 'all';
+    $$('.tab').forEach(x => x.setAttribute('aria-selected', String(x.dataset.tab === state.tab)));
+    if (k === 'outstanding') { state.statuses = new Set(['Awaiting payment', 'Overdue', 'Partially paid']); state.sort = { key: 'due', dir: 'asc' }; }
+    if (k === 'paid') { state.kpi = 'paid'; state.sort = { key: 'due', dir: 'desc' }; }
+    if (k === 'next') { state.kpi = 'next'; state.sort = { key: 'due', dir: 'asc' }; }
+    syncFilterUI(); resetAndRender();
+    $('.toolbar').scrollIntoView({ block: 'start' });
   });
 
   // ================= Table interactions =================

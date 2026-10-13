@@ -22,6 +22,7 @@
     --muted: #9d9fa4;
     --line: #36383d;
     --line-strong: #d6d7da;
+    --line-control: #75787e; /* >= 3:1 against every surface, for input/control outlines */
     --hover: #2a2c30;
     --selected: #33363b;
     --primary-bg: #ececec;
@@ -41,7 +42,7 @@
   }
   :root.theme-light {
     --bg: #ffffff; --surface: #ffffff; --sidebar-bg: #fafafa; --fg: #111111; --muted: #666666;
-    --line: #cccccc; --line-strong: #111111; --hover: #f2f2f2; --selected: #e6e6e6;
+    --line: #cccccc; --line-strong: #111111; --line-control: #8a8a8a; --hover: #f2f2f2; --selected: #e6e6e6;
     --primary-bg: #111111; --primary-fg: #ffffff;
     --group-1: #2f6bd8; --group-2: #d4851c; --notify: #e5484d;
     --shadow: rgba(0, 0, 0, .1); --scrim: rgba(0, 0, 0, .3);
@@ -52,7 +53,7 @@
   html, body { margin: 0; height: 100%; }
   body {
     background: var(--bg); color: var(--fg);
-    font: 400 13px/16px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+    font: 400 14px/20px -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
   }
   * { font-weight: 400 !important; }
   h1, h2, h3, p { margin: 0; font-size: inherit; line-height: inherit; }
@@ -76,14 +77,19 @@
   .link { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: left; }
   .input {
     height: var(--control); padding: 0 var(--s3);
-    border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+    border: 1px solid var(--line-control); border-radius: var(--radius); background: var(--surface);
   }
-  .input:focus, .btn:focus-visible, .link:focus-visible { outline: 2px solid var(--line-strong); outline-offset: 1px; }
+  .input::placeholder { color: var(--muted); opacity: 1; }
+  :where(button, a, input, select, [tabindex]):focus-visible { outline: 2px solid var(--line-strong); outline-offset: 2px; }
+  .input:focus-visible { outline-offset: 1px; }
+  tbody tr:focus-visible { outline-offset: -2px; }
+  input[type="checkbox"], input[type="radio"] { width: 16px; height: 16px; accent-color: var(--fg); cursor: pointer; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   .muted { color: var(--muted); }
-  .small-text { font-size: 11px; line-height: 16px; }
+  .small-text { font-size: 12px; line-height: 16px; }
   .badge {
     display: inline-block; padding: 0 var(--s2); height: 24px; line-height: 22px;
-    border: 1px solid var(--line-strong); border-radius: 12px; white-space: nowrap; font-size: 11px;
+    border: 1px solid var(--line-strong); border-radius: 12px; white-space: nowrap; font-size: 12px;
   }
   .icon { width: 16px; height: 16px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .icon-sm { width: 12px; height: 12px; }
@@ -93,9 +99,9 @@
   .avatar {
     width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
     display: inline-flex; align-items: center; justify-content: center;
-    background: var(--hover); border: 1px solid var(--line); font-size: 10px; line-height: 1; letter-spacing: .02em;
+    background: var(--hover); border: 1px solid var(--line-control); font-size: 11px; line-height: 1; letter-spacing: .02em;
   }
-  .avatar.lg { width: 32px; height: 32px; font-size: 12px; }
+  .avatar.lg { width: 32px; height: 32px; font-size: 13px; }
   .badge.dashed { border-style: dashed; }
   .badge.double { border-width: 3px; border-style: double; line-height: 18px; }
 
@@ -123,7 +129,7 @@
     height: 64px; padding: 0 var(--s8); border-bottom: 1px solid var(--line);
     display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-shrink: 0;
   }
-  .topbar h1 { font-size: 17px; line-height: 24px; }
+  .topbar h1 { font-size: 20px; line-height: 28px; }
   .topbar-actions { display: flex; align-items: center; gap: var(--s2); }
   .split {
     display: inline-flex; align-items: stretch; position: relative; height: var(--control);
@@ -159,9 +165,9 @@
   .kpi:hover { background: var(--hover); border-color: var(--muted); }
   .kpi:focus-visible { outline: 2px solid var(--line-strong); outline-offset: 2px; }
   .kpi-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
-  .kpi-go { display: inline-flex; align-items: center; gap: var(--s1); color: var(--muted); font-size: 12px; }
+  .kpi-go { display: inline-flex; align-items: center; gap: var(--s1); color: var(--muted); font-size: 13px; }
   .kpi:hover .kpi-go { color: var(--fg); }
-  .kpi-value { font-size: 22px; line-height: 28px; }
+  .kpi-value { font-size: 24px; line-height: 32px; }
   .kpi-row { display: flex; justify-content: space-between; gap: var(--s2); }
   .kpi-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s1); }
   .kpi-split > span { display: flex; flex-direction: column; gap: var(--s1); }
@@ -169,7 +175,7 @@
   /* ---------- Toolbar ---------- */
   .toolbar { display: flex; justify-content: space-between; align-items: center; gap: var(--s4); margin-bottom: var(--s4); flex-wrap: wrap; }
   .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
-  .tabs { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 3px; gap: 2px; }
+  .tabs { display: inline-flex; border: 1px solid var(--line-control); border-radius: var(--radius-lg); padding: 3px; gap: 2px; }
   .tab { height: 28px; padding: 0 var(--s3); border: 0; border-radius: 14px; background: none; cursor: pointer; }
   .tab:hover { background: var(--hover); }
   .tab[aria-selected="true"] { background: var(--selected); outline: 1px solid var(--line-strong); }
@@ -214,8 +220,8 @@
     position: sticky; top: calc(-1 * var(--s6)); background: var(--surface); z-index: 5;
     text-align: left; height: 44px; padding: 0 var(--s4); border-bottom: 1px solid var(--line-strong); white-space: nowrap;
   }
-  tbody td { padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; line-height: 20px; }
-  tbody td .muted { font-size: 13px; line-height: 16px; }
+  tbody td { padding: var(--s3) var(--s4); border-bottom: 1px solid var(--line); vertical-align: top; font-size: 15px; line-height: 22px; }
+  tbody td .muted { font-size: 13px; line-height: 18px; }
   tbody tr { cursor: pointer; }
   tbody tr:hover { background: var(--hover); }
   tbody tr.is-selected { background: var(--selected); }
@@ -257,7 +263,7 @@
   .drawer.open { display: flex; }
   .drawer-head { padding: var(--s5) var(--s6); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s2); }
   .drawer-head-row { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
-  .drawer-title { font-size: 17px; line-height: 24px; }
+  .drawer-title { font-size: 20px; line-height: 28px; }
   .drawer-body { flex: 1; overflow-y: auto; }
   .d-section { padding: var(--s5) var(--s6); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s3); }
   .d-section:last-child { border-bottom: 0; }
@@ -266,7 +272,7 @@
   .kv.total { border-top: 1px solid var(--line-strong); padding-top: var(--s2); }
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
   .stat { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s3) var(--s4); display: flex; flex-direction: column; gap: var(--s1); }
-  .stat-value { font-size: 15px; line-height: 20px; }
+  .stat-value { font-size: 16px; line-height: 24px; }
   .actions-row { display: flex; flex-wrap: wrap; gap: var(--s2); }
   .lines { width: 100%; border-collapse: collapse; }
   .lines th, .lines td { padding: var(--s2) 0; text-align: left; border-bottom: 1px solid var(--line); position: static; height: auto; }
@@ -380,16 +386,16 @@
                   <div id="f-statuses"></div>
                   <div class="row" style="padding-left: var(--s6)">
                     <span class="muted">Due in</span>
-                    <input class="input" id="f-due-days" type="number" min="1" placeholder="any" style="width: 64px" disabled>
+                    <input class="input" id="f-due-days" type="number" min="1" placeholder="any" aria-label="Due within this many days" style="width: 64px" disabled>
                     <span class="muted">days</span>
                   </div>
                 </div>
                 <div class="pop-section">
                   <div class="pop-title">Amount range (<span class="cur-code">USD</span>)</div>
                   <div class="row">
-                    <input class="input" id="f-amt-min" type="number" min="0" placeholder="Min" style="width: 100%">
+                    <input class="input" id="f-amt-min" type="number" min="0" placeholder="Min" aria-label="Minimum amount" style="width: 100%">
                     <span class="muted">to</span>
-                    <input class="input" id="f-amt-max" type="number" min="0" placeholder="Max" style="width: 100%">
+                    <input class="input" id="f-amt-max" type="number" min="0" placeholder="Max" aria-label="Maximum amount" style="width: 100%">
                   </div>
                 </div>
                 <div class="pop-footer">
@@ -586,7 +592,7 @@
   }
   let toastTimer;
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('open'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('open'), 2400); }
-  const groupDot = g => g ? `<span class="dot g${GROUPS.indexOf(g) + 1}" title="${esc(g)}"></span>` : '';
+  const groupDot = g => g ? `<span class="dot g${GROUPS.indexOf(g) + 1}" role="img" aria-label="Group: ${esc(g)}" title="${esc(g)}"></span>` : '';
   const initials = name => name.split(/\s+/).filter(w => /^[A-Za-z]/.test(w)).slice(0, 2).map(w => w[0].toUpperCase()).join('');
   const avatar = (c, cls = '') => `<span class="avatar ${cls}" aria-hidden="true">${esc(initials(c.name))}</span>`;
   const FLAGS = {
@@ -691,7 +697,7 @@
     const sortMark = k => state.sort.key !== k ? '<span class="muted">↕</span>' : (state.sort.dir === 'asc' ? '↑' : '↓');
     $('#thead-row').innerHTML =
       `<th class="col-check"><input type="checkbox" id="check-all" aria-label="Select all"${selCount && selCount === visibleIds.length ? ' checked' : ''}></th>` +
-      COLS.filter(c => state.cols[c.key]).map(c => `<th class="${c.num ? 'num' : ''}${c.key === 'project' ? ' th-project' : ''}">${c.sort ? `<button class="sort-btn" data-sort="${c.sort}">${c.label} ${sortMark(c.sort)}</button>` : c.label}</th>`).join('') +
+      COLS.filter(c => state.cols[c.key]).map(c => `<th class="${c.num ? 'num' : ''}${c.key === 'project' ? ' th-project' : ''}"${c.sort && state.sort.key === c.sort ? ` aria-sort="${state.sort.dir === 'asc' ? 'ascending' : 'descending'}"` : ''}>${c.sort ? `<button class="sort-btn" data-sort="${c.sort}">${c.label} ${sortMark(c.sort)}</button>` : c.label}</th>`).join('') +
       `<th class="col-edit"><div class="pop-wrap"><button class="btn small ghost" data-pop="pop-cols" aria-label="Edit columns">Edit columns</button>
         <div class="popover" id="pop-cols">${COLS.map(c => `<label class="check"><input type="checkbox" data-col="${c.key}"${state.cols[c.key] ? ' checked' : ''}${c.key === 'project' ? ' disabled' : ''}> ${c.label}</label>`).join('')}</div></div></th>`;
     const ca = $('#check-all');
@@ -723,7 +729,7 @@
       $('#tbody').innerHTML = `<tr><td colspan="${visCols.length + 2}"><div class="empty"><div>No invoices match these filters</div><button class="btn" id="empty-clear">Clear all filters</button></div></td></tr>`;
     } else {
       $('#tbody').innerHTML = slice.map(inv => `
-        <tr data-id="${inv.id}" class="${state.selected.has(inv.id) ? 'is-selected' : ''} ${state.drawer && state.drawer.type === 'invoice' && state.drawer.id === inv.id ? 'is-open' : ''}">
+        <tr data-id="${inv.id}" tabindex="0" aria-label="${inv.no}, ${esc(inv.project)}, ${esc(inv.client.name)}, ${inv.status}. Press Enter to preview." class="${state.selected.has(inv.id) ? 'is-selected' : ''} ${state.drawer && state.drawer.type === 'invoice' && state.drawer.id === inv.id ? 'is-open' : ''}">
           <td class="col-check"><input type="checkbox" data-check="${inv.id}" aria-label="Select ${inv.no}"${state.selected.has(inv.id) ? ' checked' : ''}></td>
           ${visCols.map(c => cellFor(c, inv)).join('')}
           <td class="col-edit"></td>
@@ -823,9 +829,26 @@
   }
 
   // ================= Drawer: invoice preview =================
-  function openInvoice(id) { state.drawer = { type: 'invoice', id }; state.showAllLines = false; state.recordPayment = false; renderDrawer(); renderTable(); }
-  function openClient(id) { state.drawer = { type: 'client', id }; renderDrawer(); renderTable(); }
-  function closeDrawer() { state.drawer = null; $('#drawer').classList.remove('open'); renderTable(); }
+  // Focus moves into the panel on open and returns to where it came from on close.
+  let returnFocus = null;
+  function rememberFocus() {
+    if (state.drawer) return;
+    const a = document.activeElement;
+    const row = a && a.closest && a.closest('tr[data-id]');
+    returnFocus = row ? { row: row.dataset.id } : { el: a };
+  }
+  function focusDrawer() { const t = $('#drawer .drawer-title'); if (t) t.focus(); }
+  function openInvoice(id) { rememberFocus(); state.drawer = { type: 'invoice', id }; state.showAllLines = false; state.recordPayment = false; renderDrawer(); renderTable(); focusDrawer(); }
+  function openClient(id) { rememberFocus(); state.drawer = { type: 'client', id }; renderDrawer(); renderTable(); focusDrawer(); }
+  function closeDrawer() {
+    const wasOpen = !!state.drawer;
+    state.drawer = null; $('#drawer').classList.remove('open'); renderTable();
+    if (wasOpen && returnFocus) {
+      const el = returnFocus.row ? $(`tr[data-id="${returnFocus.row}"]`) : returnFocus.el;
+      if (el && el.isConnected) el.focus();
+      returnFocus = null;
+    }
+  }
   function refreshDrawer() { if (state.drawer) renderDrawer(); }
 
   function primaryAction(inv) {
@@ -850,7 +873,7 @@
     return `
       <div class="drawer-head">
         <div class="drawer-head-row">
-          <div class="row"><span class="drawer-title">${inv.no}</span>${badge(inv.status)}</div>
+          <div class="row"><h2 class="drawer-title" tabindex="-1">${inv.no}</h2>${badge(inv.status)}</div>
           <div class="row">
             <button class="btn small ghost" data-act="full">Open full invoice</button>
             <button class="btn small ghost" data-act="close" aria-label="Close preview">Close</button>
@@ -944,7 +967,7 @@
     return `
       <div class="drawer-head">
         <div class="drawer-head-row">
-          <span class="row">${avatar(c, 'lg')}<span class="drawer-title">${esc(c.name)}</span></span>
+          <span class="row">${avatar(c, 'lg')}<h2 class="drawer-title" tabindex="-1">${esc(c.name)}</h2></span>
           <div class="row">
             <button class="btn small ghost" data-act="client-full">Open client page</button>
             <button class="btn small ghost" data-act="close" aria-label="Close preview">Close</button>
@@ -1078,6 +1101,11 @@
   $('#ph-back').onclick = () => { state.group = 'all'; showInvoices(); renderKPIs(); resetAndRender(); };
 
   // ================= Popovers =================
+  function syncExpanded() {
+    $$('[data-pop]').forEach(t => { const p = document.getElementById(t.dataset.pop); if (p) t.setAttribute('aria-expanded', String(p.classList.contains('open'))); });
+  }
+  document.addEventListener('click', () => setTimeout(syncExpanded));
+  document.addEventListener('keydown', () => setTimeout(syncExpanded));
   document.addEventListener('click', e => {
     const trigger = e.target.closest('[data-pop]');
     if (trigger) {
@@ -1100,6 +1128,13 @@
     const open = $$('.popover.open');
     if (open.length) return open.forEach(p => p.classList.remove('open'));
     if (state.drawer) closeDrawer();
+  });
+  // Rows open the invoice preview with Enter or Space.
+  $('#tbody').addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const tr = e.target.closest('tr[data-id]');
+    if (!tr || e.target !== tr) return;
+    e.preventDefault(); openInvoice(tr.dataset.id);
   });
 
   // ================= Top bar =================
@@ -1255,6 +1290,7 @@
 
   // ================= Init =================
   renderGroupCounts();
+  syncExpanded();
   syncFilterUI();
   renderKPIs();
   renderTable();

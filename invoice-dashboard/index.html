@@ -238,7 +238,7 @@
     position: absolute; top: calc(100% + var(--s1)); right: 0; z-index: 30;
     min-width: 200px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-lg);
     padding: var(--s2) var(--s3); display: none; box-shadow: 0 4px 16px var(--shadow);
-    max-height: calc(100vh - 200px); overflow-y: auto; overscroll-behavior: contain;
+    overflow-y: auto; overscroll-behavior: contain;
   }
   .popover.open { display: block; }
   .popover.left { left: 0; right: auto; }
@@ -1162,7 +1162,12 @@
       const pop = document.getElementById(trigger.dataset.pop);
       const wasOpen = pop.classList.contains('open');
       $$('.popover.open').forEach(p => p.classList.remove('open'));
-      if (!wasOpen) pop.classList.add('open');
+      if (!wasOpen) {
+        pop.classList.add('open');
+        // Keep the whole menu on screen: cap its height at the space below it.
+        const r = pop.getBoundingClientRect();
+        if (!pop.closest('.bulk')) pop.style.maxHeight = Math.max(200, window.innerHeight - r.top - 16) + 'px';
+      }
       return;
     }
     if (e.target.closest('[data-close-pop]')) { $$('.popover.open').forEach(p => p.classList.remove('open')); return; }

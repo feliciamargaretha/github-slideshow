@@ -532,6 +532,65 @@
   .kpi-chart.due .due-base { stroke: color-mix(in srgb, var(--accent) 35%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .kpi-chart.due .due-day { stroke: color-mix(in srgb, var(--accent) 20%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .due-scale { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; line-height: 12px; color: var(--muted); }
+
+  /* ================= Table style explorations (html[data-table]) ================= */
+  .grp-row { display: none; }
+  /* Shared for all non-default styles */
+  html[data-table]:not([data-table="current"]) td.num { color: #f6f7f8; font-variant-numeric: tabular-nums; }
+  html[data-table]:not([data-table="current"]) tbody tr:hover { background: color-mix(in srgb, var(--accent) 4%, var(--bg)); }
+
+  /* 1. Ledger: rows on the page, hairlines, small-caps header, lime only for state */
+  html[data-table="ledger"] .table-wrap, html[data-table="grouped"] .table-wrap { border: 0; border-radius: 0; background: transparent; }
+  html[data-table="ledger"] thead th, html[data-table="grouped"] thead th {
+    background: var(--bg); height: 40px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--outline, #46494f);
+  }
+  html[data-table] .sort-btn { font-size: inherit; letter-spacing: inherit; text-transform: inherit; }
+  html[data-table="ledger"] thead th[aria-sort] .sort-btn, html[data-table="grouped"] thead th[aria-sort] .sort-btn { color: var(--accent-text); }
+  html[data-table="ledger"] .sort-btn .muted, html[data-table="grouped"] .sort-btn .muted { color: var(--muted); }
+  html[data-table="ledger"] tbody tr, html[data-table="grouped"] tbody tr { background: transparent; }
+  html[data-table="ledger"] tbody td, html[data-table="grouped"] tbody td { border-bottom: 1px solid color-mix(in srgb, var(--fg) 8%, var(--bg)); }
+  html[data-table="ledger"] tbody tr.is-selected, html[data-table="grouped"] tbody tr.is-selected { background: color-mix(in srgb, var(--accent) 6%, var(--bg)); }
+  html[data-table="ledger"] tbody tr.is-selected td:first-child, html[data-table="grouped"] tbody tr.is-selected td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+  html[data-table="ledger"] tbody tr[data-status="overdue"] td:first-child { box-shadow: inset 2px 0 0 #ff7a4d; }
+
+  /* 2. Card rows: each row is a slim outlined container */
+  html[data-table="cards"] .table-wrap { border: 0; background: transparent; overflow: visible; }
+  html[data-table="cards"] table { border-collapse: separate; border-spacing: 0 4px; }
+  html[data-table="cards"] thead th { background: var(--bg); height: 40px; color: var(--muted); }
+  html[data-table="cards"] thead th[aria-sort] .sort-btn { color: var(--accent-text); }
+  html[data-table="cards"] .sort-btn .muted { color: var(--muted); }
+  html[data-table="cards"] tbody tr { background: transparent; }
+  html[data-table="cards"] tbody td { background: var(--surface); border-top: 1px solid var(--outline, #46494f); border-bottom: 1px solid var(--outline, #46494f); }
+  html[data-table="cards"] tbody td:first-child { border-left: 1px solid var(--outline, #46494f); border-radius: var(--radius) 0 0 var(--radius); }
+  html[data-table="cards"] tbody td:last-child { border-right: 1px solid var(--outline, #46494f); border-radius: 0 var(--radius) var(--radius) 0; }
+  html[data-table="cards"] tbody tr:hover td { border-color: var(--accent); background: var(--surface); }
+  html[data-table="cards"] tbody tr.is-selected td { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+  html[data-table="cards"] tbody tr.is-open td:first-child { box-shadow: none; }
+
+  /* 3. Status-led: a coloured left edge per status, status as plain coloured text */
+  html[data-table="status"] tbody td:first-child { box-shadow: inset 3px 0 0 var(--edge, transparent); }
+  html[data-table="status"] tbody tr[data-status="overdue"] { --edge: #ff7a4d; }
+  html[data-table="status"] tbody tr[data-status="partially-paid"] { --edge: #ffbe5c; }
+  html[data-table="status"] tbody tr[data-status="paid"] { --edge: color-mix(in srgb, var(--accent) 70%, transparent); }
+  html[data-table="status"] tbody tr[data-status="awaiting-payment"] { --edge: #6b6e74; }
+  html[data-table="status"] tbody tr[data-status="draft"], html[data-table="status"] tbody tr[data-status="cancelled"] { --edge: #3a3d42; }
+  html[data-table="status"] .badge { background: none !important; padding: 0; height: auto; font-size: 14px; }
+  html[data-table="status"] .badge.s-overdue { color: #ff7a4d; }
+  html[data-table="status"] .badge.s-partially-paid { color: #ffbe5c; }
+  html[data-table="status"] .badge.s-paid { color: var(--accent); }
+  html[data-table="status"] .badge.s-awaiting-payment { color: var(--fg); }
+  html[data-table="status"] .badge.s-draft, html[data-table="status"] .badge.s-cancelled { color: var(--muted); }
+  html[data-table="status"] tbody tr.is-selected td:first-child { box-shadow: inset 3px 0 0 var(--edge, transparent), inset 6px 0 0 var(--accent); }
+
+  /* 4. Grouped by urgency: ledger rows under collapsible section headers */
+  html[data-table="grouped"] .grp-row { display: table-row; cursor: default; }
+  html[data-table="grouped"] .grp-row:hover { background: transparent !important; }
+  html[data-table="grouped"] .grp-row td { padding: var(--s5) var(--s4) var(--s2); border-bottom: 1px solid var(--outline, #46494f); }
+  .grp-btn { display: inline-flex; align-items: center; gap: var(--s2); background: none; border: 0; padding: 0; color: var(--fg); cursor: pointer; font-size: 13px; letter-spacing: .02em; }
+  .grp-caret { width: 12px; color: var(--muted); }
+  .grp-count { min-width: 22px; height: 20px; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 14%, var(--bg)); color: var(--accent); font-size: 12px; line-height: 20px; text-align: center; }
+  html[data-table="grouped"] tr.grp-row:first-child td { padding-top: var(--s3); }
 </style>
 </head>
 <body>
@@ -985,21 +1044,52 @@
     }
   }
 
+  const tableCollapsed = new Set();
+  window.addEventListener('table-style', () => resetAndRender());
+  $('#tbody').addEventListener('click', e => {
+    const b = e.target.closest('[data-grp]'); if (!b) return;
+    e.stopPropagation(); const g = +b.dataset.grp;
+    tableCollapsed.has(g) ? tableCollapsed.delete(g) : tableCollapsed.add(g); renderTable();
+  }, true);
   function renderTable() {
     const list = filtered();
     $('#total-count').textContent = (isFiltering() ? plural(list.length, 'result') + ' of ' + invoices.filter(inGroup).length : plural(list.length, 'invoice'));
     renderHead(list);
     const visCols = COLS.filter(c => state.cols[c.key]);
-    const slice = list.slice(0, state.shown);
+    // "Grouped" table style: partition by urgency, then show group header rows.
+    const grouped = document.documentElement.dataset.table === 'grouped';
+    const GROUP_OF = inv => {
+      if (inv.status === 'Overdue' || (inv.status === 'Partially paid' && inv.due < TODAY)) return 0;
+      if (['Awaiting payment', 'Partially paid'].includes(inv.status) && diffDays(inv.due, TODAY) <= 7) return 1;
+      if (['Awaiting payment', 'Partially paid'].includes(inv.status)) return 2;
+      if (inv.status === 'Draft') return 3;
+      return 4;
+    };
+    const GROUP_NAMES = ['Overdue', 'Due in the next 7 days', 'Upcoming', 'Drafts', 'Paid and cancelled'];
+    let ordered = list, counts = [];
+    if (grouped) {
+      const buckets = GROUP_NAMES.map(() => []);
+      list.forEach(i => buckets[GROUP_OF(i)].push(i));
+      counts = buckets.map(b => b.length);
+      ordered = buckets.flatMap((b, g) => tableCollapsed.has(g) ? [] : b);
+    }
+    const slice = ordered.slice(0, state.shown);
     if (!list.length) {
       $('#tbody').innerHTML = `<tr><td colspan="${visCols.length + 2}"><div class="empty"><div>No invoices match these filters</div><button class="btn" id="empty-clear">Clear all filters</button></div></td></tr>`;
     } else {
-      $('#tbody').innerHTML = slice.map(inv => `
-        <tr data-id="${inv.id}" tabindex="0" aria-label="${inv.no}, ${esc(inv.project)}, ${esc(inv.client.name)}, ${inv.status}. Press Enter to preview." class="${state.selected.has(inv.id) ? 'is-selected' : ''} ${state.drawer && state.drawer.type === 'invoice' && state.drawer.id === inv.id ? 'is-open' : ''}">
+      let lastGroup = -1;
+      const groupRow = g => `<tr class="grp-row"><td colspan="${visCols.length + 2}"><button class="grp-btn" data-grp="${g}" aria-expanded="${!tableCollapsed.has(g)}">
+          <span class="grp-caret">${tableCollapsed.has(g) ? '▸' : '▾'}</span>${GROUP_NAMES[g]}<span class="grp-count">${counts[g]}</span></button></td></tr>`;
+      const emptyGroups = g => { let out = ''; for (let k = lastGroup + 1; k < g; k++) if (counts[k] && tableCollapsed.has(k)) out += groupRow(k); return out; };
+      $('#tbody').innerHTML = slice.map(inv => {
+        let head = '';
+        if (grouped) { const g = GROUP_OF(inv); if (g !== lastGroup) { head = emptyGroups(g) + groupRow(g); lastGroup = g; } }
+        return head + `
+        <tr data-id="${inv.id}" data-status="${inv.status.toLowerCase().replace(/ /g, '-')}" tabindex="0" aria-label="${inv.no}, ${esc(inv.project)}, ${esc(inv.client.name)}, ${inv.status}. Press Enter to preview." class="${state.selected.has(inv.id) ? 'is-selected' : ''} ${state.drawer && state.drawer.type === 'invoice' && state.drawer.id === inv.id ? 'is-open' : ''}">
           <td class="col-check"><input type="checkbox" data-check="${inv.id}" aria-label="Select ${inv.no}"${state.selected.has(inv.id) ? ' checked' : ''}></td>
           ${visCols.map(c => cellFor(c, inv)).join('')}
           <td class="col-edit"></td>
-        </tr>`).join('');
+        </tr>`; }).join('') + (grouped ? (() => { let out = ''; for (let k = lastGroup + 1; k < GROUP_NAMES.length; k++) if (counts[k]) out += groupRow(k); return out; })() : '');
     }
     $('#sentinel').textContent = list.length > state.shown ? 'Loading more…' : (list.length ? 'End of list · ' + plural(list.length, 'invoice') : '');
     renderChips();
@@ -1666,6 +1756,7 @@
   .sp-checks { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: var(--bg); font-size: 12px; line-height: 16px; }
   .sp-checks .ok { color: var(--pill-ok-fg); }
   .sp-checks .bad { color: var(--pill-bad-fg); }
+  .sp-wrap { flex-wrap: wrap; }
   .sp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .sp-actions .btn { flex: 1; justify-content: center; }
   .sp-export { width: 100%; min-height: 96px; font: 12px/16px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
@@ -1686,6 +1777,16 @@
     <div class="tabs" role="radiogroup" aria-label="Other card visuals" id="sp-extras">
       <button class="tab" role="radio" data-extras="on">Ageing + due strip</button>
       <button class="tab" role="radio" data-extras="off">Empty</button>
+    </div>
+  </div>
+  <div class="sp-group">
+    <span class="sp-group-title">Table style</span>
+    <div class="tabs sp-wrap" role="radiogroup" aria-label="Table style" id="sp-table">
+      <button class="tab" role="radio" data-table-style="current">Current</button>
+      <button class="tab" role="radio" data-table-style="ledger">Ledger</button>
+      <button class="tab" role="radio" data-table-style="cards">Card rows</button>
+      <button class="tab" role="radio" data-table-style="status">Status-led</button>
+      <button class="tab" role="radio" data-table-style="grouped">Grouped</button>
     </div>
   </div>
   <div id="sp-controls"></div>
@@ -1749,6 +1850,9 @@
     const s = state, set = (k, v) => root.style.setProperty(k, v);
     root.dataset.preset = s.preset;
     root.dataset.cardExtras = s.extras || 'on';
+    const ts = s.table || 'ledger';
+    if (root.dataset.table !== ts) { root.dataset.table = ts; window.dispatchEvent(new Event('table-style')); }
+    document.querySelectorAll('#sp-table [data-table-style]').forEach(b => { const on = b.dataset.tableStyle === ts; b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });
     document.querySelectorAll('#sp-extras [data-extras]').forEach(b => { const on = b.dataset.extras === (s.extras || 'on'); b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });
     document.querySelectorAll('#sp-presets [data-preset]').forEach(b => { const on = b.dataset.preset === s.preset; b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });
     set('--accent-fill-fg', s.accentFg);
@@ -1804,6 +1908,7 @@
     apply();
   });
   document.getElementById('sp-reset').onclick = () => { state = { ...DEFAULTS_FOR() }; render(); apply(); };
+  document.getElementById('sp-table').addEventListener('click', e => { const b = e.target.closest('[data-table-style]'); if (!b) return; state.table = b.dataset.tableStyle; apply(); });
   document.getElementById('sp-extras').addEventListener('click', e => { const b = e.target.closest('[data-extras]'); if (!b) return; state.extras = b.dataset.extras; apply(); });
   document.getElementById('sp-presets').addEventListener('click', e => { const b = e.target.closest('[data-preset]'); if (!b) return; state = { ...PRESETS[b.dataset.preset] }; render(); apply(); });
   document.getElementById('sp-copy').onclick = async () => {

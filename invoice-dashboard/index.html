@@ -50,7 +50,7 @@
     --selected: #33363b;
     --primary-bg: #ececec;
     --primary-fg: #141414;
-    --group-1: #a77bff;   /* warm violet */
+    --group-1: #38b6ff;   /* sky blue */
     --group-2: #ff9157;   /* coral */
     --notify: #ff5c5c;
     --shadow: rgba(0, 0, 0, .5);
@@ -73,7 +73,7 @@
     --pill-bad-bg: #fbe0e0; --pill-bad-fg: #8a1c1c; --hist: #d0d0d0;
     --control-fill: #ececee; --control-fill-hover: #e2e2e5; --hover: #f2f2f2; --selected: #e6e6e6;
     --primary-bg: #111111; --primary-fg: #ffffff;
-    --group-1: #7a3cff; --group-2: #d9541a; --notify: #e5484d;
+    --group-1: #0284c7; --group-2: #d9541a; --notify: #e5484d;
     --shadow: rgba(0, 0, 0, .1); --scrim: rgba(0, 0, 0, .3);
     color-scheme: light;
   }
@@ -207,31 +207,28 @@
   .kpi-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s4); border-top: 1px solid var(--line); padding-top: var(--s3); margin-top: var(--s1); }
   .kpi-split > span { display: flex; flex-direction: column; gap: var(--s1); }
 
-  /* ---------- KPI cards: pink mesh gradient + white sheen + grain/dither ----------
-     Each card places its blobs differently. Peaks are capped (pink <= 20%,
-     white <= 6%, grain <= 5%) and card captions are #d4d6da, so captions keep
-     >= 5.2:1 even where every layer overlaps. */
+  /* ---------- KPI cards: one pink wave flowing across all three cards ----------
+     A single SVG (pink bands + a soft white crest + a faint white top sheen) is
+     stretched to 3x the card width and each card shows its third, so the wave
+     reads as one continuous shape. Grain + dither on top. Peaks: pink <= 30%,
+     white <= 10%; card text is #e4e6ea / --fg, which keeps >= 4.5:1 at the
+     brightest overlap. */
   .kpis {
+    --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 240' preserveAspectRatio='none'%3E %3Cdefs%3E %3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='0'%3E %3Cstop offset='0' stop-color='%23f85ee4' stop-opacity='.10'/%3E %3Cstop offset='.35' stop-color='%23f85ee4' stop-opacity='.30'/%3E %3Cstop offset='.7' stop-color='%23ff7fe9' stop-opacity='.22'/%3E %3Cstop offset='1' stop-color='%23f85ee4' stop-opacity='.30'/%3E %3C/linearGradient%3E %3ClinearGradient id='q' x1='0' y1='0' x2='1' y2='0'%3E %3Cstop offset='0' stop-color='%23f85ee4' stop-opacity='.18'/%3E %3Cstop offset='.5' stop-color='%23f85ee4' stop-opacity='.06'/%3E %3Cstop offset='1' stop-color='%23f85ee4' stop-opacity='.16'/%3E %3C/linearGradient%3E %3ClinearGradient id='w' x1='0' y1='0' x2='1' y2='0'%3E %3Cstop offset='0' stop-color='%23fff' stop-opacity='.03'/%3E %3Cstop offset='.3' stop-color='%23fff' stop-opacity='.10'/%3E %3Cstop offset='.65' stop-color='%23fff' stop-opacity='.04'/%3E %3Cstop offset='.9' stop-color='%23fff' stop-opacity='.09'/%3E %3Cstop offset='1' stop-color='%23fff' stop-opacity='.04'/%3E %3C/linearGradient%3E %3ClinearGradient id='s' x1='0' y1='0' x2='0' y2='1'%3E %3Cstop offset='0' stop-color='%23fff' stop-opacity='.05'/%3E %3Cstop offset='.5' stop-color='%23fff' stop-opacity='0'/%3E %3C/linearGradient%3E %3Cfilter id='b' x='-10%25' y='-40%25' width='120%25' height='180%25'%3E%3CfeGaussianBlur stdDeviation='14'/%3E%3C/filter%3E %3Cfilter id='c' x='-10%25' y='-60%25' width='120%25' height='220%25'%3E%3CfeGaussianBlur stdDeviation='9'/%3E%3C/filter%3E %3C/defs%3E %3Crect width='1200' height='240' fill='url(%23s)'/%3E %3Cpath d='M0 70 C150 20 300 120 450 70 S750 10 900 60 S1100 110 1200 50 L1200 0 L0 0Z' fill='url(%23q)' filter='url(%23b)'/%3E %3Cpath d='M0 170 C160 110 320 210 480 150 S800 90 960 140 S1120 190 1200 130 L1200 240 L0 240Z' fill='url(%23p)' filter='url(%23b)'/%3E %3Cpath d='M0 150 C160 90 320 190 480 130 S800 70 960 120 S1120 170 1200 110' fill='none' stroke='url(%23w)' stroke-width='22' filter='url(%23c)'/%3E %3C/svg%3E");
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     --dither: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    --blob-pink: color-mix(in srgb, var(--accent) 20%, transparent);
-    --blob-deep: color-mix(in srgb, var(--accent-pressed) 14%, transparent);
-    --blob-white: rgba(255, 255, 255, .06);
   }
   .kpi {
-    --p: 100% 0%; --w: 18% 0%; --d: 0% 100%;
     background-color: var(--surface);
-    background-image:
-      var(--grain), var(--dither),
-      radial-gradient(55% 75% at var(--w), var(--blob-white), transparent 70%),
-      radial-gradient(70% 95% at var(--p), var(--blob-pink), transparent 70%),
-      radial-gradient(80% 90% at var(--d), var(--blob-deep), transparent 72%),
-      linear-gradient(160deg, transparent 30%, color-mix(in srgb, var(--accent) 5%, transparent) 100%);
+    background-image: var(--grain), var(--dither), var(--wave);
+    background-size: auto, auto, 300% 100%;
+    background-repeat: repeat, repeat, no-repeat;
+    background-position: 0 0, 0 0, 0% 50%;
   }
-  .kpi:nth-child(2) { --p: 0% 0%; --w: 85% 10%; --d: 100% 100%; }
-  .kpi:nth-child(3) { --p: 70% 100%; --w: 10% 20%; --d: 100% 0%; }
+  .kpi:nth-child(2) { background-position: 0 0, 0 0, 50% 50%; }
+  .kpi:nth-child(3) { background-position: 0 0, 0 0, 100% 50%; }
   .kpi:hover { background-color: var(--hover); }
-  .kpi .muted, .kpi .kpi-go { color: #d4d6da; }
+  .kpi .muted, .kpi .kpi-go { color: #e4e6ea; }
   .kpi-split { border-top-color: rgba(255, 255, 255, .12); }
 
   /* ---------- Toolbar ---------- */

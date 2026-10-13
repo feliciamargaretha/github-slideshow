@@ -631,6 +631,67 @@
   .b-more:hover { color: var(--fg); border-color: var(--line-control); }
   .b-empty { font-size: 12px; padding: var(--s3) 0; text-align: center; }
   .b-foot { grid-column: 1 / -1; font-size: 12px; margin: 0; }
+
+  /* ================= Preset: Midnight =================
+     Deep navy, electric-cyan accent, a cash-flow strip instead of cards and a
+     due-date timeline above a ledger list. Applied when data-preset="midnight". */
+  html[data-preset="midnight"] { --outline: #26324a; --muted: #9aa6bd; --hover: #1b2438; --line: #26324a; --line-control: #3a4864; --control-fill: #1a2234; --control-fill-hover: #212b40; }
+  html[data-preset="midnight"] .kpis { display: none; }
+  .flow, .tl { display: none; }
+  html[data-preset="midnight"] .flow { display: flex; }
+  html[data-preset="midnight"] .flow { flex-direction: column; gap: var(--s4); margin-bottom: var(--s6); padding: var(--s5) var(--s6);
+    border-radius: var(--radius-lg); border: 1px solid var(--outline); background: linear-gradient(180deg, #172036, #131a2b); }
+  .f-top { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--s4); flex-wrap: wrap; }
+  .f-eyebrow { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .f-total { font-size: 32px; line-height: 40px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .f-side { display: flex; gap: var(--s6); font-size: 13px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+  .f-bar { display: flex; gap: 3px; height: 14px; }
+  .f-seg { flex-basis: 0; min-width: 6px; border: 0; padding: 0; border-radius: 3px; cursor: pointer; }
+  .f-seg:hover { filter: brightness(1.15); }
+  .f-paid { background: var(--accent); }
+  .f-wait { background: color-mix(in srgb, var(--accent) 30%, #1b2438); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .f-late { background: #ff7a4d; }
+  .f-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); }
+  .f-item { display: grid; grid-template-columns: 10px 1fr; grid-template-rows: auto auto auto; column-gap: var(--s2); text-align: left; background: none; border: 0; padding: var(--s2); margin: calc(-1 * var(--s2)); border-radius: var(--radius); color: var(--fg); cursor: pointer; }
+  .f-item:hover { background: var(--hover); }
+  .f-key { grid-row: 1; width: 10px; height: 10px; border-radius: 2px; margin-top: 3px; }
+  .f-lbl { font-size: 12px; color: var(--muted); }
+  .f-val, .f-sub { grid-column: 2; }
+  .f-val { font-size: 18px; line-height: 26px; font-variant-numeric: tabular-nums; }
+  .f-sub { font-size: 12px; }
+
+  html[data-preset="midnight"] .tl:not([hidden]) { display: flex; }
+  .tl { flex-direction: column; gap: var(--s3); margin-bottom: var(--s5); padding: var(--s4) var(--s5); border-radius: var(--radius-lg); border: 1px solid var(--outline); background: #121929; }
+  .tl-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); flex-wrap: wrap; }
+  .tl-title { font-size: 13px; }
+  .tl-legend { display: flex; gap: var(--s4); font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .tl-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .tl-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .tl-plot { position: relative; height: 150px; margin: 0 0 18px; }
+  .tl-plot svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tl-past { fill: rgba(255, 122, 77, .04); }
+  .tl-grid { stroke: #24304a; stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .tl-today { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+  .tl-month, .tl-today-label { position: absolute; bottom: -18px; transform: translateX(4px); font-size: 11px; color: var(--muted); }
+  .tl-today-label { top: -2px; bottom: auto; color: var(--accent); }
+  .tl-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; padding: 0; border-radius: 50%; border: 0; cursor: pointer; }
+  .tl-dot:hover, .tl-dot:focus-visible { transform: scale(1.6); z-index: 2; }
+  .tl-dot.is-selected { box-shadow: 0 0 0 2px #0f1420, 0 0 0 3px var(--accent); }
+  .d-paid { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+  .d-wait { background: transparent; box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .d-part { background: #ffbe5c; }
+  .d-late { background: #ff7a4d; }
+  .tl-foot { display: flex; gap: var(--s6); font-size: 13px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+
+  /* Midnight uses the ledger table, with cyan for state */
+  html[data-preset="midnight"] .btn.primary, html[data-preset="midnight"] .split, html[data-preset="midnight"] .preset[aria-pressed="true"] { color: var(--accent-fill-fg); }
+  html[data-preset="midnight"] .split-divider { background: color-mix(in srgb, var(--accent-fill-fg) 25%, transparent); }
+  html[data-preset="midnight"] .nav-item[aria-current="true"] { background: color-mix(in srgb, var(--accent) 12%, var(--sidebar-bg)); color: var(--accent); }
+  html[data-preset="midnight"] .nav-item[aria-current="true"] .muted { color: var(--accent); }
+  html[data-preset="midnight"] .tab[aria-selected="true"] { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent); }
+  html[data-preset="midnight"] .tabs, html[data-preset="midnight"] .toolbar-right > .pop-wrap > .btn { border: 1px solid var(--outline); background: transparent; }
+  html[data-preset="midnight"] .chip { background: transparent; border-color: color-mix(in srgb, var(--accent) 60%, transparent); color: var(--accent); }
+  html[data-preset="midnight"] .dot { box-shadow: none !important; }
 </style>
 </head>
 <body>
@@ -689,6 +750,7 @@
     <main class="content" id="content">
       <!-- Dashboard view -->
       <section id="view-invoices">
+        <section class="flow" id="flow" aria-label="Cash position"></section>
         <div class="kpis" id="kpis" aria-label="Summary"></div>
 
         <div class="toolbar">
@@ -756,6 +818,7 @@
 
         <div class="chips" id="chips"></div>
 
+        <section class="tl" id="timeline" aria-label="Invoices by due date" hidden></section>
         <div class="board" id="board" hidden></div>
         <div class="table-wrap">
           <table aria-label="Invoices">
@@ -962,6 +1025,34 @@
   }
 
   // ================= KPIs =================
+  // Midnight preset: one cash-position strip instead of three cards.
+  function renderFlow(d) {
+    const segs = [
+      { k: 'paid', label: 'Collected in Oct', v: d.pt, sub: `${plural(d.paidN, 'invoice')} · <span class="trend ${d.change >= 0 ? 'up' : 'down'}">${d.change >= 0 ? '+' : ''}${d.change}%</span> vs Sep`, cls: 'f-paid' },
+      { k: 'notdue', label: 'Awaiting, not yet due', v: d.notDue, sub: `${plural(d.openN - d.overdueN, 'invoice')}`, cls: 'f-wait' },
+      { k: 'overdue', label: 'Overdue', v: d.overdue, sub: `${plural(d.overdueN, 'invoice')}`, cls: 'f-late' },
+    ];
+    const tot = segs.reduce((a, x) => a + x.v, 0) || 1;
+    $('#flow').innerHTML = `
+      <div class="f-top">
+        <div><div class="f-eyebrow">Money in play</div><div class="f-total">${money(tot)}</div></div>
+        <div class="f-side"><span><span class="muted">Due next month</span> ${money(d.nextAmt)} <span class="muted">· ${plural(d.nextN, 'invoice')}</span></span>
+          <span><span class="muted">Avg. days to payment</span> ${d.avgDays}</span></div>
+      </div>
+      <div class="f-bar" role="img" aria-label="${segs.map(x => `${x.label} ${money(x.v)}`).join(', ')}">
+        ${segs.map(x => `<button class="f-seg ${x.cls}" data-flow="${x.k}" style="flex-grow: ${x.v / tot}" aria-label="Show ${x.label}"></button>`).join('')}
+      </div>
+      <div class="f-legend">${segs.map(x => `<button class="f-item" data-flow="${x.k}"><span class="f-key ${x.cls}"></span>
+        <span class="f-lbl">${x.label}</span><span class="f-val">${money(x.v)}</span><span class="f-sub muted">${x.sub}</span></button>`).join('')}</div>`;
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-flow]'); if (!b) return;
+    const k = b.dataset.flow;
+    if (k === 'paid') return document.querySelector('[data-kpi="paid"]').click();
+    if (k === 'overdue') return document.querySelector('[data-tab="Overdue"]').click();
+    document.querySelector('[data-tab="Awaiting payment"]').click();
+  });
+
   function renderKPIs() {
     const list = invoices.filter(inGroup);
     const open = list.filter(i => ['Awaiting payment', 'Overdue', 'Partially paid'].includes(i.status));
@@ -1019,6 +1110,7 @@
       ticks.map(t => { const h = Math.max(8, t.v / tmax * (dueH - 6)); return `<rect x="${(t.d - 1) * 6 + .5}" y="${dueH - h}" width="5" height="${h}" rx="1.5"/>`; }).join('') +
       `</svg><span class="due-scale"><span>1 Nov</span><span>30 Nov</span></span></span>`;
     const go = '<span class="kpi-go">View<svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></span>';
+    renderFlow({ pt, pl, change, overdue, notDue: outstanding - overdue, overdueN: overdueList.length, openN: open.length, nextAmt, nextN: nextM.length, avgDays, paidN: thisM.length });
     $('#kpis').innerHTML = `
       <button class="kpi" data-kpi="outstanding" aria-label="View outstanding invoices">
         <span class="kpi-main">${ageChart}<span class="kpi-head"><span class="muted">Total outstanding</span>${go}</span>
@@ -1137,8 +1229,50 @@
     if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openInvoice(c.dataset.id); }
   });
 
+  // Midnight preset: every invoice on one due-date axis (paid ones at their payment date).
+  function renderTimeline(list) {
+    const el = $('#timeline');
+    if (document.documentElement.dataset.timeline !== 'on') { el.hidden = true; return; }
+    el.hidden = false;
+    const FROM = -75, TO = 45, W = 1000, H = 150, PAD = 14;
+    const pts = list.filter(i => i.status !== 'Draft' && i.status !== 'Cancelled').map(i => {
+      const d = i.status === 'Paid' ? i.paidDate : i.due;
+      return { i, off: diffDays(d, TODAY), v: i.status === 'Paid' ? i.total : balance(i) };
+    }).filter(p => p.off >= FROM && p.off <= TO);
+    const vmax = Math.max(...pts.map(p => p.v), 1);
+    const x = off => (off - FROM) / (TO - FROM) * W;
+    const y = v => H - PAD - Math.sqrt(v / vmax) * (H - PAD * 2);
+    const months = [];
+    for (let m = new Date(2026, 6, 1); m <= addDays(TODAY, TO); m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+      const off = diffDays(m, TODAY); if (off >= FROM) months.push({ off, label: MONTHS[m.getMonth()] });
+    }
+    const cls = st => ({ 'Paid': 'd-paid', 'Overdue': 'd-late', 'Partially paid': 'd-part', 'Awaiting payment': 'd-wait' })[st];
+    const lateSum = list.filter(i => ['Overdue', 'Partially paid', 'Awaiting payment'].includes(i.status) && i.due < TODAY).reduce((a, i) => a + balance(i), 0);
+    const soonSum = pts.filter(p => p.i.status !== 'Paid' && p.off >= 0).reduce((a, p) => a + p.v, 0);
+    el.innerHTML = `
+      <div class="tl-head"><span class="tl-title">By due date</span>
+        <span class="tl-legend"><span><i class="d-paid"></i>Paid</span><span><i class="d-wait"></i>Awaiting</span><span><i class="d-part"></i>Partially paid</span><span><i class="d-late"></i>Overdue</span></span></div>
+      <div class="tl-plot">
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+          <rect class="tl-past" x="0" y="0" width="${x(0)}" height="${H}"/>
+          ${months.map(m => `<line class="tl-grid" x1="${x(m.off)}" x2="${x(m.off)}" y1="0" y2="${H}"/>`).join('')}
+          <line class="tl-today" x1="${x(0)}" x2="${x(0)}" y1="0" y2="${H}"/>
+        </svg>
+        ${pts.map(p => `<button class="tl-dot ${cls(p.i.status)}${state.selected.has(p.i.id) ? ' is-selected' : ''}" data-tl="${p.i.id}"
+            style="left:${x(p.off) / W * 100}%; top:${y(p.v) / H * 100}%"
+            title="${p.i.no} · ${esc(p.i.client.name)} · ${money(p.v)}"
+            aria-label="${p.i.no}, ${esc(p.i.client.name)}, ${money(p.v)}, ${p.i.status}"></button>`).join('')}
+        <span class="tl-today-label" style="left:${x(0) / W * 100}%">Today</span>
+        ${months.map(m => `<span class="tl-month" style="left:${x(m.off) / W * 100}%">${m.label}</span>`).join('')}
+      </div>
+      <div class="tl-foot"><span><span class="muted">Past due, unpaid</span> <span class="trend down">${money(lateSum)}</span></span>
+        <span><span class="muted">Coming in, next 45 days</span> ${money(soonSum)}</span></div>`;
+  }
+  document.addEventListener('click', e => { const d = e.target.closest('[data-tl]'); if (d) openInvoice(d.dataset.tl); });
+
   function renderTable() {
     const list = filtered();
+    renderTimeline(list);
     const board = document.documentElement.dataset.table === 'board';
     $('#board').hidden = !board; $('.table-wrap').hidden = board;
     if (board) {
@@ -1862,6 +1996,7 @@
     <div class="tabs" role="radiogroup" aria-label="Preset" id="sp-presets">
       <button class="tab" role="radio" data-preset="solid">Solid lime</button>
       <button class="tab" role="radio" data-preset="glow">Glow pink</button>
+      <button class="tab" role="radio" data-preset="midnight">Midnight</button>
     </div>
   </div>
   <div class="sp-group">
@@ -1928,6 +2063,9 @@
     glow: { ...GLOW, preset: 'glow', accentFg: '#2a0a26' },
     solid: { ...GLOW, preset: 'solid', accentFg: '#1b2100', accent: '#d2f543', g1: '#7ee3ff', g2: '#ffbe5c', radius: 6, radiusLg: 8,
              glowOp: 0, grain: 0, cast: 0, castSpread: 0 },
+    midnight: { ...GLOW, preset: 'midnight', accentFg: '#03232b', accent: '#5ee7ff', bg: '#0f1420', surface: '#151c2c', sidebar: '#0b0f18',
+                g1: '#b39bff', g2: '#ffb86b', radius: 8, radiusLg: 14, glowOp: 0, grain: 0, cast: 0, castSpread: 0, headDark: 0, zebra: 0,
+                table: 'ledger', extras: 'off' },
   };
   const KEY = 'style-playground-v4';
   let state = { ...PRESETS.solid };
@@ -1943,6 +2081,8 @@
     const s = state, set = (k, v) => root.style.setProperty(k, v);
     root.dataset.preset = s.preset;
     root.dataset.cardExtras = s.extras || 'on';
+    const tlOn = s.preset === 'midnight' ? 'on' : 'off';
+    if (root.dataset.timeline !== tlOn) { root.dataset.timeline = tlOn; window.dispatchEvent(new Event('table-style')); }
     const ts = s.table || 'ledger';
     if (root.dataset.table !== ts) { root.dataset.table = ts; window.dispatchEvent(new Event('table-style')); }
     document.querySelectorAll('#sp-table [data-table-style]').forEach(b => { const on = b.dataset.tableStyle === ts; b.setAttribute('aria-checked', String(on)); b.setAttribute('aria-selected', String(on)); });

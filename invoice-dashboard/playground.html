@@ -641,7 +641,7 @@
   html[data-preset="midnight"] .flow { display: flex; }
   html[data-preset="midnight"] .flow { flex-direction: column; gap: var(--s4); margin-bottom: var(--s6); padding: var(--s5) var(--s6);
     border-radius: var(--radius-lg); border: 1px solid var(--outline); background: linear-gradient(180deg, #172036, #131a2b); }
-  .f-top { display: flex; gap: var(--s8); flex-wrap: wrap; }
+  .f-top { display: flex; gap: 64px; flex-wrap: wrap; }
   .f-stat { display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; padding: var(--s2); margin: calc(-1 * var(--s2)); border-radius: var(--radius); color: var(--fg); }
   button.f-stat { cursor: pointer; }
   button.f-stat:hover { background: var(--hover); }
@@ -649,15 +649,21 @@
   .f-eyebrow { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .f-total { font-size: 28px; line-height: 36px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
   .f-segs { display: flex; gap: 4px; align-items: stretch; }
-  .f-col { flex-basis: 0; min-width: 160px; display: flex; flex-direction: column; gap: 2px; text-align: left; background: none; border: 0; padding: 0 0 var(--s1); color: var(--fg); cursor: pointer; }
+  .f-col { flex-basis: 0; min-width: 8px; position: relative; display: block; text-align: left; background: none; border: 0; padding: 0; color: var(--fg); cursor: pointer; border-radius: 4px; }
   .f-col:hover .f-seg { filter: brightness(1.15); }
-  .f-col:hover .f-val { text-decoration: underline; text-underline-offset: 4px; }
-  .f-seg { display: block; height: 16px; border-radius: 4px; margin-bottom: var(--s2); }
+  /* Breakdown appears only on hover / keyboard focus, in a small dark container under the segment */
+  .f-tip { display: none; position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; min-width: 168px;
+    flex-direction: column; gap: 2px; padding: var(--s2) var(--s3); border-radius: 8px;
+    background: #0a0e17; border: 1px solid var(--outline); box-shadow: 0 8px 24px rgba(0, 0, 0, .5); pointer-events: none; }
+  .f-col:last-child .f-tip { left: auto; right: 0; }
+  .f-col:hover .f-tip, .f-col:focus-visible .f-tip { display: flex; }
+  .f-tip .f-sub { color: var(--muted); }
+  .f-seg { display: block; height: 16px; border-radius: 4px; }
   .f-late { background: #ff7a4d; }
   .f-this { background: #3fa6c4; }   /* solid, blue-tinted */
   .f-next { background: repeating-linear-gradient(135deg, rgba(94, 231, 255, .30) 0 2px, transparent 2px 6px); box-shadow: inset 0 0 0 1.5px rgba(94, 231, 255, .55); }
   .f-lbl { font-size: 12px; color: var(--muted); white-space: nowrap; }
-  .f-val { font-size: 20px; line-height: 28px; font-variant-numeric: tabular-nums; }
+  .f-val { font-size: 16px; line-height: 22px; font-variant-numeric: tabular-nums; }
   .f-sub { font-size: 12px; }
 
   html[data-preset="midnight"] .tl:not([hidden]) { display: flex; }
@@ -1039,7 +1045,7 @@
     const tot = segs.reduce((a, x) => a + x.v, 0) || 1;
     $('#flow').innerHTML = `
       <div class="f-top">
-        <button class="f-stat" data-flow="paid"><span class="f-eyebrow">Collected in Oct</span><span class="f-total">${money(d.pt)}</span>
+        <button class="f-stat" data-flow="paid"><span class="f-eyebrow">Collected this month</span><span class="f-total">${money(d.pt)}</span>
           <span class="f-note muted">${plural(d.paidN, 'invoice')} · <span class="trend ${d.change >= 0 ? 'up' : 'down'}">${d.change >= 0 ? '+' : ''}${d.change}%</span> vs Sep</span></button>
         <div class="f-stat"><span class="f-eyebrow">Avg. days to payment</span><span class="f-total">${d.avgDays} days</span>
           <span class="f-note muted">from issue date to paid</span></div>
@@ -1047,9 +1053,7 @@
       <div class="f-segs">${segs.map(x => `
         <button class="f-col" data-flow="${x.k}" style="flex-grow: ${x.v / tot}" aria-label="Show ${x.label}: ${money(x.v)}, ${plural(x.n, 'invoice')}">
           <span class="f-seg ${x.cls}"></span>
-          <span class="f-lbl">${x.label}</span>
-          <span class="f-val">${money(x.v)}</span>
-          <span class="f-sub muted">${plural(x.n, 'invoice')}</span>
+          <span class="f-tip" aria-hidden="true"><span class="f-lbl">${x.label}</span><span class="f-val">${money(x.v)}</span><span class="f-sub">${plural(x.n, 'invoice')} · ${Math.round(x.v / tot * 100)}%</span></span>
         </button>`).join('')}
       </div>`;
   }

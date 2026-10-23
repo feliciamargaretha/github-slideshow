@@ -720,7 +720,7 @@ a { color: inherit; }
     s.hx += dx * follow; s.hy += dy * follow;
 
     const D = diag();
-    const base = Math.max(120, Math.min(W, H) * 0.2);
+    const base = Math.max(108, Math.min(W, H) * 0.2 - 12);  // spotlight radius
     const target = s.pinned ? D * 1.25 : s.inside ? base : 0;  // only the button reveals everything
     s.r += (target - s.r) * (active ? 0.1 : 0.08);
 

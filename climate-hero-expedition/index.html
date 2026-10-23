@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&family=Geist:wght@400;500&display=swap">
-<link rel="preload" as="image" href="assets/summit/main.webp">
+<link rel="preload" as="image" href="assets/world/main.webp">
 <style>
 /* Layout: one full-viewport stage, pinned while you scroll through a taller track.
    A two-colour dithered alpine scene fills it, anchored bottom right; the copy sits in
-   the clear night sky at the top left. Scrolling walks the camera toward the summit,
-   then dissolves through three places, each with its field note in the same spot. */
+   the clear night sky at the top left. Scrolling flies the camera forward through one
+   landscape: the summit passes below, and each place rises behind it in turn. */
 :root {
   --night: #172f35;        /* ink, sky and every dark dot */
   --lichen: #c2dc93;       /* paper, snow and type: 9.6:1 on --night */
@@ -39,7 +39,7 @@ a { color: inherit; }
 
 .dolly {
   position: relative;
-  height: 840vh;          /* 1.4 screens for the summit, 2 for each place */
+  height: 750vh;          /* 6.5 screens of flight, plus the pinned screen itself */
 }
 .stage {
   position: sticky;
@@ -248,10 +248,12 @@ a { color: inherit; }
 
 <script>
 (() => {
-  // Every scene ships as greyscale depth layers. Each frame the current scene's layers are
-  // placed for the camera, then dithered to two colours at the screen's own size, so every
-  // dot lands on whole pixels. Between scenes the two tone maps cross-fade, which the
-  // dither turns into a dissolve of dots.
+  // One landscape of mountain ranges standing one behind another, each a greyscale layer
+  // drawn as seen from the start. Scrolling flies the camera forward: every layer scales
+  // by depth / (depth − distance travelled) about the point the camera is headed for, so
+  // near ranges sweep down and out of frame while the ones behind rise into view. Distant
+  // ranges are lost in the night haze until the camera gets close enough to see them.
+  // The frame is then dithered to two colours at the screen's own size.
   const dolly = document.getElementById('dolly');
   const stage = document.getElementById('stage');
   const canvas = document.getElementById('scene');
@@ -262,29 +264,24 @@ a { color: inherit; }
   const DOT = 2;                              // CSS pixels per dither dot
   const INK = [0x17, 0x2f, 0x35], PAPER = [0xc2, 0xdc, 0x93];
   const SIZE = { w: 1920, h: 1080 };
-  const BLEND = 0.16;                         // share of a scene spent dissolving into the next
+  const FOCUS = { x: 1480, y: 20 };           // where the camera is headed, in scene pixels
+  const HAZE = { from: 1.12, over: 0.3 };     // a range appears from this apparent scale on
 
-  // focus: the point the camera walks toward. walk: how far it travels, in layer-depth units.
-  // hero: the depth of the layer the walk is tuned for (it ends walk/(hero - walk) times larger).
-  // drift: sideways drift by the end, in scene pixels at the hero layer's depth.
-  // run: scroll length of the scene, in screen heights.
-  const SCENES = [
-    { dir: 'summit', run: 1.4, focus: { x: 1420, y: 175 }, walk: 1.6, hero: 3.2, drift: -300,
-      layers: [['far', 7], ['main', 3.2], ['snow', 1.75], ['bank', 1.25]] },
-    { dir: 'aletsch', run: 2, focus: { x: 1320, y: 520 }, walk: 1.5, hero: 3.2, drift: -220,
-      layers: [['far', 7], ['walls', 3.2], ['ice', 2.3], ['moraine', 1.3]] },
-    { dir: 'paradiso', run: 2, focus: { x: 1480, y: 380 }, walk: 1.4, hero: 3, drift: -260,
-      layers: [['far', 7], ['meadow', 3], ['near', 1.6]] },
-    { dir: 'tatras', run: 2, focus: { x: 1490, y: 570 }, walk: 1.4, hero: 3, drift: -220,
-      layers: [['far', 6], ['slope', 3], ['rocks', 1.45]] }
-  ];
-  for (const sc of SCENES) {
-    sc.layers = sc.layers.map(([name, depth]) => ({ depth, img: Object.assign(new Image(), { src: `assets/${sc.dir}/${name}.webp` }) }));
-    sc.ready = Promise.all(sc.layers.map(l => l.img.decode ? l.img.decode() : new Promise(r => { l.img.onload = r; }))).then(() => { sc.loaded = true; });
-  }
-  const TOTAL = SCENES.reduce((n, s) => n + s.run, 0);
+  // Back to front, with each layer's depth from the camera at the start.
+  const LAYERS = [
+    ['backdrop', 40, false], ['tatras', 16, true], ['dome', 10, true], ['meadow', 8.6, true],
+    ['aletsch', 6, true], ['main', 3.2, false], ['snow', 1.75, false], ['bank', 1.25, false]
+  ].map(([name, depth, hazy]) => ({ depth, hazy, img: Object.assign(new Image(), { src: `assets/world/${name}.webp` }) }));
+  for (const l of LAYERS) l.ready = (l.img.decode ? l.img.decode() : new Promise(r => { l.img.onload = r; })).then(() => { l.loaded = true; });
 
-  let cw = 0, ch = 0, base = null, va = null, vb = null, img = null;
+  // The flight: [scroll position in screen heights, distance travelled]. The camera eases
+  // between keys, so it slows into each place and lingers while its note is up.
+  const KEYS = [[0, 0], [1.1, 1.25], [2.1, 2.84], [2.9, 3.1], [3.9, 4.74], [4.7, 5.0], [5.7, 7.58], [6.5, 8.0]];
+  const RUN = KEYS[KEYS.length - 1][0];
+  // When each note is up: [arrives, leaves] in screen heights (the last one stays).
+  const STOPS = [[2.1, 2.9], [3.9, 4.7], [5.7, Infinity]];
+
+  let cw = 0, ch = 0, base = null, img = null;
 
   function size() {
     cw = Math.ceil(stage.clientWidth / DOT); ch = Math.ceil(stage.clientHeight / DOT);
@@ -295,38 +292,48 @@ a { color: inherit; }
     const s = Math.max(cw / SIZE.w, ch * share / SIZE.h);
     base = { s, ox: cw - SIZE.w * s, oy: ch - SIZE.h * s };
     img = ctx.createImageData(cw, ch);
-    va = new Float32Array(cw * ch); vb = new Float32Array(cw * ch);
   }
 
-  const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const smooth = t => t * t * (3 - 2 * t);
 
-  // Draw one scene at walk progress p and read its tone into out.
-  function tone(sc, p, out) {
-    const e = reduce ? 0 : ease(p), z = sc.walk * e;
-    const kHero = sc.hero / (sc.hero - sc.walk);
+  function travelled(sc) {
+    if (reduce) {                              // no flight: cut to each place as its note comes up
+      let z = 0;
+      for (const [s0, z0] of KEYS) if (STOPS.some(([a]) => a === s0) && sc >= s0 - 0.3) z = z0;
+      return z;
+    }
+    for (let i = 1; i < KEYS.length; i++) {
+      const [s0, z0] = KEYS[i - 1], [s1, z1] = KEYS[i];
+      if (sc <= s1) return z0 + (z1 - z0) * smooth(clamp((sc - s0) / (s1 - s0)));
+    }
+    return KEYS[KEYS.length - 1][1];
+  }
+
+  function render(z) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, cw, ch);
     ctx.imageSmoothingQuality = 'high';
-    for (const l of sc.layers) {
+    for (const l of LAYERS) {
       const gap = l.depth - z;
-      if (gap < 0.12) continue;                // the camera has walked past it
+      if (!l.loaded || gap < 0.12) continue;   // not here yet, or already flown past
       const k = l.depth / gap;                 // perspective: nearer layers grow faster
+      const a = l.hazy ? clamp((k - HAZE.from) / HAZE.over) : 1;
+      if (a <= 0) continue;
       const s = base.s * k;
-      // a sideways move shifts each layer by 1 / its distance: far ones barely slide
-      const drift = sc.drift * e * base.s * (k / l.depth) / (kHero / sc.hero);
-      ctx.setTransform(s, 0, 0, s, base.ox + base.s * sc.focus.x * (1 - k) + drift, base.oy + base.s * sc.focus.y * (1 - k));
+      ctx.globalAlpha = a;
+      ctx.setTransform(s, 0, 0, s, base.ox + base.s * FOCUS.x * (1 - k), base.oy + base.s * FOCUS.y * (1 - k));
       ctx.drawImage(l.img, 0, 0);
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const d = ctx.getImageData(0, 0, cw, ch).data;
-    for (let i = 0; i < out.length; i++) out[i] = d[i * 4] / 255;
-  }
+    ctx.globalAlpha = 1;
 
-  // Floyd–Steinberg, serpentine, to two colours.
-  function dither(v) {
-    const d = img.data;
+    const src = ctx.getImageData(0, 0, cw, ch).data, d = img.data;
+    const v = new Float32Array(cw * ch);
+    for (let i = 0; i < v.length; i++) v[i] = src[i * 4] / 255;
+    // Floyd–Steinberg, serpentine, to two colours.
     for (let y = 0; y < ch; y++) {
       const ltr = (y & 1) === 0, dx = ltr ? 1 : -1;
       for (let k = 0; k < cw; k++) {
@@ -345,59 +352,50 @@ a { color: inherit; }
     ctx.putImageData(img, 0, 0);
   }
 
-  // Where the scroll is: which scene, how far through it, and how far into the dissolve.
-  function where() {
-    const r = dolly.getBoundingClientRect();
-    const run = r.height - stage.clientHeight;
-    let t = run > 0 ? clamp(-r.top / run) * TOTAL : 0;
-    for (let i = 0; i < SCENES.length; i++) {
-      if (t <= SCENES[i].run || i === SCENES.length - 1) {
-        const p = clamp(t / SCENES[i].run);
-        const mix = i < SCENES.length - 1 ? clamp((p - (1 - BLEND)) / BLEND) : 0;
-        return { i, p, mix };
-      }
-      t -= SCENES[i].run;
-    }
-  }
-
-  // Copy for the scene on screen: in after the dissolve, out before the next one.
-  function panelsFor(i, p) {
+  // The headline leaves in the first quarter screen; each note rises in as the camera
+  // arrives at its place and lifts away as it leaves.
+  function panelsAt(sc) {
     for (const el of panels) {
       const n = +el.dataset.scene;
-      let o = 0;
-      if (n === i) o = n === 0 ? clamp(1 - p / 0.18) : clamp((p - 0.1) / 0.12) * clamp((0.82 - p) / 0.1);
-      const y = n === i ? (n === 0 ? -90 * p : 24 * (1 - clamp((p - 0.1) / 0.12)) - 30 * clamp((p - 0.72) / 0.1)) : 0;
+      let o, y;
+      if (n === 0) { o = clamp(1 - sc / 0.25); y = -90 * clamp(sc / 0.25); }
+      else {
+        const [a, b] = STOPS[n - 1];
+        const fin = clamp((sc - (a - 0.3)) / 0.3), fout = clamp((b - sc) / 0.25);
+        o = Math.min(fin, fout);
+        y = 24 * (1 - fin) - 30 * (1 - fout);
+      }
       el.style.opacity = o.toFixed(3);
       el.style.transform = reduce ? 'none' : `translateY(${y.toFixed(1)}px)`;
       el.style.visibility = o > 0.01 ? 'visible' : 'hidden';
     }
   }
 
+  function scrolled() {
+    const r = dolly.getBoundingClientRect();
+    const run = r.height - stage.clientHeight;
+    return run > 0 ? clamp(-r.top / run) * RUN : 0;
+  }
+
   let last = '', queued = false;
   function frame() {
     queued = false;
-    const { i, p, mix } = where();
-    panelsFor(i, p);
-    const a = SCENES[i], b = SCENES[i + 1];
-    const key = `${i}:${p.toFixed(4)}:${a.loaded}:${b && b.loaded}`;
-    if (key === last || !a.loaded) return;
+    const sc = scrolled();
+    panelsAt(sc);
+    const z = travelled(sc);
+    const key = z.toFixed(4) + ':' + LAYERS.filter(l => l.loaded).length;
+    if (key === last) return;
     last = key;
-    tone(a, p, va);
-    if (mix > 0 && b && b.loaded) {
-      tone(b, 0, vb);
-      const m = ease(mix);
-      for (let k = 0; k < va.length; k++) va[k] = va[k] * (1 - m) + vb[k] * m;
-    }
-    dither(va);
+    render(z);
   }
   function queue() { if (!queued) { queued = true; requestAnimationFrame(frame); } }
 
-  SCENES[0].ready.then(() => {
+  Promise.all(LAYERS.filter(l => !l.hazy).map(l => l.ready)).then(() => {
     size(); queue();
     addEventListener('scroll', queue, { passive: true });
     let t;
     addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { size(); last = ''; queue(); }, 120); });
-    for (const sc of SCENES.slice(1)) sc.ready.then(queue);
+    for (const l of LAYERS) l.ready.then(queue);
   }).catch(() => {});
 })();
 </script>

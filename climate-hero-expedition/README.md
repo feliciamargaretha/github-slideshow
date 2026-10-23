@@ -4,33 +4,39 @@ An alternative to `../climate-hero/`. It's a night-time alpine scene in two gree
 
 - **Type:** Source Serif 4 for the headline, Geist for the subtitle, the button and the nav.
 - **Layout:** 120px side margins from 1024px wide, 24px below that. The nav has no borders. The button has 14px corners.
-- **Scenes:** four landscapes in `assets/<scene>/`, each split into depth layers (greyscale tone with transparency):
-  - **summit:** the opening peak, with a snowfield, climbers and pines
-  - **aletsch:** a glacier between rock walls, with crevasses, moraine stripes and a roped party on the ice
-  - **paradiso:** a snow dome above a meadow, with a larch line and big larches in front
-  - **tatras:** a sawtooth ridge, with a switchback trail up the scree to a hut on the saddle
+- **Landscape:** one world of mountain ranges standing one behind another, in `assets/world/`. Each is a greyscale layer with transparency, drawn as seen from the camera's starting point. From front to back:
+  - **bank:** pines on a snowy bank
+  - **snow:** the snowfield with the climbers
+  - **main:** the summit
+  - **aletsch:** a glaciated massif
+  - **meadow:** a meadow with larches
+  - **dome:** a snow dome
+  - **tatras:** a granite ridge
+  - **backdrop:** the far range
 
-  The page places the layers for the current camera position and dithers the result to the two colours at 2 CSS pixels per dot. Scenes fill the screen from the bottom right; on tall phone screens they keep to the lower half so the copy sits on open sky.
-- **Scroll:** the header stays pinned through the whole sequence (about 7.4 screens of scroll):
-  1. The camera walks toward the summit while the headline fades out.
-  2. The dots dissolve into each place in turn. The camera walks into it, and its field note (number, coordinates, place, one sentence, link) fades in over the sky and out again before the next dissolve.
-
-  Each walk is a dolly, not a zoom: each layer grows by its distance from the camera, so near ground rushes past and leaves the frame while the far range barely moves, and the camera drifts slightly toward its subject. Scene settings (focus point, walk distance, drift, scroll length, layer depths) are in the `SCENES` list at the top of the script.
-- **Reduced motion:** with reduced motion turned on, the scenes don't move. They still change from one place to the next as you scroll, and the notes still appear, without sliding.
+  The page dithers the frame to the two colours at 2 CSS pixels per dot. It fills the screen from the bottom right; on tall phone screens it keeps to the lower half so the copy sits on open sky.
+- **Scroll:** the header stays pinned while the camera flies forward through the landscape (6.5 screens of scroll).
+  - **Movement:** every layer scales by `depth / (depth − distance travelled)` around the point the camera is headed for. Near ranges sweep down and out of frame while the ones behind rise into view. Distant ranges stay hidden in the night haze until the camera is close enough, then fade in.
+  - **Pacing:** the camera slows into each place and lingers while its field note is up (number, coordinates, place, one sentence, link).
+  - **Settings:** the flight keys (`KEYS`), note timings (`STOPS`), focus point and haze are at the top of the script. Layer depths live in both the script and `tools/world.py`.
+- **Reduced motion:** with reduced motion turned on, the camera doesn't fly. It cuts from place to place as each note comes up, and the notes appear without sliding.
 - **Placeholder copy:** the three places, their notes and links are examples. Replace them with the organisation's real projects. The coordinates are approximate.
 
-## How the scenes are made
+## How the landscape is made
 
-`tools/scenes.py` builds every scene from the drawing kit in `tools/engrave.py`:
-- **Terrain:** shaded relief from one ridgeline per layer, with noise for the gullies and light from the upper left.
-- **Ground:** snowfields, meadows and glacier ice.
+`tools/world.py` draws every layer with the kit in `tools/engrave.py`:
+- **Terrain:** shaded relief from one ridgeline per range, with noise for the gullies and light from the upper left.
+- **Ground:** snowfields and meadows.
 - **Trees:** pines and larches.
-- **Climbers:** cut from Edward Whymper's wood engravings for *Scrambles amongst the Alps* (1871, public domain), via [Project Gutenberg ebook 41234](https://www.gutenberg.org/ebooks/41234):
+- **Climbers:** in the opening view only, cut from Edward Whymper's wood engravings for *Scrambles amongst the Alps* (1871, public domain), via [Project Gutenberg ebook 41234](https://www.gutenberg.org/ebooks/41234):
   - the roped party of three, from "The Matterhorn from near the summit of the Théodule Pass"
   - the lone climber with hat and axe, from "Glissading"
 
-To rebuild, download those two plates (`images/fig27.jpg` and `images/fig92.jpg` from the Gutenberg HTML edition) into a folder, then run this from `tools/` (name scenes at the end to rebuild only those):
+`tools/fly.py` renders dithered stills of the flight at any distance, to tune it without a browser.
+
+To rebuild, download those two plates (`images/fig27.jpg` and `images/fig92.jpg` from the Gutenberg HTML edition) into a folder, then run this from `tools/`:
 
 ```
-python3 scenes.py <folder with the plates> ../assets [preview folder] [summit aletsch paradiso tatras]
+python3 world.py <folder with the plates> ../assets
+python3 fly.py ../assets <preview folder> 0 2.84 4.74 7.58
 ```

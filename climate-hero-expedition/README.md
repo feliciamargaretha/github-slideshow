@@ -18,6 +18,7 @@ An alternative to `../climate-hero/`. It's a night-time alpine scene in two gree
 - **Scroll:** the header stays pinned while the camera flies forward through the landscape (6.5 screens of scroll).
   - **Movement:** every layer scales by `depth / (depth − distance travelled)` around the point the camera is headed for. Near ranges sweep down and out of frame while the ones behind rise into view. Distant ranges stay hidden in the night haze until the camera is close enough, then fade in.
   - **Pacing:** the camera slows into each place and lingers while its field note is up (number, coordinates, place, one sentence, link).
+  - **Going back:** scrolling back up reverses the flight. The logo and "Back to the start ↑" on the last note scroll smoothly back to the opening view. The page reads its own scroll position every animation frame rather than relying on scroll events, so it keeps up inside embedded viewers.
   - **Settings:** the flight keys (`KEYS`), note timings (`STOPS`), focus point and haze are at the top of the script. Layer depths live in both the script and `tools/world.py`.
 - **Reduced motion:** with reduced motion turned on, the camera doesn't fly. It cuts from place to place as each note comes up, and the notes appear without sliding.
 - **Placeholder copy:** the three places, their notes and links are examples. Replace them with the organisation's real projects. The coordinates are approximate.

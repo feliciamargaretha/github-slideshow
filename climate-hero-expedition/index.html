@@ -177,6 +177,9 @@ a { color: inherit; }
   border-bottom: 1px solid currentColor;
 }
 .textlink:hover { color: var(--lichen-hi); }
+.note-links { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
+button.textlink { background: none; border: 0; border-bottom: 1px solid currentColor; color: inherit; cursor: pointer; }
+.textlink.back { color: var(--lichen-soft); }
 
 @media (max-width: 1023px) {
   :root { --margin: 24px; }
@@ -198,7 +201,7 @@ a { color: inherit; }
 
   <div class="layer">
     <nav class="nav" aria-label="Main">
-      <a class="brand" href="#">
+      <a class="brand" href="#" data-to-start>
         <svg viewBox="0 0 11 10" aria-hidden="true" shape-rendering="crispEdges">
           <path fill="currentColor" d="M5 0h1v1h1v1h1v2h1v2h1v2h1v2H0V8h1V6h1V4h1V2h1V1h1z"/>
           <path fill="var(--night)" d="M5 1h1v1h1v1H6v1H5V3H4V2h1z"/>
@@ -239,7 +242,10 @@ a { color: inherit; }
         <p class="note-meta"><span class="stop">03 / 03</span><span>49.17° N, 20.13° E</span></p>
         <h2 class="note-title" id="note-3">High Tatras, <em>Slovakia &amp; Poland</em></h2>
         <p class="note-body">Volunteers hike the high trails every weekend to mend the paths and carry the litter back down.</p>
-        <a class="textlink" href="#">Read the field note <span aria-hidden="true">→</span></a>
+        <div class="note-links">
+          <a class="textlink" href="#">Read the field note <span aria-hidden="true">→</span></a>
+          <button class="textlink back" type="button" data-to-start>Back to the start <span aria-hidden="true">↑</span></button>
+        </div>
       </article>
     </div>
   </div>
@@ -377,9 +383,8 @@ a { color: inherit; }
     return run > 0 ? clamp(-r.top / run) * RUN : 0;
   }
 
-  let last = '', queued = false;
+  let last = '';
   function frame() {
-    queued = false;
     const sc = scrolled();
     panelsAt(sc);
     const z = travelled(sc);
@@ -388,14 +393,33 @@ a { color: inherit; }
     last = key;
     render(z);
   }
-  function queue() { if (!queued) { queued = true; requestAnimationFrame(frame); } }
+  // Follow the track's position every frame rather than waiting for scroll events: inside an
+  // embedded viewer, or when an element other than the window does the scrolling, those
+  // events may never reach this page. Reading one rectangle per frame costs next to nothing,
+  // and the scene only redraws when the camera has actually moved.
+  let lastTop = NaN, dirty = true;
+  function watch() {
+    const top = dolly.getBoundingClientRect().top;
+    if (dirty || top !== lastTop) { lastTop = top; dirty = false; frame(); }
+    requestAnimationFrame(watch);
+  }
+
+  // The logo and the last note's link take you back to the opening view.
+  for (const el of document.querySelectorAll('[data-to-start]')) {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      const home = document.scrollingElement || document.documentElement;
+      home.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
 
   Promise.all(LAYERS.filter(l => !l.hazy).map(l => l.ready)).then(() => {
-    size(); queue();
-    addEventListener('scroll', queue, { passive: true });
+    size();
+    requestAnimationFrame(watch);
     let t;
-    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { size(); last = ''; queue(); }, 120); });
-    for (const l of LAYERS) l.ready.then(queue);
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { size(); last = ''; dirty = true; }, 120); });
+    for (const l of LAYERS) l.ready.then(() => { dirty = true; });
   }).catch(() => {});
 })();
 </script>

@@ -7,10 +7,10 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=Jacquarda+Bastarda+9&family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=DotGothic16&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="preload" as="image" href="assets/flower.webp">
 <style>
-/* Layout: one full-viewport stage. Nav on top, pixel-script headline above a flower that
+/* Layout: one full-viewport stage. Nav on top, pixel headline above a flower that
    rises from the bottom edge to 60% of the screen height; copy and controls flank the stem. */
 :root {
   --ink: #0b0c0b;          /* page ground, a green-biased near-black */
@@ -22,8 +22,7 @@
   --sky-shade: rgba(6, 30, 62, .38);
 
   --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --f-pixel: "Jacquarda Bastarda 9", "Courier New", monospace;
-  --f-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-pixel: "DotGothic16", "Courier New", monospace;
   --f-body: "Geist", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
@@ -65,9 +64,25 @@ a { color: inherit; }
   pointer-events: none;
 }
 
+.halo {
+  position: absolute; inset: -40px;
+  z-index: 2;
+  visibility: hidden;
+  pointer-events: none;
+  background: #1d5aa0 url("assets/sky.webp") center 70% / cover no-repeat;
+  filter: blur(26px) brightness(.5) saturate(.9);
+}
+.halo.is-on { visibility: visible; }
+.halo-flower {
+  position: absolute;
+  left: calc(var(--fx) + 40px); top: calc(var(--fy) + 40px);
+  width: var(--fw); height: var(--fh);
+  max-width: none;
+}
+
 .real {
   position: absolute; inset: 0;
-  z-index: 2;
+  z-index: 3;
   visibility: hidden;
   pointer-events: none;
   background: #1d5aa0 url("assets/sky.webp") center 70% / cover no-repeat;
@@ -82,14 +97,12 @@ a { color: inherit; }
   left: var(--fx); top: var(--fy);
   width: var(--fw); height: var(--fh);
   max-width: none;
-  object-fit: contain;
-  object-position: bottom center;
   filter: drop-shadow(0 30px 60px rgba(4, 24, 52, .25));
 }
 
 .layer {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   height: 100%;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
@@ -99,6 +112,17 @@ a { color: inherit; }
   pointer-events: none;
 }
 .layer a, .layer button { pointer-events: auto; }
+.layer > * {
+  transition: opacity .8s ease, transform .9s cubic-bezier(.2, .7, .2, 1), visibility 0s;
+}
+.layer > .intro { transition-delay: .18s; }
+.layer > .foot { transition-delay: .36s; }
+.hero.is-growing .layer > * {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: none;
+}
 
 /* ---------- nav ---------- */
 .nav {
@@ -182,40 +206,36 @@ a { color: inherit; }
   70%, 100% { box-shadow: 0 0 0 8px rgba(198, 244, 50, 0); }
 }
 
-/* Two copies of the headline share one grid cell: a pixel calligraphy (the
-   render) and a smooth serif (the real thing). Hover wipes one into the other. */
+/* Two copies of the headline share one grid cell: the pixel face (the render)
+   and Geist Mono (the real thing). Both are monospaced; script splits both into letters and gives each
+   smooth letter the width of its pixel twin, so they line up. The smooth copy
+   only shows inside the same soft mask that reveals the sky. */
 .headline {
   margin: 0;
   display: grid;
-  justify-items: stretch;
-  align-items: center;
   text-align: center;
   font-weight: 400;
-  font-size: clamp(2.5rem, 6vw, 6.5rem);
-  line-height: 1;
-  text-wrap: balance;
-  pointer-events: auto;
-  cursor: default;
+  font-size: clamp(2.5rem, 6.2vw, 6.6rem);
+  line-height: 1.06em;   /* a length, so both copies keep the same line pitch */
 }
-.headline > span {
-  grid-area: 1 / 1;
-  padding: 0.06em 0.08em;
-  transition: clip-path .75s cubic-bezier(.65, 0, .25, 1);
-}
+.headline > span { grid-area: 1 / 1; }
 .h-px {
   font-family: var(--f-pixel);
-  letter-spacing: -0.01em;
-  clip-path: inset(0 0 0 0);
+  letter-spacing: -0.03em;
 }
-.h-serif {
-  font-family: var(--f-serif);
-  font-size: 1.14em;
-  letter-spacing: -0.015em;
-  clip-path: inset(0 100% 0 0);
+.h-sans {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  letter-spacing: 0;
+  visibility: hidden;
 }
-.h-serif em { font-style: italic; }
-.headline:hover .h-px, .hero.is-real .h-px { clip-path: inset(0 0 0 100%); }
-.headline:hover .h-serif, .hero.is-real .h-serif { clip-path: inset(0 0 0 0); }
+.headline.is-split .h-sans {
+  visibility: visible;
+  -webkit-mask-image: linear-gradient(transparent, transparent);
+          mask-image: linear-gradient(transparent, transparent);
+}
+.headline .w { display: inline-block; white-space: nowrap; }
+.headline .c { display: inline-block; text-align: center; }
 
 /* ---------- bottom row ---------- */
 .foot {
@@ -325,7 +345,7 @@ a { color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eyebrow, .caption, .headline > span { transition: none; }
+  .eyebrow, .caption, .layer > * { transition: none; }
   .dot { animation: none; }
   .real { transition: opacity .4s; }
 }
@@ -336,8 +356,11 @@ a { color: inherit; }
 <header class="hero" id="hero">
   <canvas class="ascii" id="ascii" aria-hidden="true"></canvas>
 
+  <div class="halo" id="halo" aria-hidden="true">
+    <img class="halo-flower" src="assets/flower.webp" alt="">
+  </div>
   <div class="real" id="real">
-    <img class="real-flower" id="realFlower" src="assets/flower.webp" alt="A pale pink cosmos flower on a green stem, seen from below against a clear blue sky.">
+    <canvas class="real-flower" id="realFlower" role="img" aria-label="A pale pink cosmos flower on a green stem, turning slowly against a blue sky with a few clouds."></canvas>
   </div>
 
   <div class="layer">
@@ -366,7 +389,7 @@ a { color: inherit; }
       <p class="eyebrow"><span class="nw"><span class="dot" aria-hidden="true"></span>Atmospheric CO₂</span> &nbsp;<span class="nw"><b>315 ppm</b> in 1958</span> &nbsp;·&nbsp; <span class="nw"><b>424.6 ppm</b> in 2024</span></p>
       <h1 class="headline" aria-label="Don’t let this be the only flower they know.">
         <span class="h-px" aria-hidden="true">Don’t let this be the <br class="br-wide">only flower they know.</span>
-        <span class="h-serif" aria-hidden="true">Don’t let this be the <br class="br-wide">only <em>flower</em> they know.</span>
+        <span class="h-sans" aria-hidden="true">Don’t let this be the <br class="br-wide">only flower they know.</span>
       </h1>
     </div>
 
@@ -397,6 +420,12 @@ a { color: inherit; }
   const canvas = document.getElementById('ascii');
   const ctx = canvas.getContext('2d');
   const real = document.getElementById('real');
+  const halo = document.getElementById('halo');
+  const realCanvas = document.getElementById('realFlower');
+  const rctx = realCanvas.getContext('2d');
+  const headline = document.querySelector('.headline');
+  const hPx = headline.querySelector('.h-px');
+  const hSans = headline.querySelector('.h-sans');
   const toggle = document.getElementById('toggle');
   const toggleLabel = toggle.querySelector('.toggle-label');
   const hint = document.getElementById('hint');
@@ -408,28 +437,66 @@ a { color: inherit; }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const coarse = matchMedia('(hover: none)').matches;
   if (coarse) hint.textContent = 'or tap';
+  if (!reduce) hero.classList.add('is-growing');  // nothing but the flower until it has grown
 
   // Where the flower sits: bottom-anchored, 60% of the stage height.
   const FLOWER_SHARE = 0.6;
   // Calyx (where petals meet the stem) in the source image, as fractions.
   const CALYX = { u: 0.537, v: 0.5 };
+  const HEAD_END = CALYX.v + 0.04;                     // rows above this turn; the stem stays still
   const GROW = { rise: 1.9, openAt: 1.6, open: 1.7 };  // seconds
+  // Once grown the head turns side to side on its stem. A single photo has no back,
+  // so the turn stays within the angles that the front view can carry.
+  const TURN = { amp: 0.32, period: 9 };               // radians, seconds
+  const FRAME_MS = 33;                                 // ~30fps for the idle render
 
   const src = new Image();
   src.src = 'assets/flower.webp';
 
   let W = 0, H = 0, rect = null, dpr = 1;
-  let grid = null;           // { cols, rows, cell, data, sw, sh }
-  let staticFrame = null;    // cached finished render
-  let growStart = 0;
-  let growing = false;
+  let grid = null;           // ASCII sampling buffer
+  let photo = null;          // pixel buffer for the turning photo
+  let growStart = 0, growing = false, ready = reduce;
+  let theta = 0, phase = 0, spinFrom = 0, lastFrame = 0, lastSpin = 0;
+
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  /* Centre and half-width of the silhouette per row, from the alpha channel, smoothed
+     over neighbouring rows so the turn does not tear the image into strips. */
+  function rowSpans(data, w, h) {
+    const lo = new Float32Array(h), hi = new Float32Array(h), has = new Uint8Array(h);
+    for (let y = 0; y < h; y++) {
+      let a = -1, b = -1;
+      for (let x = 0; x < w; x++) if (data[(y * w + x) * 4 + 3] > 40) { if (a < 0) a = x; b = x + 1; }
+      if (a >= 0) { lo[y] = a; hi[y] = b; has[y] = 1; }
+    }
+    const k = Math.max(2, Math.round(h * 0.02));
+    const c = new Float32Array(h), r = new Float32Array(h);
+    for (let y = 0; y < h; y++) {
+      if (!has[y]) continue;
+      let sl = 0, sh = 0, n = 0;
+      for (let j = Math.max(0, y - k); j <= Math.min(h - 1, y + k); j++) if (has[j]) { sl += lo[j]; sh += hi[j]; n++; }
+      c[y] = (sl + sh) / (2 * n);
+      r[y] = (sh - sl) / (2 * n) + 1;
+    }
+    return { c, r };
+  }
+
+  // Turn one position round a row's cylinder: x is the offset from the row centre.
+  function turn(pos, c, r, rot) {
+    const x = (pos - c) / r;
+    if (x <= -1 || x >= 1) return null;
+    const phi = Math.asin(x) + rot;
+    return { pos: c + r * Math.sin(phi), shade: Math.cos(phi) };
+  }
 
   /* ---------- layout ---------- */
   function layout() {
     W = hero.clientWidth; H = hero.clientHeight;
     const ar = src.naturalWidth / src.naturalHeight || 0.66;
-    const narrow = W < 600;
-    const fh = Math.round(H * (narrow ? 0.52 : FLOWER_SHARE));
+    const fh = Math.round(H * (W < 600 ? 0.52 : FLOWER_SHARE));
     const fw = Math.round(fh * ar);
     rect = { x: Math.round((W - fw) / 2), y: H - fh, w: fw, h: fh };
     hero.style.setProperty('--fx', rect.x + 'px');
@@ -441,11 +508,12 @@ a { color: inherit; }
     canvas.width = Math.round(rect.w * dpr);
     canvas.height = Math.round(rect.h * dpr);
     buildGrid();
+    buildPhoto();
+    measureHeadline();
   }
 
   /* Sample the photo once into a small pixel buffer; the ASCII is read from it. */
   function buildGrid() {
-    if (!src.complete || !src.naturalWidth) return;
     const cell = Math.max(5, Math.min(10, Math.round(rect.h / 100)));
     const cols = Math.ceil(rect.w / cell);
     const rows = Math.ceil(rect.h / cell);
@@ -457,20 +525,42 @@ a { color: inherit; }
     const data = o.getImageData(0, 0, sw, sh).data;
 
     // A blurred copy of the alpha gives the scattered dust around the edges.
-    let halo = null;
+    let haloData = null;
     if ('filter' in o) {
       o.clearRect(0, 0, sw, sh);
       o.filter = 'blur(' + Math.round(sw / 40) + 'px)';
       o.drawImage(src, 0, 0, sw, sh);
       o.filter = 'none';
-      halo = o.getImageData(0, 0, sw, sh).data;
+      haloData = o.getImageData(0, 0, sw, sh).data;
     }
     const seed = new Float32Array(cols * rows);
     let s = 7;
     for (let i = 0; i < seed.length; i++) { s = (s * 16807) % 2147483647; seed[i] = s / 2147483647; }
-    grid = { cell, cols, rows, sw, sh, data, halo, seed };
-    staticFrame = null;
+    const spans = rowSpans(data, sw, sh);
+    for (let i = 0; i < sh; i++) { spans.c[i] /= sw; spans.r[i] /= sw; }   // in u units
+    grid = { cell, cols, rows, sw, sh, data, halo: haloData, seed, spans };
     charCount.textContent = countCells().toLocaleString('en-US');
+  }
+
+  function buildPhoto() {
+    const q = Math.min(dpr, 1.5);
+    const pw = Math.round(rect.w * q), ph = Math.round(rect.h * q);
+    realCanvas.width = pw; realCanvas.height = ph;
+    rctx.clearRect(0, 0, pw, ph);
+    rctx.drawImage(src, 0, 0, pw, ph);
+    const img = rctx.getImageData(0, 0, pw, ph);
+    photo = {
+      pw, ph,
+      src: new Uint8ClampedArray(img.data),
+      out: img,
+      spans: rowSpans(img.data, pw, ph),
+      headRows: Math.round(HEAD_END * ph)
+    };
+  }
+
+  function sample(u, v) {
+    if (u < 0 || u >= 1 || v < 0 || v >= 1) return null;
+    return ((v * grid.sh | 0) * grid.sw + (u * grid.sw | 0)) * 4;
   }
 
   function countCells() {
@@ -484,21 +574,11 @@ a { color: inherit; }
 
   /* ---------- ASCII render ---------- */
   const RAMP = ['·', ':', '-', '+', '+', '+', '*'];
-  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-  const easeOut = t => 1 - Math.pow(1 - t, 3);
-  const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-  function sample(u, v) {
+  // t: seconds since growth started (Infinity = grown); rot: turn of the head in radians.
+  function draw(t, rot) {
     const g = grid;
-    if (u < 0 || u >= 1 || v < 0 || v >= 1) return null;
-    const i = ((v * g.sh | 0) * g.sw + (u * g.sw | 0)) * 4;
-    return i;
-  }
-
-  // t: seconds since growth started; Infinity = fully grown.
-  function draw(t) {
-    const g = grid; if (!g) return 0;
-    const { cell, cols, rows, data, halo, seed } = g;
+    const { cell, cols, rows, data, halo: hd, seed, spans } = g;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.w, rect.h);
     ctx.font = '500 ' + (cell * 1.5).toFixed(1) + 'px "Geist Mono", ui-monospace, monospace';
@@ -508,6 +588,7 @@ a { color: inherit; }
     // A closed bud rides up from the bottom edge on a lengthening stem,
     // then the petals open once it reaches full height.
     const rise = easeInOut(clamp(t / GROW.rise));
+    if (rise <= 0) return 0;
     const open = easeOut(clamp((t - GROW.openAt) / GROW.open));
     const cy = 1 - rise * (1 - CALYX.v);      // calyx position on screen, 1 = bottom edge
     const bud = 0.22 + 0.78 * rise;           // the bud swells as it climbs
@@ -519,16 +600,24 @@ a { color: inherit; }
     for (let r = 0; r < rows; r++) {
       const v = (r + 0.5) / rows;
       const inHead = v < cy + 0.02;
-      if (rise <= 0) break;
       const vs = inHead
         ? CALYX.v + (v - cy) / sy
         : CALYX.v + (v - cy) / (1 - cy) * (1 - CALYX.v);
+      if (vs < 0 || vs >= 1) continue;
+      // Turning the head: treat each row as a cylinder and slide the texture round it.
+      const sr = vs * g.sh | 0;
+      const rr = rot && vs < HEAD_END ? spans.r[sr] : 0, rc = spans.c[sr];
       for (let c = 0; c < cols; c++) {
         const u = (c + 0.5) / cols;
-        const us = inHead ? CALYX.u + (u - CALYX.u) / sx : u;
+        let us = inHead ? CALYX.u + (u - CALYX.u) / sx : u;
+        let shade = 1;
+        if (rr > 0) {
+          const tu = turn(us, rc, rr, rot);
+          if (tu) { us = tu.pos; shade = 0.82 + 0.18 * tu.shade; }
+        }
         const i = sample(us, vs);
         if (i === null) continue;
-        let a = data[i + 3] / 255;
+        const a = data[i + 3] / 255;
         const k = r * cols + c;
         let ch, R, G, B, A;
         if (a > 0.18) {
@@ -536,14 +625,14 @@ a { color: inherit; }
           ch = RAMP[Math.min(RAMP.length - 1, (lum * RAMP.length) | 0)];
           const gray = lum * 255;
           // pull toward grey so the render reads as a screen, with a hint of the real colour
-          R = (data[i] * 0.55 + gray * 0.45) * 1.25;
-          G = (data[i + 1] * 0.55 + gray * 0.45) * 1.25;
-          B = (data[i + 2] * 0.55 + gray * 0.45) * 1.25;
+          R = (data[i] * 0.55 + gray * 0.45) * 1.25 * shade;
+          G = (data[i + 1] * 0.55 + gray * 0.45) * 1.25 * shade;
+          B = (data[i + 2] * 0.55 + gray * 0.45) * 1.25 * shade;
           A = a * (0.5 + 0.5 * lum);
           if (inHead && budTint > 0) {
             R += (130 - R) * budTint; G += (205 - G) * budTint; B += (80 - B) * budTint;
           }
-        } else if (halo && halo[i + 3] > 14 && seed[k] < 0.16) {
+        } else if (hd && hd[i + 3] > 14 && seed[k] < 0.16) {
           ch = '·'; R = G = B = 220; A = 0.22 + seed[k];
         } else continue;
         ctx.fillStyle = 'rgba(' + (R > 255 ? 255 : R | 0) + ',' + (G > 255 ? 255 : G | 0) + ',' + (B > 255 ? 255 : B | 0) + ',' + A.toFixed(2) + ')';
@@ -558,7 +647,7 @@ a { color: inherit; }
   const sparks = [];
   function drawSparks(now) {
     const g = grid;
-    if (!reduce && sparks.length < 14 && Math.random() < 0.35) {
+    if (sparks.length < 14 && Math.random() < 0.35) {
       for (let tries = 0; tries < 6; tries++) {
         const c = (Math.random() * g.cols) | 0, r = (Math.random() * g.rows * 0.62) | 0;
         const i = sample((c + 0.5) / g.cols, (r + 0.5) / g.rows);
@@ -574,40 +663,103 @@ a { color: inherit; }
     }
   }
 
-  let lastIdle = 0;
-  function asciiFrame(now) {
-    if (!grid) return;
-    if (growing) {
-      if (!growStart) growStart = now;  // start on the first visible frame
-      const t = (now - growStart) / 1000;
-      draw(t);
-      if (t > GROW.openAt + GROW.open + 0.1) { growing = false; staticFrame = null; }
-      return;
+  /* The photo turns the same way: remap each head row around the stem axis. */
+  function drawPhoto(rot) {
+    const { pw, src: sp, out, spans, headRows } = photo;
+    const op = out.data;
+    for (let y = 0; y < headRows; y++) {
+      const R = spans.r[y], C = spans.c[y];
+      if (!R) continue;
+      const row = y * pw * 4;
+      const x0 = Math.max(0, Math.floor(C - R)), x1 = Math.min(pw - 1, Math.ceil(C + R));
+      for (let x = x0; x <= x1; x++) {
+        const o = row + x * 4;
+        const tu = turn(x + 0.5, C, R, rot);
+        if (!tu) { op[o + 3] = 0; continue; }
+        const sx = Math.min(pw - 1, Math.max(0, tu.pos | 0));
+        const si = row + sx * 4;
+        const shade = 0.86 + 0.14 * tu.shade;
+        op[o] = sp[si] * shade; op[o + 1] = sp[si + 1] * shade; op[o + 2] = sp[si + 2] * shade; op[o + 3] = sp[si + 3];
+      }
     }
-    if (!staticFrame) {
-      charCount.textContent = draw(Infinity).toLocaleString('en-US');
-      staticFrame = document.createElement('canvas');
-      staticFrame.width = canvas.width; staticFrame.height = canvas.height;
-      staticFrame.getContext('2d').drawImage(canvas, 0, 0);
-    }
-    if (reduce || now - lastIdle < 40 || reveal.full) return;  // ~25fps idle shimmer
-    lastIdle = now;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(staticFrame, 0, 0);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawSparks(now);
+    rctx.putImageData(out, 0, 0);
   }
 
   function startGrowth() {
-    if (reduce) { growing = false; staticFrame = null; return; }
-    growing = true; growStart = 0;
+    sparks.length = 0;
+    if (reduce) { ready = true; return; }
+    growing = true; growStart = 0; ready = false; theta = 0; phase = 0;
+    hero.classList.add('is-growing');
+    reveal.inside = false;
+    if (reveal.pinned) setPinned(false);
   }
 
-  /* ---------- reveal: a soft mask that follows the cursor ---------- */
+  function finishGrowth(now) {
+    growing = false; ready = true;
+    spinFrom = now; lastSpin = now;
+    hero.classList.remove('is-growing');
+    measureHeadline();
+  }
+
+  function asciiFrame(now) {
+    if (growing) {
+      if (!growStart) growStart = now;  // start on the first visible frame
+      const t = (now - growStart) / 1000;
+      draw(t, 0);
+      if (t > GROW.openAt + GROW.open + 0.1) finishGrowth(now);
+      return;
+    }
+    if (reduce) { if (!lastFrame) { draw(Infinity, 0); drawPhoto(0); lastFrame = now; } return; }
+    if (now - lastFrame < FRAME_MS) return;
+    // ease into the spin over the first second and a half
+    const dt = Math.min(0.1, (now - lastSpin) / 1000);
+    lastSpin = now;
+    phase += dt * (2 * Math.PI / TURN.period) * easeInOut(clamp((now - spinFrom) / 1500));
+    theta = TURN.amp * Math.sin(phase);
+    lastFrame = now;
+    if (!reveal.full) { draw(Infinity, theta); drawSparks(now); }
+    if (real.classList.contains('is-on')) drawPhoto(theta);
+  }
+
+  /* ---------- headline: letter-aligned twin ---------- */
+  function splitInto(el) {
+    const parts = [];
+    el.childNodes.forEach(n => parts.push(n.nodeType === 3 ? n.textContent : n));
+    el.textContent = '';
+    parts.forEach(p => {
+      if (typeof p !== 'string') { el.appendChild(p); return; }
+      const words = p.split(/(\s+)/).filter(Boolean);
+      words.forEach((w, i) => {
+        if (/^\s+$/.test(w)) return;
+        const span = document.createElement('span');
+        span.className = 'w';
+        const text = w + (i < words.length - 1 ? ' ' : '');
+        for (const ch of text) {
+          const c = document.createElement('span');
+          c.className = 'c';
+          c.textContent = ch;
+          span.appendChild(c);
+        }
+        el.appendChild(span);
+      });
+    });
+  }
+  splitInto(hPx); splitInto(hSans);
+  const pxChars = hPx.querySelectorAll('.c'), sansChars = hSans.querySelectorAll('.c');
+
+  function measureHeadline() {
+    const widths = Array.from(pxChars, c => c.getBoundingClientRect().width);
+    // size the smooth face so its advance (0.6em) matches a typical pixel cell
+    const typical = widths.slice().sort((a, b) => a - b)[widths.length >> 1];
+    hSans.style.fontSize = (typical / 0.6 / parseFloat(getComputedStyle(headline).fontSize)).toFixed(3) + 'em';
+    sansChars.forEach((c, i) => { c.style.width = widths[i] + 'px'; });
+    headline.classList.add('is-split');
+  }
+
+  /* ---------- reveal: a soft, uneven mask that follows the cursor ---------- */
   const reveal = {
     inside: false, pinned: false, full: false,
-    px: 0, py: 0, hx: 0, hy: 0, r: 0, enterAt: 0, trail: []
+    px: 0, py: 0, hx: 0, hy: 0, r: 0, trail: []
   };
 
   function diag() { return Math.hypot(W, H) * 1.05; }
@@ -618,50 +770,90 @@ a { color: inherit; }
     capRender.hidden = on; capReal.hidden = !on;
   }
 
+  // The mask is a cluster of overlapping soft circles that drift around the cursor,
+  // so its outline wobbles instead of reading as one clean disc.
+  function shapes(now) {
+    const s = reveal, out = [];
+    if (s.r > 0.5) {
+      const t = now / 1000;
+      out.push({ x: s.hx, y: s.hy, R: s.r * 0.85 });
+      for (let i = 0; i < 4; i++) {
+        const a = t * (0.5 + i * 0.13) + i * 1.7;
+        const d = s.r * (0.3 + 0.12 * Math.sin(t * 1.1 + i * 2.3));
+        out.push({ x: s.hx + Math.cos(a) * d, y: s.hy + Math.sin(a) * d * 0.8, R: s.r * (0.55 + 0.12 * Math.sin(t * 1.4 + i)) });
+      }
+    }
+    for (const p of s.trail) {
+      const k = 1 - (now - p.t) / 520;
+      if (p.r * 0.7 * k > 2) out.push({ x: p.x, y: p.y, R: p.r * 0.7 * k });
+    }
+    return out;
+  }
+
+  const SOFT = '#000 0%, rgba(0,0,0,.9) 28%, rgba(0,0,0,.5) 58%, rgba(0,0,0,.14) 84%, transparent 100%';
+  const INV = 'transparent 0%, rgba(0,0,0,.1) 28%, rgba(0,0,0,.5) 58%, rgba(0,0,0,.86) 84%, #000 100%';
+  const HALO = '#000 0%, rgba(0,0,0,.55) 42%, rgba(0,0,0,.18) 72%, transparent 100%';
+  const NONE = 'linear-gradient(transparent, transparent)';
+
+  function gradients(list, ox, oy, scale, stops) {
+    if (!list.length) return null;
+    return list.map(c => 'radial-gradient(circle ' + (c.R * scale).toFixed(1) + 'px at ' + (c.x - ox).toFixed(1) + 'px ' + (c.y - oy).toFixed(1) + 'px, ' + stops + ')').join(',');
+  }
+
+  function setMask(el, value, intersect) {
+    el.style.webkitMaskImage = value;
+    el.style.maskImage = value;
+    if (intersect !== undefined) {
+      el.style.webkitMaskComposite = intersect ? 'source-in' : 'source-over';
+      el.style.maskComposite = intersect ? 'intersect' : 'add';
+    }
+  }
+
+  function headlineMasks(list, full) {
+    if (full) { setMask(hSans, 'none'); setMask(hPx, NONE, false); return; }
+    if (!list) { setMask(hSans, NONE); setMask(hPx, 'none', false); return; }
+    const hb = hSans.getBoundingClientRect(), b = hero.getBoundingClientRect();
+    const ox = hb.left - b.left, oy = hb.top - b.top;
+    setMask(hSans, gradients(list, ox, oy, 1, SOFT) || NONE);
+    setMask(hPx, gradients(list, ox, oy, 1, INV) || 'none', true);
+  }
+
   function revealFrame(now) {
     const s = reveal;
     const active = s.inside || s.pinned;
     if (!active && s.r < 0.5 && !s.trail.length) {
-      if (real.classList.contains('is-on')) { real.classList.remove('is-on'); setReal(false); s.full = false; }
+      if (real.classList.contains('is-on')) {
+        real.classList.remove('is-on'); halo.classList.remove('is-on');
+        setReal(false); s.full = false; headlineMasks(null);
+      }
       return;
     }
-    real.classList.add('is-on');
+    real.classList.add('is-on'); halo.classList.add('is-on');
 
-    const follow = s.pinned ? 0.08 : 0.16;
+    const follow = s.pinned ? 0.08 : 0.14;
     const dx = s.px - s.hx, dy = s.py - s.hy;
     s.hx += dx * follow; s.hy += dy * follow;
 
     const D = diag();
-    const base = Math.max(110, Math.min(W, H) * 0.17);
-    let target = 0;
-    if (s.pinned) target = D;            // full reveal only from the button or a tap
-    else if (s.inside) target = base;    // hover: a spotlight that follows the cursor
-    s.r += (target - s.r) * (active ? 0.11 : 0.09);
+    const base = Math.max(120, Math.min(W, H) * 0.2);
+    const target = s.pinned ? D * 1.25 : s.inside ? base : 0;  // only the button reveals everything
+    s.r += (target - s.r) * (active ? 0.1 : 0.08);
 
-    // trail: recent positions, shrinking as they age
-    if (Math.hypot(dx, dy) > 3 && s.r < D * 0.9) s.trail.push({ x: s.hx, y: s.hy, t: now, r: s.r });
-    while (s.trail.length && now - s.trail[0].t > 420) s.trail.shift();
+    if (Math.hypot(dx, dy) > 3 && !s.pinned) s.trail.push({ x: s.hx, y: s.hy, t: now, r: s.r });
+    while (s.trail.length && now - s.trail[0].t > 520) s.trail.shift();
 
-    s.full = s.r > D * 0.985;
-    setReal(s.r > D * 0.45);
+    s.full = s.pinned && s.r > D * 1.2;
+    setReal(s.pinned && s.r > D * 0.45);
 
     if (s.full) {
-      real.style.webkitMaskImage = real.style.maskImage = 'none';
+      setMask(real, 'none'); setMask(halo, NONE);
+      headlineMasks(null, true);
       return;
     }
-    const layers = [];
-    const circle = (x, y, R) => {
-      const f = Math.min(70, R * 0.4);
-      return 'radial-gradient(circle ' + R.toFixed(1) + 'px at ' + x.toFixed(1) + 'px ' + y.toFixed(1) + 'px, #000 ' + Math.max(0, R - f).toFixed(1) + 'px, transparent ' + R.toFixed(1) + 'px)';
-    };
-    if (s.r > 0.5) layers.push(circle(s.hx, s.hy, s.r));
-    for (const p of s.trail) {
-      const k = 1 - (now - p.t) / 420;
-      const R = p.r * 0.78 * k;
-      if (R > 2) layers.push(circle(p.x, p.y, R));
-    }
-    const m = layers.length ? layers.join(',') : 'linear-gradient(transparent, transparent)';
-    real.style.webkitMaskImage = real.style.maskImage = m;
+    const list = shapes(now);
+    setMask(real, gradients(list, 0, 0, 1, SOFT) || NONE);
+    setMask(halo, gradients(list, -40, -40, 1.75, HALO) || NONE);
+    headlineMasks(list);
   }
 
   function localPoint(e) {
@@ -670,11 +862,11 @@ a { color: inherit; }
   }
 
   hero.addEventListener('pointermove', e => {
-    if (e.pointerType === 'touch') return;
+    if (e.pointerType === 'touch' || !ready) return;
     const [x, y] = localPoint(e);
     reveal.px = x; reveal.py = y;
     if (!reveal.inside) {
-      reveal.inside = true; reveal.enterAt = performance.now();
+      reveal.inside = true;
       if (reveal.r < 1) { reveal.hx = x; reveal.hy = y; }
     }
   });
@@ -683,7 +875,7 @@ a { color: inherit; }
     reveal.inside = false;
   });
 
-  // Touch and keyboard: the button pins the reveal open, blooming from where it was pressed.
+  // The button (or a tap on touch screens) opens the whole scene from where it was pressed.
   function setPinned(on, x, y) {
     reveal.pinned = on;
     toggle.setAttribute('aria-pressed', String(on));
@@ -696,19 +888,18 @@ a { color: inherit; }
       reveal.px = reveal.hx; reveal.py = reveal.hy;
     }
   }
-  toggle.addEventListener('click', e => {
+  toggle.addEventListener('click', () => {
+    if (!ready) return;
     const b = toggle.getBoundingClientRect(), h = hero.getBoundingClientRect();
     setPinned(!reveal.pinned, b.left + b.width / 2 - h.left, b.top + b.height / 2 - h.top);
   });
-  // A tap anywhere on the stage (not on a link) toggles too.
   hero.addEventListener('click', e => {
-    if (e.target.closest('a, button')) return;
-    if (!coarse) return;
+    if (!coarse || !ready || e.target.closest('a, button')) return;
     const [x, y] = localPoint(e);
     setPinned(!reveal.pinned, x, y);
   });
 
-  replayBtn.addEventListener('click', () => { if (!reduce) { sparks.length = 0; startGrowth(); } });
+  replayBtn.addEventListener('click', () => { if (!reduce) startGrowth(); });
 
   /* ---------- loop ---------- */
   function loop(now) {
@@ -720,18 +911,18 @@ a { color: inherit; }
   let resizeT;
   addEventListener('resize', () => {
     clearTimeout(resizeT);
-    resizeT = setTimeout(() => { layout(); }, 120);
+    resizeT = setTimeout(() => { layout(); lastFrame = 0; }, 120);
   });
 
-  const fontsReady = document.fonts && document.fonts.load
-    ? Promise.race([document.fonts.load('500 10px "Geist Mono"'), new Promise(r => setTimeout(r, 1500))])
+  const fontLoads = document.fonts && document.fonts.load
+    ? Promise.all(['500 10px "Geist Mono"', '400 10px "DotGothic16"', '400 10px "Geist"'].map(f => document.fonts.load(f)))
     : Promise.resolve();
+  const fontsReady = Promise.race([fontLoads, new Promise(r => setTimeout(r, 2000))]);
   const imgReady = src.decode ? src.decode().catch(() => {}) : new Promise(r => { src.onload = r; });
 
   Promise.all([fontsReady, imgReady]).then(() => {
     layout();
     startGrowth();
-    requestAnimationFrame(() => hero.classList.add('is-in'));
     requestAnimationFrame(loop);
   });
 })();

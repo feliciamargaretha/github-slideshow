@@ -39,7 +39,7 @@ a { color: inherit; }
 
 .dolly {
   position: relative;
-  height: 400vh;          /* one screen of scroll per section, plus the pinned screen itself */
+  height: 310vh;          /* 0.7 screen of scroll per section, plus the pinned screen itself */
 }
 .stage {
   position: sticky;
@@ -283,8 +283,8 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   // One section per screen of scroll: the opening view, then each place. STOPS is how far
   // the camera has travelled when that section is on screen.
   const STOPS = [0, 2.84, 4.74, 7.58];
-  const RUN = STOPS.length - 1;               // screens of scroll in the track
-  const STEP_MS = 1200;                       // one gesture flies one section in this long
+  const RUN = STOPS.length - 1;               // sections after the opening view
+  const STEP_MS = 1000;                       // a full section's glide when the camera settles
 
   let cw = 0, ch = 0, base = null, img = null;
 
@@ -382,98 +382,87 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
     last = key;
     render(z);
   }
-  // Follow the track's position every frame rather than waiting for scroll events: inside an
-  // embedded viewer, or when an element other than the window does the scrolling, those
-  // events may never reach this page. Reading one rectangle per frame costs next to nothing,
-  // and the scene only redraws when the camera has actually moved.
-  let lastTop = NaN, dirty = true;
-  function watch() {
-    const top = dolly.getBoundingClientRect().top;
-    if (dirty || top !== lastTop) { lastTop = top; dirty = false; frame(); }
-    requestAnimationFrame(watch);
-  }
+  /* ---------- scrolling ----------
+     Scrolling is the browser's own, so the flight follows your fingers and works wherever
+     the pointer is. When you pause between two places, the camera glides on to the next
+     one if you were heading there (even a little), or settles back if you barely moved.
+     Scrolling again during the glide hands control straight back to you. */
 
-  /* ---------- one gesture, one section ---------- */
   // Whatever element actually scrolls the page (the window, or the body inside some viewers).
   function scroller() {
     const b = document.body;
     if (/(auto|scroll)/.test(getComputedStyle(b).overflowY) && b.scrollHeight > b.clientHeight + 1) return b;
     return document.scrollingElement || document.documentElement;
   }
-  // Scroll offset of section n: where the track's top is, plus n screens.
+  // Scroll offset of section n.
   function offsetOf(n) {
     const el = scroller();
     const top = dolly.getBoundingClientRect().top + el.scrollTop;
     return top + (n / RUN) * (dolly.offsetHeight - stage.clientHeight);
   }
 
-  let flying = null, quietUntil = 0;
-  function flyTo(n) {
+  let glide = null;                           // { to, set } while the camera is settling
+  function glideTo(n, ms) {
     n = Math.max(0, Math.min(RUN, n));
     const el = scroller(), from = el.scrollTop, to = Math.round(offsetOf(n));
     if (Math.abs(to - from) < 2) return;
     if (reduce) { el.scrollTop = to; return; }
-    const t0 = performance.now(), dur = STEP_MS * Math.min(1.6, Math.max(0.6, Math.abs(to - from) / stage.clientHeight));
-    const id = {};
-    flying = id;
+    const t0 = performance.now(), g = { n, set: from };
+    glide = g;
     (function step(now) {
-      if (flying !== id) return;
-      const t = clamp((now - t0) / dur);
-      el.scrollTop = from + (to - from) * easeInOut(t);
-      if (t < 1) requestAnimationFrame(step);
-      else { flying = null; quietUntil = performance.now() + 250; }
+      if (glide !== g) return;
+      if (Math.abs(el.scrollTop - g.set) > 2) { glide = null; return; }   // you scrolled: you're in charge
+      const t = clamp((now - t0) / ms);
+      el.scrollTop = g.set = Math.round(from + (to - from) * easeInOut(t));
+      if (t < 1) requestAnimationFrame(step); else glide = null;
     })(t0);
   }
-  const current = () => Math.round(scrolled());
-  // Inside the track; past its end the page scrolls normally.
-  const inTrack = dir => { const sc = scrolled(); return dir > 0 ? sc < RUN - 0.01 : sc > 0.01; };
 
-  // Wheel and trackpad: one gesture moves one section. Input during a flight, and the
-  // trackpad's momentum right after it, is absorbed so a swipe never skips two places.
-  let wheelAcc = 0;
-  addEventListener('wheel', e => {
-    if (e.ctrlKey) return;                    // pinch-zoom
-    const dir = Math.sign(e.deltaY);
-    if (!dir || !inTrack(dir)) return;
-    e.preventDefault();
-    const now = performance.now();
-    if (flying || now < quietUntil) { quietUntil = Math.max(quietUntil, now + 120); wheelAcc = 0; return; }
-    wheelAcc += e.deltaY;
-    if (Math.abs(wheelAcc) < 24) return;     // ignore the faintest nudges
-    wheelAcc = 0;
-    flyTo(current() + dir);
-  }, { passive: false });
+  // Follow the track's position every frame rather than waiting for scroll events: inside an
+  // embedded viewer, or when an element other than the window does the scrolling, those
+  // events may never reach this page. Reading one rectangle per frame costs next to nothing,
+  // and the scene only redraws when the camera has actually moved.
+  const SETTLE_AFTER = 180;                   // ms of stillness before the camera settles
+  const LEAN = 0.12;                          // share of a section that counts as heading on
+  let lastTop = NaN, dirty = true, movedAt = 0, heading = 0, touching = false;
+  function watch(now) {
+    const top = dolly.getBoundingClientRect().top;
+    if (top !== lastTop) {
+      if (!glide && !Number.isNaN(lastTop)) { movedAt = now; heading = Math.sign(lastTop - top); }
+      lastTop = top; dirty = true;
+    }
+    if (dirty) { dirty = false; frame(); }
+    if (!glide && !touching && movedAt && now - movedAt > SETTLE_AFTER) {
+      movedAt = 0;
+      const sc = scrolled(), lo = Math.floor(sc), f = sc - lo;
+      if (f > 0.004 && f < 0.996) {
+        const n = heading > 0 ? (f > LEAN ? lo + 1 : lo) : heading < 0 ? (f < 1 - LEAN ? lo : lo + 1) : Math.round(sc);
+        glideTo(n, Math.max(280, STEP_MS * Math.abs(n - sc)));
+      }
+    }
+    requestAnimationFrame(watch);
+  }
+  addEventListener('touchstart', () => { touching = true; }, { passive: true });
+  addEventListener('touchend', () => { touching = false; }, { passive: true });
+  addEventListener('touchcancel', () => { touching = false; }, { passive: true });
 
-  // Touch: a swipe moves one section.
-  let touchY = null;
-  addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
-  addEventListener('touchmove', e => {
-    if (touchY === null) return;
-    const dir = Math.sign(touchY - e.touches[0].clientY);
-    if (dir && inTrack(dir)) e.preventDefault();
-  }, { passive: false });
-  addEventListener('touchend', e => {
-    if (touchY === null) return;
-    const dy = touchY - e.changedTouches[0].clientY, dir = Math.sign(dy);
-    touchY = null;
-    if (Math.abs(dy) > 40 && inTrack(dir) && !flying) flyTo(current() + dir);
-  });
-
-  // Keyboard: arrows, Page Up/Down, space, Home and End.
+  // Keyboard: arrows and Page Up/Down step one place; Home and End go to the ends.
   addEventListener('keydown', e => {
     if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
-    const map = { ArrowDown: 1, PageDown: 1, ' ': e.shiftKey ? -1 : 1, ArrowUp: -1, PageUp: -1 };
-    if (e.key === 'Home') { e.preventDefault(); flyTo(0); return; }
-    if (e.key === 'End') { e.preventDefault(); flyTo(RUN); return; }
-    const dir = map[e.key];
-    if (!dir || !inTrack(dir)) return;
+    const sc = scrolled(), at = glide ? glide.n : Math.round(sc);
+    const map = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 };
+    let n = null;
+    if (e.key === 'Home') n = 0;
+    else if (e.key === 'End') n = RUN;
+    else if (map[e.key]) n = at + map[e.key];
+    if (n === null || n < 0 || n > RUN) return;
     e.preventDefault();
-    if (!flying) flyTo(current() + dir);
+    glideTo(n, STEP_MS);
   });
 
   // The logo and the last note's link take you back to the opening view.
   for (const el of document.querySelectorAll('[data-to-start]')) {
-    el.addEventListener('click', e => { e.preventDefault(); flyTo(0); });
+    el.addEventListener('click', e => { e.preventDefault(); glideTo(0, STEP_MS * 1.4); });
   }
 
   Promise.all(LAYERS.filter(l => !l.hazy).map(l => l.ready)).then(() => {

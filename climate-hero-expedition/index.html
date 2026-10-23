@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rootwork Expedition</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&family=Geist:wght@400;500&display=swap">
+<link rel="preload" as="image" href="assets/scene.jpg">
+<style>
+/* Layout: one full-viewport stage. A two-colour dithered alpine scene fills it, anchored
+   bottom right; the copy sits in the clear night sky at the top left. */
+:root {
+  --night: #172f35;        /* ink, sky and every dark dot */
+  --lichen: #c2dc93;       /* paper, snow and type: 9.6:1 on --night */
+  --lichen-soft: #a9c47f;  /* secondary type: 7.3:1 on --night */
+  --lichen-hi: #d4ebaa;    /* button hover */
+
+  --f-serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --f-sans: "Geist", "Helvetica Neue", Arial, sans-serif;
+
+  --margin: 120px;
+  --radius: 14px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--night); color: var(--lichen); }
+body {
+  font: 400 16px/1.5 var(--f-sans);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--lichen); outline-offset: 3px; }
+
+.stage {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 640px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--night);
+}
+.scene {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  image-rendering: pixelated;
+  z-index: 0;
+}
+
+.layer {
+  position: relative;
+  z-index: 1;
+  padding-left: max(var(--margin), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--margin), env(safe-area-inset-right, 0px));
+}
+
+/* ---------- nav: no borders, just the mark and buttons ---------- */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 96px;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none;
+  font: 400 24px/1 var(--f-serif);
+  letter-spacing: -0.01em;
+}
+.brand svg { width: 22px; height: 22px; display: block; }
+.links { display: flex; align-items: center; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.links a {
+  display: inline-flex; align-items: center;
+  height: 40px; padding: 0 14px;
+  border-radius: 10px;
+  font: 450 15px/1 var(--f-sans);
+  text-decoration: none;
+  color: var(--lichen-soft);
+  transition: color .2s, background-color .2s;
+}
+.links a:hover { color: var(--lichen); background: rgba(194, 220, 147, .08); }
+.links .give {
+  margin-left: 10px;
+  color: var(--lichen);
+  background: rgba(194, 220, 147, .12);
+}
+.links .give:hover { background: rgba(194, 220, 147, .2); }
+
+/* ---------- copy ---------- */
+.copy {
+  max-width: 34rem;
+  padding-top: clamp(40px, 11vh, 132px);
+  display: grid;
+  gap: 22px;
+  justify-items: start;
+}
+.headline {
+  margin: 0;
+  font: 400 clamp(2.6rem, 4.6vw, 4.75rem)/1.04 var(--f-serif);
+  font-optical-sizing: auto;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+.headline em { font-style: italic; }
+.sub {
+  margin: 0;
+  max-width: 31ch;
+  font: 400 clamp(17px, 1.3vw, 19px)/1.5 var(--f-sans);
+  color: var(--lichen-soft);
+  text-wrap: pretty;
+}
+.cta {
+  margin-top: 8px;
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 52px;
+  padding: 0 22px;
+  border-radius: var(--radius);
+  background: var(--lichen);
+  color: var(--night);
+  font: 500 16px/1 var(--f-sans);
+  text-decoration: none;
+  transition: background-color .2s, transform .2s;
+}
+.cta:hover { background: var(--lichen-hi); transform: translateY(-1px); }
+.cta .arrow { transition: transform .25s cubic-bezier(.2, .7, .2, 1); }
+.cta:hover .arrow { transform: translateX(3px); }
+
+@media (max-width: 1023px) {
+  :root { --margin: 24px; }
+  .links li:not(:last-child) { display: none; }
+}
+@media (max-width: 520px) {
+  .copy { padding-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta, .cta .arrow, .links a { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="stage" id="stage">
+  <canvas class="scene" id="scene" role="img" aria-label="A night-time alpine scene in two shades of green: a tall peak on the right, a snowfield where three roped climbers and a lone climber with an ice axe make their way up, and pine trees on a snowy bank at the lower left."></canvas>
+
+  <div class="layer">
+    <nav class="nav" aria-label="Main">
+      <a class="brand" href="#">
+        <svg viewBox="0 0 11 10" aria-hidden="true" shape-rendering="crispEdges">
+          <path fill="currentColor" d="M5 0h1v1h1v1h1v2h1v2h1v2h1v2H0V8h1V6h1V4h1V2h1V1h1z"/>
+          <path fill="var(--night)" d="M5 1h1v1h1v1H6v1H5V3H4V2h1z"/>
+        </svg>
+        Rootwork
+      </a>
+      <ul class="links">
+        <li><a href="#">Our work</a></li>
+        <li><a href="#">Places</a></li>
+        <li><a href="#">Field notes</a></li>
+        <li><a href="#">About</a></li>
+        <li><a class="give" href="#">Donate</a></li>
+      </ul>
+    </nav>
+
+    <div class="copy">
+      <h1 class="headline">You haven’t seen <em>half of it</em> yet.</h1>
+      <p class="sub">The glaciers, forests and rivers still on your list need looking after now. Let’s make sure they’re there when you arrive.</p>
+      <a class="cta" href="#">Join the expedition <span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</header>
+
+<script>
+(() => {
+  // The scene ships as a smooth greyscale tone map and is dithered here, at the screen's
+  // own size, so every dot lands on whole pixels instead of blurring when scaled.
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const DOT = 2;                         // CSS pixels per dither dot
+  const INK = [0x17, 0x2f, 0x35], PAPER = [0xc2, 0xdc, 0x93];
+  const src = new Image();
+  src.src = 'assets/scene.jpg';
+
+  function render() {
+    const cw = Math.ceil(stage.clientWidth / DOT), ch = Math.ceil(stage.clientHeight / DOT);
+    canvas.width = cw; canvas.height = ch;
+
+    // Cover the stage, anchored bottom right, so extra width or height becomes open sky.
+    // On tall, narrow screens the scene keeps to the lower half and the copy gets the sky.
+    const share = cw / ch >= 1.2 ? 1 : 0.5;
+    const s = Math.max(cw / src.naturalWidth, ch * share / src.naturalHeight);
+    const dw = src.naturalWidth * s, dh = src.naturalHeight * s;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(src, cw - dw, ch - dh, dw, dh);
+
+    const img = ctx.getImageData(0, 0, cw, ch), d = img.data;
+    const v = new Float32Array(cw * ch);
+    for (let i = 0; i < v.length; i++) v[i] = d[i * 4] / 255;
+
+    // Floyd–Steinberg, serpentine, to two colours.
+    for (let y = 0; y < ch; y++) {
+      const ltr = (y & 1) === 0;
+      for (let k = 0; k < cw; k++) {
+        const x = ltr ? k : cw - 1 - k, i = y * cw + x;
+        const o = v[i], n = o > 0.5 ? 1 : 0, e = o - n;
+        const c = n ? PAPER : INK, p = i * 4;
+        d[p] = c[0]; d[p + 1] = c[1]; d[p + 2] = c[2]; d[p + 3] = 255;
+        const dx = ltr ? 1 : -1;
+        if (x + dx >= 0 && x + dx < cw) v[i + dx] += e * 7 / 16;
+        if (y + 1 < ch) {
+          if (x - dx >= 0 && x - dx < cw) v[i + cw - dx] += e * 3 / 16;
+          v[i + cw] += e * 5 / 16;
+          if (x + dx >= 0 && x + dx < cw) v[i + cw + dx] += e / 16;
+        }
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  let t;
+  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(render, 120); });
+  (src.decode ? src.decode() : new Promise(r => { src.onload = r; })).then(render).catch(() => {});
+})();
+</script>
+</body>
+</html>

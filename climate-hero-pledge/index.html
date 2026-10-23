@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rootwork Hectare</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..700&family=Hanken+Grotesk:wght@400;500;600&family=Martian+Mono:wdth,wght@87.5,400;87.5,500&display=swap">
+<style>
+/* Layout: the action is the hero. On wide screens the pledge tool sits left and the
+   hectare it fills sits right, square and large; on phones the headline, plot and tool
+   stack. One dark, earthy look: wet soil, chalk type, moss for restored ground. */
+:root {
+  --soil: #12100d;         /* page ground */
+  --soil-2: #1c1914;       /* the tool's surface */
+  --line: #332e25;         /* hairlines, unrestored squares */
+  --chalk: #ece6da;        /* primary text, 15.6:1 on --soil */
+  --dust: #a89f90;         /* secondary text, 7.3:1 on --soil */
+  --moss: #a9d46e;         /* restored ground and the one action, 11.8:1 on --soil */
+  --moss-hi: #bfe388;
+
+  --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-num: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --gutter: clamp(16px, 5vw, 96px);
+  --radius: 14px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--soil); color: var(--chalk); }
+body { font: 400 16px/1.5 var(--f-body); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--moss); outline-offset: 3px; }
+
+.page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+  padding-block: 0 clamp(24px, 5vh, 56px);
+}
+
+/* ---------- nav ---------- */
+.nav {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  height: 88px;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 650 21px/1 var(--f-display);
+  font-variation-settings: "wdth" 85;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+.brand svg { width: 20px; height: 20px; display: block; }
+.links { display: flex; align-items: center; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.links a {
+  display: inline-flex; align-items: center; height: 40px; padding: 0 14px;
+  border-radius: 10px; text-decoration: none;
+  font: 500 15px/1 var(--f-body); color: var(--dust);
+  transition: color .2s, background-color .2s;
+}
+.links a:hover { color: var(--chalk); background: rgba(236, 230, 218, .06); }
+
+/* ---------- hero ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 112px);
+  padding-top: clamp(8px, 3vh, 40px);
+}
+
+.pitch { display: grid; gap: 28px; min-width: 0; max-width: 34rem; }
+.headline {
+  margin: 0;
+  font: 650 clamp(2.4rem, 4.4vw, 4.6rem)/0.98 var(--f-display);
+  font-variation-settings: "wdth" 82, "opsz" 96;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.headline .green { color: var(--moss); }
+.lede {
+  margin: 0;
+  max-width: 40ch;
+  font-size: clamp(16px, 1.25vw, 18px);
+  color: var(--dust);
+  text-wrap: pretty;
+}
+
+/* ---------- the tool ---------- */
+.tool {
+  display: grid; gap: 20px;
+  padding: 22px;
+  background: var(--soil-2);
+  border-radius: var(--radius);
+}
+.tool-label {
+  margin: 0;
+  font: 500 13px/1.3 var(--f-body);
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--dust);
+}
+.sizes {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;
+  border: 0; margin: 0; padding: 0;
+}
+.sizes legend { padding: 0; margin-bottom: 12px; }
+.size { position: relative; }
+.size input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.size span {
+  display: grid; gap: 2px; place-items: center;
+  height: 64px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font: 500 18px/1 var(--f-num);
+  font-variant-numeric: tabular-nums;
+  transition: border-color .15s, background-color .15s, color .15s;
+}
+.size span small { font: 400 11px/1 var(--f-body); color: var(--dust); letter-spacing: .02em; }
+.size input:hover + span { border-color: var(--dust); }
+.size input:checked + span { border-color: var(--moss); background: rgba(169, 212, 110, .1); color: var(--moss); }
+.size input:checked + span small { color: var(--moss); }
+.size input:focus-visible + span { outline: 2px solid var(--moss); outline-offset: 2px; }
+
+.what {
+  margin: 0;
+  font-size: 15px;
+  color: var(--dust);
+  min-height: 3em;
+}
+.what b { color: var(--chalk); font-weight: 500; }
+
+.go {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  height: 56px;
+  border: 0; border-radius: 12px;
+  background: var(--moss); color: var(--soil);
+  font: 600 17px/1 var(--f-body);
+  cursor: pointer;
+  transition: background-color .2s, transform .2s;
+}
+.go:hover:not(:disabled) { background: var(--moss-hi); transform: translateY(-1px); }
+.go:disabled { background: var(--line); color: var(--dust); cursor: not-allowed; }
+.go .arrow { transition: transform .25s cubic-bezier(.2, .7, .2, 1); }
+.go:hover:not(:disabled) .arrow { transform: translateX(3px); }
+
+.status { margin: 0; font-size: 14px; color: var(--dust); min-height: 1.5em; }
+.status.done { color: var(--moss); }
+
+/* ---------- the hectare ---------- */
+.plot-wrap { display: grid; gap: 16px; min-width: 0; justify-items: stretch; }
+.tally { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px; }
+.tally-num {
+  font: 500 clamp(28px, 3.2vw, 44px)/1 var(--f-num);
+  font-variation-settings: "wdth" 87.5;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.tally-num small { font-size: .45em; color: var(--dust); margin-left: .3em; letter-spacing: 0; }
+.tally-of { font-size: 14px; color: var(--dust); }
+.tally-of b { color: var(--chalk); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.plot {
+  position: relative;
+  width: 100%;
+  max-width: min(640px, 72vh);
+  aspect-ratio: 1;
+  justify-self: end;
+}
+.plot canvas { width: 100%; height: 100%; display: block; }
+.plot-foot {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  max-width: min(640px, 72vh); width: 100%; justify-self: end;
+  font: 400 12px/1.3 var(--f-num);
+  font-variation-settings: "wdth" 87.5;
+  color: var(--dust);
+}
+.scale { display: grid; gap: 4px; width: 10%; flex: 0 0 auto; }   /* 10 of the 100 squares */
+.scale i { display: block; width: 100%; height: 6px; border: 1px solid var(--dust); border-top: 0; }
+.legend { display: inline-flex; gap: 14px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 2px; display: block; }
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 900px) {
+  .links li:not(:last-child) { display: none; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 28px; padding-top: 4px; }
+  .pitch { max-width: none; display: contents; }
+  .headline { order: 1; }
+  .lede { order: 2; }
+  .plot-wrap { order: 3; }
+  .tool { order: 4; }
+  .plot, .plot-foot { max-width: none; justify-self: stretch; }
+}
+@media (max-width: 420px) {
+  .sizes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tool { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .go, .go .arrow, .links a, .size span { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <nav class="nav" aria-label="Main">
+    <a class="brand" href="#">
+      <svg viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges">
+        <rect x="0" y="0" width="10" height="10" fill="var(--line)"/>
+        <rect x="0" y="5" width="5" height="5" fill="var(--moss)"/>
+        <rect x="5" y="5" width="2" height="2" fill="var(--moss)"/>
+        <rect x="2" y="3" width="3" height="2" fill="var(--moss)"/>
+      </svg>
+      Rootwork
+    </a>
+    <ul class="links">
+      <li><a href="#">Our work</a></li>
+      <li><a href="#">The sites</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Sign in</a></li>
+    </ul>
+  </nav>
+
+  <main class="hero">
+    <div class="pitch">
+      <h1 class="headline">Every square metre you claim turns <span class="green">green</span>.</h1>
+      <p class="lede">This is one hectare of drained wetland we’re bringing back, drawn square by square. Choose how much of it you’ll restore. Your squares light up here, for everyone who visits.</p>
+
+      <form class="tool" id="tool" novalidate>
+        <fieldset class="sizes">
+          <legend class="tool-label">I’ll restore</legend>
+          <label class="size"><input type="radio" name="m2" id="m2-1" value="1"><span>1<small>m²</small></span></label>
+          <label class="size"><input type="radio" name="m2" id="m2-10" value="10" checked><span>10<small>m²</small></span></label>
+          <label class="size"><input type="radio" name="m2" id="m2-25" value="25"><span>25<small>m²</small></span></label>
+          <label class="size"><input type="radio" name="m2" id="m2-100" value="100"><span>100<small>m²</small></span></label>
+        </fieldset>
+        <p class="what" id="what" aria-live="polite"></p>
+        <button class="go" id="go" type="submit">Restore <span id="go-n">10 m²</span> <span class="arrow" aria-hidden="true">→</span></button>
+        <p class="status" id="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <section class="plot-wrap" aria-labelledby="tally-label">
+      <div class="tally">
+        <div class="tally-num" id="tally-label"><span id="total">0</span><small>m² claimed</small></div>
+        <div class="tally-of"><b id="pct">0%</b> of hectare <b id="hectare-no">1</b> · <span id="people">no pledges yet</span></div>
+      </div>
+      <div class="plot">
+        <canvas id="plot" role="img" aria-label="A one-hectare plot drawn as a 100 by 100 grid of one-square-metre squares. Claimed squares are green."></canvas>
+      </div>
+      <div class="plot-foot">
+        <span class="scale"><i aria-hidden="true"></i>10 m</span>
+        <span class="legend">
+          <span><i style="background: var(--moss)"></i>claimed</span>
+          <span><i style="background: transparent; border: 1px solid var(--moss)"></i>yours, if you go ahead</span>
+        </span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  const SIDE = 100;                           // 100 × 100 squares of 1 m² = one hectare
+  const HECTARE = SIDE * SIDE;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  const tool = document.getElementById('tool');
+  const go = document.getElementById('go');
+  const goN = document.getElementById('go-n');
+  const what = document.getElementById('what');
+  const statusEl = document.getElementById('status');
+  const totalEl = document.getElementById('total');
+  const pctEl = document.getElementById('pct');
+  const hectareEl = document.getElementById('hectare-no');
+  const peopleEl = document.getElementById('people');
+
+  const fmt = n => n.toLocaleString('en-US');
+
+  /* The order squares come back in: the wetland starts from one spot on its meandering
+     channel and spreads, quickest along the water and slower away from it, so the
+     fill grows like returning ground instead of row by row. Fixed for everyone, so the
+     same total always paints the same squares. */
+  const order = (() => {
+    let s = 12345;
+    const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const noise = new Float32Array(HECTARE);
+    for (let i = 0; i < HECTARE; i++) noise[i] = rnd();
+    const score = new Float32Array(HECTARE);
+    for (let y = 0; y < SIDE; y++) for (let x = 0; x < SIDE; x++) {
+      const channel = 50 + 18 * Math.sin(y / 14) + 7 * Math.sin(y / 5 + 1);
+      const d = Math.abs(x - channel);
+      let n = 0;                                  // a little local clumping
+      for (let k = -2; k <= 2; k++) n += noise[y * SIDE + Math.min(SIDE - 1, Math.max(0, x + k))];
+      score[y * SIDE + x] = Math.abs(y - 46) * 0.55 + d * 1.5 + n * 3 + noise[y * SIDE + x] * 4;
+    }
+    return Array.from({ length: HECTARE }, (_, i) => i).sort((a, b) => score[a] - score[b]);
+  })();
+  const rank = new Int32Array(HECTARE);      // each square's place in that order
+  for (let k = 0; k < HECTARE; k++) rank[order[k]] = k;
+  // per-square texture: unrestored soil and restored moss both vary a little
+  const grain = new Float32Array(HECTARE);
+  { let s = 777; for (let i = 0; i < HECTARE; i++) grain[i] = ((s = (s * 48271) % 2147483647) / 2147483647); }
+
+  let total = 0, shown = 0, people = 0, mine = 0, pick = 10, justAdded = null;
+
+  /* ---------- drawing ---------- */
+  let px = 0, dpr = 1;
+  function size() {
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    px = canvas.width / SIDE;
+  }
+
+  function draw(now) {
+    if (!px) return;
+    const w = canvas.width, gap = px > 5 ? Math.max(1, px * 0.12) : 0.6;
+    ctx.clearRect(0, 0, w, w);
+    // the hectare being filled now; once one is full the next starts empty
+    const filled = Math.floor(shown) % HECTARE;
+    const preview = Math.min(HECTARE - filled, pick);
+    const pulse = reduce ? 0.8 : 0.55 + 0.45 * Math.sin(now / 320);
+    for (let i = 0; i < HECTARE; i++) {
+      const x = (i % SIDE) * px, y = ((i / SIDE) | 0) * px, r = rank[i], g = grain[i];
+      if (r < filled) {
+        const fresh = justAdded && r >= justAdded.from && r < justAdded.to;
+        const l = fresh ? 1 : 0.82 + g * 0.18;
+        ctx.fillStyle = `rgb(${(169 * l) | 0},${(212 * l) | 0},${(110 * l) | 0})`;
+        ctx.fillRect(x + gap / 2, y + gap / 2, px - gap, px - gap);
+      } else if (r < filled + preview) {
+        ctx.strokeStyle = `rgba(169,212,110,${pulse.toFixed(2)})`;
+        ctx.lineWidth = Math.max(1, px * 0.14);
+        const inset = gap / 2 + ctx.lineWidth / 2;
+        ctx.strokeRect(x + inset, y + inset, px - 2 * inset, px - 2 * inset);
+      } else {
+        const t = 38 + g * 14;
+        ctx.fillStyle = `rgb(${t + 8 | 0},${t + 3 | 0},${t - 6 | 0})`;
+        ctx.fillRect(x + gap / 2, y + gap / 2, px - gap, px - gap);
+      }
+    }
+  }
+
+  // Count up toward the real total, so new squares grow in rather than appear.
+  function loop(now) {
+    if (shown !== total) {
+      const step = reduce ? total - shown : Math.sign(total - shown) * Math.max(1, Math.abs(total - shown) * 0.08);
+      shown = Math.abs(total - shown) <= Math.abs(step) ? total : shown + step;
+    }
+    draw(now);
+    requestAnimationFrame(loop);
+  }
+
+  function renderTally() {
+    const ha = Math.floor(total / HECTARE);
+    const inHa = total - ha * HECTARE;
+    totalEl.textContent = fmt(total);
+    hectareEl.textContent = String(ha + 1);
+    pctEl.textContent = (inHa / HECTARE * 100).toFixed(inHa && inHa < 100 ? 2 : 1).replace(/\.0+$/, '') + '%';
+    peopleEl.textContent = people === 0 ? 'no pledges yet' : people === 1 ? '1 person' : fmt(people) + ' people';
+    renderPick();
+  }
+
+  function renderPick() {
+    goN.textContent = fmt(pick) + ' m²';
+    const side = Math.sqrt(pick);
+    const shape = Number.isInteger(side) && side > 1 ? `a ${side} × ${side} m patch` : pick === 1 ? 'one square, a metre each way' : `${fmt(pick)} squares`;
+    what.innerHTML = `That’s <b>${shape}</b>, about ${pick >= 100 ? 'a small garden' : pick >= 25 ? 'a living room' : pick >= 10 ? 'a parking space or two' : 'a doormat, give or take'}. The squares it adds are outlined on the plot.`;
+  }
+
+  tool.addEventListener('change', e => {
+    if (e.target.name !== 'm2') return;
+    pick = +e.target.value;
+    renderPick();
+  });
+
+  /* ---------- the shared count ---------- */
+  // Each person keeps one document, pledges/<their id>, holding their running total; the
+  // hectare's total is the sum over everyone. Only they can write theirs.
+  let db = null, me = null, store = 'local';
+
+  function readLocal() {
+    try { return JSON.parse(localStorage.getItem('rootwork-pledge') || '{"m2":0,"count":0}'); } catch (e) { return { m2: 0, count: 0 }; }
+  }
+  function useLocal(note) {
+    store = 'local';
+    const l = readLocal();
+    mine = l.m2; total = l.m2; people = l.count ? 1 : 0;
+    renderTally();
+    statusEl.textContent = note;
+  }
+
+  async function connect() {
+    if (!window.claude || !window.claude.use) { useLocal('Pledges here are kept in this browser only.'); return; }
+    const [d, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    const id = user ? await user.id() : null;
+    if (!d || !id) { useLocal('Pledges here are kept in this browser only.'); return; }
+    db = d; me = id; store = 'shared';
+    const canWrite = user.can ? await user.can('data.write') : null;
+    if (canWrite === false) {
+      go.disabled = true;
+      statusEl.textContent = 'You can watch this hectare fill. Adding a pledge needs contributor access to this page.';
+    }
+    db.collection('pledges').onSnapshot(snap => {
+      let sum = 0, n = 0, m = 0;
+      for (const doc of snap.docs) {
+        const v = doc.data() || {};
+        const m2 = Math.max(0, Math.floor(+v.m2 || 0));
+        if (!m2) continue;
+        sum += m2; n++;
+        if (doc.id === me) m = m2;
+      }
+      total = sum; people = n; mine = m;
+      renderTally();
+    }, () => useLocal('The shared count is unavailable right now, so pledges are kept in this browser.'));
+  }
+
+  let busy = false;
+  tool.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (busy || go.disabled) return;
+    busy = true; go.disabled = true;
+    const before = total;
+    try {
+      if (store === 'shared') {
+        await db.doc('pledges/' + me).set({ m2: mine + pick, updatedAt: new Date().toISOString() });
+      } else {
+        const l = readLocal();
+        const next = { m2: l.m2 + pick, count: l.count + 1 };
+        try { localStorage.setItem('rootwork-pledge', JSON.stringify(next)); } catch (err) {}
+        mine = next.m2; total += pick; people = 1;
+        renderTally();
+      }
+      justAdded = { from: before % HECTARE, to: before % HECTARE + pick };
+      setTimeout(() => { justAdded = null; }, 2600);
+      statusEl.className = 'status done';
+      statusEl.textContent = `Your ${fmt(pick)} m² ${pick === 1 ? 'is' : 'are'} on the map. On the live site, paying for ${pick === 1 ? 'it' : 'them'} comes next.`;
+    } catch (err) {
+      statusEl.className = 'status';
+      statusEl.textContent = err && err.code === 'invalid_argument'
+        ? 'This page is view-only for you, so the pledge wasn’t added.'
+        : 'The pledge didn’t go through. Check your connection and try again.';
+      if (err && err.code === 'invalid_argument') { busy = false; return; }
+    }
+    busy = false; go.disabled = false;
+  });
+
+  /* ---------- start ---------- */
+  size();
+  renderTally();
+  requestAnimationFrame(loop);
+  let t;
+  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(size, 100); });
+  connect().catch(() => useLocal('Pledges here are kept in this browser only.'));
+})();
+</script>
+</body>
+</html>

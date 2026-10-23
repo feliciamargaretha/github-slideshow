@@ -12,4 +12,4 @@ A standalone landing-page header for a climate non-profit (Rootwork is a placeho
 - `assets/flower.webp`: cut out from [a cosmos photo on Pexels](https://www.pexels.com/photo/tender-cosmos-bipinnatus-flower-with-thin-stem-against-blue-sky-5743979/) (Pexels license).
 - `assets/sky.webp`: a gradient sky with clouds taken from [a sky photo on Pexels](https://www.pexels.com/photo/blue-sky-and-white-clouds-231009/) (Pexels license).
 
-The CO₂ figures are the Mauna Loa annual means for 1958 and 2024.
+The CO₂ figures are Mauna Loa readings: about 315 ppm when measurements began in 1958, and the 2024 annual mean of 424.6 ppm.

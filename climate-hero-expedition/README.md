@@ -15,12 +15,12 @@ An alternative to `../climate-hero/`. It's a night-time alpine scene in two gree
   - **backdrop:** the far range
 
   The page dithers the frame to the two colours at 2 CSS pixels per dot. It fills the screen from the bottom right; on tall phone screens it keeps to the lower half so the copy sits on open sky.
-- **Scroll:** the header stays pinned while the camera flies forward through the landscape (6.5 screens of scroll).
+- **Scroll:** the header stays pinned while the camera flies forward through the landscape. There are four sections: the opening view, then each place. One wheel flick, trackpad swipe, phone swipe, arrow key, Page Down or space flies one section in about 1.2 seconds. Input during a flight, and the trackpad's momentum right after it, is ignored, so one swipe never skips a place. Dragging the scrollbar scrubs the flight directly (one screen of scroll per section).
   - **Movement:** every layer scales by `depth / (depth − distance travelled)` around the point the camera is headed for. Near ranges sweep down and out of frame while the ones behind rise into view. Distant ranges stay hidden in the night haze until the camera is close enough, then fade in.
-  - **Pacing:** the camera slows into each place and lingers while its field note is up (number, coordinates, place, one sentence, link).
-  - **Going back:** scrolling back up reverses the flight. The logo and "Back to the start ↑" on the last note scroll smoothly back to the opening view. The page reads its own scroll position every animation frame rather than relying on scroll events, so it keeps up inside embedded viewers.
-  - **Settings:** the flight keys (`KEYS`), note timings (`STOPS`), focus point and haze are at the top of the script. Layer depths live in both the script and `tools/world.py`.
-- **Reduced motion:** with reduced motion turned on, the camera doesn't fly. It cuts from place to place as each note comes up, and the notes appear without sliding.
+  - **Notes:** each place's field note (number, coordinates, place, one sentence, link) rises in as the camera arrives and lifts away as it leaves.
+  - **Going back:** scrolling back up reverses the flight. The logo, "Back to the start ↑" on the last note, and Home fly back to the opening view; End flies to the last place. The page reads its own scroll position every animation frame rather than relying on scroll events, so it keeps up inside embedded viewers.
+  - **Settings:** the camera distance at each section (`STOPS`), the flight time (`STEP_MS`), the focus point and the haze are at the top of the script. Layer depths live in both the script and `tools/world.py`.
+- **Reduced motion:** with reduced motion turned on, the camera doesn't fly. It cuts straight to the next place on each gesture, and the notes appear without sliding.
 - **Placeholder copy:** the three places, their notes and links are examples. Replace them with the organisation's real projects. The coordinates are approximate.
 
 ## How the landscape is made

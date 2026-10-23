@@ -39,7 +39,7 @@ a { color: inherit; }
 
 .dolly {
   position: relative;
-  height: 310vh;          /* 0.7 screen of scroll per section, plus the pinned screen itself */
+  height: 400vh;          /* one screen of scroll per section, plus the pinned screen itself */
 }
 .stage {
   position: sticky;
@@ -284,7 +284,9 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   // the camera has travelled when that section is on screen.
   const STOPS = [0, 2.84, 4.74, 7.58];
   const RUN = STOPS.length - 1;               // sections after the opening view
-  const STEP_MS = 1000;                       // a full section's glide when the camera settles
+  const HOLD = 0.18;                          // either side of each place, the camera holds still
+  const STEP_MS = 1100;                       // a full section's glide when the camera settles
+
 
   let cw = 0, ch = 0, base = null, img = null;
 
@@ -303,10 +305,13 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   // sc: scroll position in sections (0 = opening view, 1 = first place, ...).
+  // Near each place the camera holds still, so passing at speed still shows it and its
+  // note; in between it flies with a gentle start and stop.
   function travelled(sc) {
     if (reduce) return STOPS[Math.round(sc)];  // no flight: cut from place to place
     const i = Math.min(Math.floor(sc), RUN - 1), f = sc - i;
-    return STOPS[i] + (STOPS[i + 1] - STOPS[i]) * f;
+    const g = clamp((f - HOLD) / (1 - 2 * HOLD));
+    return STOPS[i] + (STOPS[i + 1] - STOPS[i]) * g * g * (3 - 2 * g);
   }
 
   function render(z) {
@@ -356,8 +361,8 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   function panelsAt(sc) {
     for (const el of panels) {
       const n = +el.dataset.scene;
-      const fin = n === 0 ? 1 : clamp((sc - (n - 0.35)) / 0.35);
-      const fout = n === RUN ? 1 : clamp((n + 0.3 - sc) / 0.3);
+      const fin = n === 0 ? 1 : clamp((sc - (n - 0.4)) / 0.25);
+      const fout = n === RUN ? 1 : clamp((n + 0.4 - sc) / 0.25);
       const o = Math.min(fin, fout);
       const y = 24 * (1 - fin) - (n === 0 ? 90 : 30) * (1 - fout);
       el.style.opacity = o.toFixed(3);
@@ -384,9 +389,9 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   }
   /* ---------- scrolling ----------
      Scrolling is the browser's own, so the flight follows your fingers and works wherever
-     the pointer is. When you pause between two places, the camera glides on to the next
-     one if you were heading there (even a little), or settles back if you barely moved.
-     Scrolling again during the glide hands control straight back to you. */
+     the pointer is. When you pause, the camera settles on a place: the next one from where
+     that swipe began, even if momentum carried you further, unless you scrolled a long way
+     on purpose. Scrolling again during the glide hands control straight back to you. */
 
   // Whatever element actually scrolls the page (the window, or the body inside some viewers).
   function scroller() {
@@ -394,14 +399,13 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
     if (/(auto|scroll)/.test(getComputedStyle(b).overflowY) && b.scrollHeight > b.clientHeight + 1) return b;
     return document.scrollingElement || document.documentElement;
   }
-  // Scroll offset of section n.
   function offsetOf(n) {
     const el = scroller();
     const top = dolly.getBoundingClientRect().top + el.scrollTop;
     return top + (n / RUN) * (dolly.offsetHeight - stage.clientHeight);
   }
 
-  let glide = null;                           // { to, set } while the camera is settling
+  let glide = null;                           // { n, set } while the camera is settling
   function glideTo(n, ms) {
     n = Math.max(0, Math.min(RUN, n));
     const el = scroller(), from = el.scrollTop, to = Math.round(offsetOf(n));
@@ -422,23 +426,26 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   // embedded viewer, or when an element other than the window does the scrolling, those
   // events may never reach this page. Reading one rectangle per frame costs next to nothing,
   // and the scene only redraws when the camera has actually moved.
-  const SETTLE_AFTER = 180;                   // ms of stillness before the camera settles
-  const LEAN = 0.12;                          // share of a section that counts as heading on
-  let lastTop = NaN, dirty = true, movedAt = 0, heading = 0, touching = false;
+  const SETTLE_AFTER = 200;                   // ms of stillness before the camera settles
+  const LEAN = 0.07;                          // share of a section that counts as heading on (a wheel notch is ~0.11)
+  let lastTop = NaN, dirty = true, movedAt = 0, start = 0, touching = false;
   function watch(now) {
     const top = dolly.getBoundingClientRect().top;
     if (top !== lastTop) {
-      if (!glide && !Number.isNaN(lastTop)) { movedAt = now; heading = Math.sign(lastTop - top); }
+      if (!glide && !Number.isNaN(lastTop)) {
+        if (!movedAt) start = glide ? glide.n : Math.round(scrolled());   // a new swipe starts here
+        movedAt = now;
+      }
       lastTop = top; dirty = true;
     }
     if (dirty) { dirty = false; frame(); }
     if (!glide && !touching && movedAt && now - movedAt > SETTLE_AFTER) {
       movedAt = 0;
-      const sc = scrolled(), lo = Math.floor(sc), f = sc - lo;
-      if (f > 0.004 && f < 0.996) {
-        const n = heading > 0 ? (f > LEAN ? lo + 1 : lo) : heading < 0 ? (f < 1 - LEAN ? lo : lo + 1) : Math.round(sc);
-        glideTo(n, Math.max(280, STEP_MS * Math.abs(n - sc)));
-      }
+      const sc = scrolled(), d = sc - start;
+      // one place per swipe; only a long, deliberate scroll goes further
+      const n = Math.abs(d) <= LEAN ? start
+        : Math.max(0, Math.min(RUN, start + Math.sign(d) * Math.max(1, Math.floor(Math.abs(d) + 0.2))));
+      if (Math.abs(n - sc) > 0.004) glideTo(n, Math.max(300, STEP_MS * Math.min(1.2, Math.abs(n - sc))));
     }
     requestAnimationFrame(watch);
   }
@@ -449,7 +456,7 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   // Keyboard: arrows and Page Up/Down step one place; Home and End go to the ends.
   addEventListener('keydown', e => {
     if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
-    const sc = scrolled(), at = glide ? glide.n : Math.round(sc);
+    const at = glide ? glide.n : Math.round(scrolled());
     const map = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 };
     let n = null;
     if (e.key === 'Home') n = 0;

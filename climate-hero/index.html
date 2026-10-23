@@ -421,9 +421,10 @@ a { color: inherit; }
   // Calyx (where petals meet the stem) in the source image, as fractions.
   const CALYX = { u: 0.537, v: 0.5 };
   const GROW = { rise: 1.9, openAt: 1.6, open: 1.7 };  // seconds
-  // Once grown the flower bends in a light wind: rooted at the bottom edge, the
-  // bend grows toward the top. amp is the largest lean at the top, as a share of width.
-  const SWAY = { amp: 0.032, flutter: 0.0035 };
+  // Once grown the flower sways in a light wind: the stem bends from its root at the
+  // bottom edge and the head rides on its tip, tilting with it as one piece.
+  // amp is how far the calyx moves sideways at full gust, as a share of the flower's width.
+  const SWAY = { amp: 0.024 };
   const FRAME_MS = 33;                                 // ~30fps for the idle render
 
   const src = new Image();
@@ -439,18 +440,41 @@ a { color: inherit; }
   const easeOut = t => 1 - Math.pow(1 - t, 3);
   const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-  /* Wind: a few slow, unrelated waves summed, so gusts never repeat exactly. It
-     leans mostly one way, the way a steady breeze does, and eases in after growth. */
+  /* Wind: one slow swing (about seven seconds side to side and back) with two smaller,
+     unrelated waves on top, so it never repeats exactly. It swings both ways, a touch
+     further downwind, and eases in after growth. */
   function windAt(now) {
     const t = now / 1000;
-    const gust = 0.6 * Math.sin(t * 0.83) + 0.28 * Math.sin(t * 1.91 + 1.3) + 0.12 * Math.sin(t * 3.7 + 0.4);
-    return (0.35 + 0.65 * gust) * easeInOut(clamp((now - swayFrom) / 1800));
+    const gust = 0.68 * Math.sin(t * 0.9) + 0.22 * Math.sin(t * 1.73 + 1.3) + 0.1 * Math.sin(t * 2.9 + 0.4);
+    return (0.12 + 0.88 * gust) * easeInOut(clamp((now - swayFrom) / 1800));
   }
-  // Sideways shift of a row at screen height v (0 = top of the flower, 1 = bottom edge).
-  function bend(v, wind, now) {
-    const k = (1 - v) * (1 - v);
-    const flutter = v < CALYX.v ? SWAY.flutter * Math.sin(now / 160 + v * 24) * Math.abs(wind) : 0;
-    return SWAY.amp * wind * k + flutter;
+  /* The flower's pose for a gust, in pixels of a w x h box. The stem bends like a rod
+     fixed at the bottom: its sideways shift grows with the square of the height, so it
+     curves rather than leans. The head keeps its shape and turns by the stem's angle at
+     the calyx. */
+  function pose(wind, w, h) {
+    const stem = (1 - CALYX.v) * h;
+    const tip = SWAY.amp * w * wind;                    // calyx shift
+    const th = Math.atan(2 * tip / stem);               // stem angle at the calyx
+    return { w, h, tip, cos: Math.cos(th), sin: Math.sin(th), cx: CALYX.u * w, cy: CALYX.v * h };
+  }
+  // Stem shift at height y (pixels from the top of the box).
+  function stemShift(P, y) {
+    const s = clamp((P.h - y) / (P.h - P.cy));
+    return P.tip * s * s;
+  }
+  // Where a point of the still flower ends up.
+  function swayed(P, x, y) {
+    if (y >= P.cy) return [x + stemShift(P, y), y];
+    const dx = x - P.cx, dy = y - P.cy;
+    return [P.cx + P.tip + dx * P.cos - dy * P.sin, P.cy + dx * P.sin + dy * P.cos];
+  }
+  // And the reverse: which point of the still flower lands at (x, y).
+  function unswayed(P, x, y) {
+    const dx = x - P.cx - P.tip, dy = y - P.cy;
+    const hx = P.cx + dx * P.cos + dy * P.sin, hy = P.cy - dx * P.sin + dy * P.cos;
+    if (hy < P.cy) return [hx, hy];                     // part of the head
+    return [x - stemShift(P, y), y];                    // part of the stem
   }
 
 
@@ -550,17 +574,18 @@ a { color: inherit; }
     const sy = bud * (0.42 + 0.58 * open);    // and lift
     const budTint = (1 - open) * 0.65;        // closed buds read green
 
+    const P = wind ? pose(wind, rect.w, rect.h) : null;   // in pixels, so the head turns without skewing
     let count = 0;
     for (let r = 0; r < rows; r++) {
-      const v = (r + 0.5) / rows;
-      const inHead = v < cy + 0.02;
-      const vs = inHead
-        ? CALYX.v + (v - cy) / sy
-        : CALYX.v + (v - cy) / (1 - cy) * (1 - CALYX.v);
-      if (vs < 0 || vs >= 1) continue;
-      const shift = wind ? bend(v, wind, now) : 0;
+      const v0 = (r + 0.5) / rows;
       for (let c = 0; c < cols; c++) {
-        const u = (c + 0.5) / cols - shift;
+        let u = (c + 0.5) / cols, v = v0;
+        if (P) { const [x, y] = unswayed(P, u * rect.w, v * rect.h); u = x / rect.w; v = y / rect.h; }
+        const inHead = v < cy + 0.02;
+        const vs = inHead
+          ? CALYX.v + (v - cy) / sy
+          : CALYX.v + (v - cy) / (1 - cy) * (1 - CALYX.v);
+        if (vs < 0 || vs >= 1) continue;
         const us = inHead ? CALYX.u + (u - CALYX.u) / sx : u;
         const i = sample(us, vs);
         if (i === null) continue;
@@ -606,20 +631,28 @@ a { color: inherit; }
       const s = sparks[j], life = (now - s.born) / 900;
       if (life >= 1) { sparks.splice(j, 1); continue; }
       ctx.fillStyle = 'rgba(255,255,255,' + Math.sin(life * Math.PI).toFixed(2) + ')';
-      const dx = wind ? bend((s.r + 0.5) / g.rows, wind, now) * rect.w : 0;
-      ctx.fillText('+', s.c * g.cell + g.cell / 2 + dx, s.r * g.cell + g.cell / 2);
+      let x = s.c * g.cell + g.cell / 2, y = s.r * g.cell + g.cell / 2;
+      if (wind) [x, y] = swayed(pose(wind, rect.w, rect.h), x, y);
+      ctx.fillText('+', x, y);
     }
   }
 
-  /* The photo bends the same way, drawn in thin horizontal strips. */
+  /* The photo sways the same way: the stem in thin strips that follow its curve, the
+     head drawn whole, turned about the calyx and carried on the stem's tip. */
   function drawPhoto(wind, now) {
     const { pw, ph, canvas: pc } = photo;
+    rctx.setTransform(1, 0, 0, 1, 0, 0);
     rctx.clearRect(0, 0, pw, ph);
     if (!wind) { rctx.drawImage(pc, 0, 0); return; }
-    for (let y = 0; y < ph; y += 2) {
-      const dx = bend((y + 1) / ph, wind, now) * pw;
-      rctx.drawImage(pc, 0, y, pw, 2, dx, y, pw, 2);
+    const P = pose(wind, pw, ph);
+    const cyRow = Math.round(P.cy);
+    for (let y = cyRow; y < ph; y += 2) {
+      rctx.drawImage(pc, 0, y, pw, 2, stemShift(P, y + 1), y, pw, 2);
     }
+    const lap = 6;                                      // a little overlap so no seam opens at the calyx
+    rctx.setTransform(P.cos, P.sin, -P.sin, P.cos, P.cx + P.tip, P.cy);
+    rctx.drawImage(pc, 0, 0, pw, cyRow + lap, -P.cx, -P.cy, pw, cyRow + lap);
+    rctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
   function startGrowth() {

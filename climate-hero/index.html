@@ -206,36 +206,19 @@ a { color: inherit; }
   70%, 100% { box-shadow: 0 0 0 8px rgba(198, 244, 50, 0); }
 }
 
-/* Two copies of the headline share one grid cell: the pixel face (the render)
-   and Geist Mono (the real thing). Both are monospaced; script splits both into letters and gives each
-   smooth letter the width of its pixel twin, so they line up. The smooth copy
-   only shows inside the same soft mask that reveals the sky. */
+/* DotGothic16 ships in one weight. A thin stroke in the text colour, painted
+   under the fill, thickens it to a medium weight without blurring the pixels. */
 .headline {
   margin: 0;
-  display: grid;
-  text-align: center;
+  font-family: var(--f-pixel);
   font-weight: 400;
   font-size: clamp(2.5rem, 6.2vw, 6.6rem);
-  line-height: 1.06em;   /* a length, so both copies keep the same line pitch */
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  -webkit-text-stroke: 0.022em currentColor;
+  paint-order: stroke fill;
+  text-wrap: balance;
 }
-.headline > span { grid-area: 1 / 1; }
-.h-px {
-  font-family: var(--f-pixel);
-  letter-spacing: -0.03em;
-}
-.h-sans {
-  font-family: var(--f-mono);
-  font-weight: 500;
-  letter-spacing: 0;
-  visibility: hidden;
-}
-.headline.is-split .h-sans {
-  visibility: visible;
-  -webkit-mask-image: linear-gradient(transparent, transparent);
-          mask-image: linear-gradient(transparent, transparent);
-}
-.headline .w { display: inline-block; white-space: nowrap; }
-.headline .c { display: inline-block; text-align: center; }
 
 /* ---------- bottom row ---------- */
 .foot {
@@ -360,7 +343,7 @@ a { color: inherit; }
     <img class="halo-flower" src="assets/flower.webp" alt="">
   </div>
   <div class="real" id="real">
-    <canvas class="real-flower" id="realFlower" role="img" aria-label="A pale pink cosmos flower on a green stem, turning slowly against a blue sky with a few clouds."></canvas>
+    <canvas class="real-flower" id="realFlower" role="img" aria-label="A pale pink cosmos flower on a green stem, swaying slightly against a blue sky with a few clouds."></canvas>
   </div>
 
   <div class="layer">
@@ -387,10 +370,7 @@ a { color: inherit; }
 
     <div class="intro">
       <p class="eyebrow"><span class="nw"><span class="dot" aria-hidden="true"></span>Atmospheric CO₂</span> &nbsp;<span class="nw"><b>315 ppm</b> in 1958</span> &nbsp;·&nbsp; <span class="nw"><b>424.6 ppm</b> in 2024</span></p>
-      <h1 class="headline" aria-label="Don’t let this be the only flower they know.">
-        <span class="h-px" aria-hidden="true">Don’t let this be the <br class="br-wide">only flower they know.</span>
-        <span class="h-sans" aria-hidden="true">Don’t let this be the <br class="br-wide">only flower they know.</span>
-      </h1>
+      <h1 class="headline">Don’t let this be the <br class="br-wide">only flower they know.</h1>
     </div>
 
     <div class="foot">
@@ -423,9 +403,6 @@ a { color: inherit; }
   const halo = document.getElementById('halo');
   const realCanvas = document.getElementById('realFlower');
   const rctx = realCanvas.getContext('2d');
-  const headline = document.querySelector('.headline');
-  const hPx = headline.querySelector('.h-px');
-  const hSans = headline.querySelector('.h-sans');
   const toggle = document.getElementById('toggle');
   const toggleLabel = toggle.querySelector('.toggle-label');
   const hint = document.getElementById('hint');
@@ -443,11 +420,10 @@ a { color: inherit; }
   const FLOWER_SHARE = 0.6;
   // Calyx (where petals meet the stem) in the source image, as fractions.
   const CALYX = { u: 0.537, v: 0.5 };
-  const HEAD_END = CALYX.v + 0.04;                     // rows above this turn; the stem stays still
   const GROW = { rise: 1.9, openAt: 1.6, open: 1.7 };  // seconds
-  // Once grown the head turns side to side on its stem. A single photo has no back,
-  // so the turn stays within the angles that the front view can carry.
-  const TURN = { amp: 0.32, period: 9 };               // radians, seconds
+  // Once grown the flower bends in a light wind: rooted at the bottom edge, the
+  // bend grows toward the top. amp is the largest lean at the top, as a share of width.
+  const SWAY = { amp: 0.032, flutter: 0.0035 };
   const FRAME_MS = 33;                                 // ~30fps for the idle render
 
   const src = new Image();
@@ -457,40 +433,26 @@ a { color: inherit; }
   let grid = null;           // ASCII sampling buffer
   let photo = null;          // pixel buffer for the turning photo
   let growStart = 0, growing = false, ready = reduce;
-  let theta = 0, phase = 0, spinFrom = 0, lastFrame = 0, lastSpin = 0;
+  let swayFrom = 0, lastFrame = 0;
 
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
   const easeOut = t => 1 - Math.pow(1 - t, 3);
   const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-  /* Centre and half-width of the silhouette per row, from the alpha channel, smoothed
-     over neighbouring rows so the turn does not tear the image into strips. */
-  function rowSpans(data, w, h) {
-    const lo = new Float32Array(h), hi = new Float32Array(h), has = new Uint8Array(h);
-    for (let y = 0; y < h; y++) {
-      let a = -1, b = -1;
-      for (let x = 0; x < w; x++) if (data[(y * w + x) * 4 + 3] > 40) { if (a < 0) a = x; b = x + 1; }
-      if (a >= 0) { lo[y] = a; hi[y] = b; has[y] = 1; }
-    }
-    const k = Math.max(2, Math.round(h * 0.02));
-    const c = new Float32Array(h), r = new Float32Array(h);
-    for (let y = 0; y < h; y++) {
-      if (!has[y]) continue;
-      let sl = 0, sh = 0, n = 0;
-      for (let j = Math.max(0, y - k); j <= Math.min(h - 1, y + k); j++) if (has[j]) { sl += lo[j]; sh += hi[j]; n++; }
-      c[y] = (sl + sh) / (2 * n);
-      r[y] = (sh - sl) / (2 * n) + 1;
-    }
-    return { c, r };
+  /* Wind: a few slow, unrelated waves summed, so gusts never repeat exactly. It
+     leans mostly one way, the way a steady breeze does, and eases in after growth. */
+  function windAt(now) {
+    const t = now / 1000;
+    const gust = 0.6 * Math.sin(t * 0.83) + 0.28 * Math.sin(t * 1.91 + 1.3) + 0.12 * Math.sin(t * 3.7 + 0.4);
+    return (0.35 + 0.65 * gust) * easeInOut(clamp((now - swayFrom) / 1800));
+  }
+  // Sideways shift of a row at screen height v (0 = top of the flower, 1 = bottom edge).
+  function bend(v, wind, now) {
+    const k = (1 - v) * (1 - v);
+    const flutter = v < CALYX.v ? SWAY.flutter * Math.sin(now / 160 + v * 24) * Math.abs(wind) : 0;
+    return SWAY.amp * wind * k + flutter;
   }
 
-  // Turn one position round a row's cylinder: x is the offset from the row centre.
-  function turn(pos, c, r, rot) {
-    const x = (pos - c) / r;
-    if (x <= -1 || x >= 1) return null;
-    const phi = Math.asin(x) + rot;
-    return { pos: c + r * Math.sin(phi), shade: Math.cos(phi) };
-  }
 
   /* ---------- layout ---------- */
   function layout() {
@@ -509,7 +471,6 @@ a { color: inherit; }
     canvas.height = Math.round(rect.h * dpr);
     buildGrid();
     buildPhoto();
-    measureHeadline();
   }
 
   /* Sample the photo once into a small pixel buffer; the ASCII is read from it. */
@@ -536,9 +497,7 @@ a { color: inherit; }
     const seed = new Float32Array(cols * rows);
     let s = 7;
     for (let i = 0; i < seed.length; i++) { s = (s * 16807) % 2147483647; seed[i] = s / 2147483647; }
-    const spans = rowSpans(data, sw, sh);
-    for (let i = 0; i < sh; i++) { spans.c[i] /= sw; spans.r[i] /= sw; }   // in u units
-    grid = { cell, cols, rows, sw, sh, data, halo: haloData, seed, spans };
+    grid = { cell, cols, rows, sw, sh, data, halo: haloData, seed };
     charCount.textContent = countCells().toLocaleString('en-US');
   }
 
@@ -546,16 +505,11 @@ a { color: inherit; }
     const q = Math.min(dpr, 1.5);
     const pw = Math.round(rect.w * q), ph = Math.round(rect.h * q);
     realCanvas.width = pw; realCanvas.height = ph;
-    rctx.clearRect(0, 0, pw, ph);
-    rctx.drawImage(src, 0, 0, pw, ph);
-    const img = rctx.getImageData(0, 0, pw, ph);
-    photo = {
-      pw, ph,
-      src: new Uint8ClampedArray(img.data),
-      out: img,
-      spans: rowSpans(img.data, pw, ph),
-      headRows: Math.round(HEAD_END * ph)
-    };
+    const off = document.createElement('canvas');
+    off.width = pw; off.height = ph;
+    off.getContext('2d').drawImage(src, 0, 0, pw, ph);
+    photo = { pw, ph, canvas: off };
+    drawPhoto(0, 0);
   }
 
   function sample(u, v) {
@@ -575,10 +529,10 @@ a { color: inherit; }
   /* ---------- ASCII render ---------- */
   const RAMP = ['·', ':', '-', '+', '+', '+', '*'];
 
-  // t: seconds since growth started (Infinity = grown); rot: turn of the head in radians.
-  function draw(t, rot) {
+  // t: seconds since growth started (Infinity = grown); wind: current gust, 0 = still.
+  function draw(t, wind, now) {
     const g = grid;
-    const { cell, cols, rows, data, halo: hd, seed, spans } = g;
+    const { cell, cols, rows, data, halo: hd, seed } = g;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.w, rect.h);
     ctx.font = '500 ' + (cell * 1.5).toFixed(1) + 'px "Geist Mono", ui-monospace, monospace';
@@ -604,17 +558,10 @@ a { color: inherit; }
         ? CALYX.v + (v - cy) / sy
         : CALYX.v + (v - cy) / (1 - cy) * (1 - CALYX.v);
       if (vs < 0 || vs >= 1) continue;
-      // Turning the head: treat each row as a cylinder and slide the texture round it.
-      const sr = vs * g.sh | 0;
-      const rr = rot && vs < HEAD_END ? spans.r[sr] : 0, rc = spans.c[sr];
+      const shift = wind ? bend(v, wind, now) : 0;
       for (let c = 0; c < cols; c++) {
-        const u = (c + 0.5) / cols;
-        let us = inHead ? CALYX.u + (u - CALYX.u) / sx : u;
-        let shade = 1;
-        if (rr > 0) {
-          const tu = turn(us, rc, rr, rot);
-          if (tu) { us = tu.pos; shade = 0.82 + 0.18 * tu.shade; }
-        }
+        const u = (c + 0.5) / cols - shift;
+        const us = inHead ? CALYX.u + (u - CALYX.u) / sx : u;
         const i = sample(us, vs);
         if (i === null) continue;
         const a = data[i + 3] / 255;
@@ -625,9 +572,9 @@ a { color: inherit; }
           ch = RAMP[Math.min(RAMP.length - 1, (lum * RAMP.length) | 0)];
           const gray = lum * 255;
           // pull toward grey so the render reads as a screen, with a hint of the real colour
-          R = (data[i] * 0.55 + gray * 0.45) * 1.25 * shade;
-          G = (data[i + 1] * 0.55 + gray * 0.45) * 1.25 * shade;
-          B = (data[i + 2] * 0.55 + gray * 0.45) * 1.25 * shade;
+          R = (data[i] * 0.55 + gray * 0.45) * 1.25;
+          G = (data[i + 1] * 0.55 + gray * 0.45) * 1.25;
+          B = (data[i + 2] * 0.55 + gray * 0.45) * 1.25;
           A = a * (0.5 + 0.5 * lum);
           if (inHead && budTint > 0) {
             R += (130 - R) * budTint; G += (205 - G) * budTint; B += (80 - B) * budTint;
@@ -645,7 +592,7 @@ a { color: inherit; }
 
   /* A few cells flare and fade, like the noise on a live feed. */
   const sparks = [];
-  function drawSparks(now) {
+  function drawSparks(now, wind) {
     const g = grid;
     if (sparks.length < 14 && Math.random() < 0.35) {
       for (let tries = 0; tries < 6; tries++) {
@@ -659,36 +606,26 @@ a { color: inherit; }
       const s = sparks[j], life = (now - s.born) / 900;
       if (life >= 1) { sparks.splice(j, 1); continue; }
       ctx.fillStyle = 'rgba(255,255,255,' + Math.sin(life * Math.PI).toFixed(2) + ')';
-      ctx.fillText('+', s.c * g.cell + g.cell / 2, s.r * g.cell + g.cell / 2);
+      const dx = wind ? bend((s.r + 0.5) / g.rows, wind, now) * rect.w : 0;
+      ctx.fillText('+', s.c * g.cell + g.cell / 2 + dx, s.r * g.cell + g.cell / 2);
     }
   }
 
-  /* The photo turns the same way: remap each head row around the stem axis. */
-  function drawPhoto(rot) {
-    const { pw, src: sp, out, spans, headRows } = photo;
-    const op = out.data;
-    for (let y = 0; y < headRows; y++) {
-      const R = spans.r[y], C = spans.c[y];
-      if (!R) continue;
-      const row = y * pw * 4;
-      const x0 = Math.max(0, Math.floor(C - R)), x1 = Math.min(pw - 1, Math.ceil(C + R));
-      for (let x = x0; x <= x1; x++) {
-        const o = row + x * 4;
-        const tu = turn(x + 0.5, C, R, rot);
-        if (!tu) { op[o + 3] = 0; continue; }
-        const sx = Math.min(pw - 1, Math.max(0, tu.pos | 0));
-        const si = row + sx * 4;
-        const shade = 0.86 + 0.14 * tu.shade;
-        op[o] = sp[si] * shade; op[o + 1] = sp[si + 1] * shade; op[o + 2] = sp[si + 2] * shade; op[o + 3] = sp[si + 3];
-      }
+  /* The photo bends the same way, drawn in thin horizontal strips. */
+  function drawPhoto(wind, now) {
+    const { pw, ph, canvas: pc } = photo;
+    rctx.clearRect(0, 0, pw, ph);
+    if (!wind) { rctx.drawImage(pc, 0, 0); return; }
+    for (let y = 0; y < ph; y += 2) {
+      const dx = bend((y + 1) / ph, wind, now) * pw;
+      rctx.drawImage(pc, 0, y, pw, 2, dx, y, pw, 2);
     }
-    rctx.putImageData(out, 0, 0);
   }
 
   function startGrowth() {
     sparks.length = 0;
     if (reduce) { ready = true; return; }
-    growing = true; growStart = 0; ready = false; theta = 0; phase = 0;
+    growing = true; growStart = 0; ready = false;
     hero.classList.add('is-growing');
     reveal.inside = false;
     if (reveal.pinned) setPinned(false);
@@ -696,65 +633,26 @@ a { color: inherit; }
 
   function finishGrowth(now) {
     growing = false; ready = true;
-    spinFrom = now; lastSpin = now;
+    swayFrom = now;
     hero.classList.remove('is-growing');
-    measureHeadline();
   }
 
   function asciiFrame(now) {
     if (growing) {
       if (!growStart) growStart = now;  // start on the first visible frame
       const t = (now - growStart) / 1000;
-      draw(t, 0);
+      draw(t, 0, now);
       if (t > GROW.openAt + GROW.open + 0.1) finishGrowth(now);
       return;
     }
-    if (reduce) { if (!lastFrame) { draw(Infinity, 0); drawPhoto(0); lastFrame = now; } return; }
+    if (reduce) { if (!lastFrame) { draw(Infinity, 0, now); drawPhoto(0, now); lastFrame = now; } return; }
     if (now - lastFrame < FRAME_MS) return;
-    // ease into the spin over the first second and a half
-    const dt = Math.min(0.1, (now - lastSpin) / 1000);
-    lastSpin = now;
-    phase += dt * (2 * Math.PI / TURN.period) * easeInOut(clamp((now - spinFrom) / 1500));
-    theta = TURN.amp * Math.sin(phase);
     lastFrame = now;
-    if (!reveal.full) { draw(Infinity, theta); drawSparks(now); }
-    if (real.classList.contains('is-on')) drawPhoto(theta);
+    const wind = windAt(now);
+    if (!reveal.full) { draw(Infinity, wind, now); drawSparks(now, wind); }
+    if (real.classList.contains('is-on')) drawPhoto(wind, now);
   }
 
-  /* ---------- headline: letter-aligned twin ---------- */
-  function splitInto(el) {
-    const parts = [];
-    el.childNodes.forEach(n => parts.push(n.nodeType === 3 ? n.textContent : n));
-    el.textContent = '';
-    parts.forEach(p => {
-      if (typeof p !== 'string') { el.appendChild(p); return; }
-      const words = p.split(/(\s+)/).filter(Boolean);
-      words.forEach((w, i) => {
-        if (/^\s+$/.test(w)) return;
-        const span = document.createElement('span');
-        span.className = 'w';
-        const text = w + (i < words.length - 1 ? ' ' : '');
-        for (const ch of text) {
-          const c = document.createElement('span');
-          c.className = 'c';
-          c.textContent = ch;
-          span.appendChild(c);
-        }
-        el.appendChild(span);
-      });
-    });
-  }
-  splitInto(hPx); splitInto(hSans);
-  const pxChars = hPx.querySelectorAll('.c'), sansChars = hSans.querySelectorAll('.c');
-
-  function measureHeadline() {
-    const widths = Array.from(pxChars, c => c.getBoundingClientRect().width);
-    // size the smooth face so its advance (0.6em) matches a typical pixel cell
-    const typical = widths.slice().sort((a, b) => a - b)[widths.length >> 1];
-    hSans.style.fontSize = (typical / 0.6 / parseFloat(getComputedStyle(headline).fontSize)).toFixed(3) + 'em';
-    sansChars.forEach((c, i) => { c.style.width = widths[i] + 'px'; });
-    headline.classList.add('is-split');
-  }
 
   /* ---------- reveal: a soft, uneven mask that follows the cursor ---------- */
   const reveal = {
@@ -791,7 +689,6 @@ a { color: inherit; }
   }
 
   const SOFT = '#000 0%, rgba(0,0,0,.9) 28%, rgba(0,0,0,.5) 58%, rgba(0,0,0,.14) 84%, transparent 100%';
-  const INV = 'transparent 0%, rgba(0,0,0,.1) 28%, rgba(0,0,0,.5) 58%, rgba(0,0,0,.86) 84%, #000 100%';
   const HALO = '#000 0%, rgba(0,0,0,.55) 42%, rgba(0,0,0,.18) 72%, transparent 100%';
   const NONE = 'linear-gradient(transparent, transparent)';
 
@@ -800,23 +697,11 @@ a { color: inherit; }
     return list.map(c => 'radial-gradient(circle ' + (c.R * scale).toFixed(1) + 'px at ' + (c.x - ox).toFixed(1) + 'px ' + (c.y - oy).toFixed(1) + 'px, ' + stops + ')').join(',');
   }
 
-  function setMask(el, value, intersect) {
+  function setMask(el, value) {
     el.style.webkitMaskImage = value;
     el.style.maskImage = value;
-    if (intersect !== undefined) {
-      el.style.webkitMaskComposite = intersect ? 'source-in' : 'source-over';
-      el.style.maskComposite = intersect ? 'intersect' : 'add';
-    }
   }
 
-  function headlineMasks(list, full) {
-    if (full) { setMask(hSans, 'none'); setMask(hPx, NONE, false); return; }
-    if (!list) { setMask(hSans, NONE); setMask(hPx, 'none', false); return; }
-    const hb = hSans.getBoundingClientRect(), b = hero.getBoundingClientRect();
-    const ox = hb.left - b.left, oy = hb.top - b.top;
-    setMask(hSans, gradients(list, ox, oy, 1, SOFT) || NONE);
-    setMask(hPx, gradients(list, ox, oy, 1, INV) || 'none', true);
-  }
 
   function revealFrame(now) {
     const s = reveal;
@@ -824,7 +709,7 @@ a { color: inherit; }
     if (!active && s.r < 0.5 && !s.trail.length) {
       if (real.classList.contains('is-on')) {
         real.classList.remove('is-on'); halo.classList.remove('is-on');
-        setReal(false); s.full = false; headlineMasks(null);
+        setReal(false); s.full = false;
       }
       return;
     }
@@ -847,13 +732,11 @@ a { color: inherit; }
 
     if (s.full) {
       setMask(real, 'none'); setMask(halo, NONE);
-      headlineMasks(null, true);
       return;
     }
     const list = shapes(now);
     setMask(real, gradients(list, 0, 0, 1, SOFT) || NONE);
     setMask(halo, gradients(list, -40, -40, 1.75, HALO) || NONE);
-    headlineMasks(list);
   }
 
   function localPoint(e) {
@@ -915,7 +798,7 @@ a { color: inherit; }
   });
 
   const fontLoads = document.fonts && document.fonts.load
-    ? Promise.all(['500 10px "Geist Mono"', '400 10px "DotGothic16"', '400 10px "Geist"'].map(f => document.fonts.load(f)))
+    ? Promise.all(['500 10px "Geist Mono"', '400 10px "DotGothic16"'].map(f => document.fonts.load(f)))
     : Promise.resolve();
   const fontsReady = Promise.race([fontLoads, new Promise(r => setTimeout(r, 2000))]);
   const imgReady = src.decode ? src.decode().catch(() => {}) : new Promise(r => { src.onload = r; });

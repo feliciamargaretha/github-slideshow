@@ -14,4 +14,3 @@ A standalone landing-page header for a climate non-profit (Rootwork is a placeho
 - `assets/flower.webp`: cut out from [a cosmos photo on Pexels](https://www.pexels.com/photo/tender-cosmos-bipinnatus-flower-with-thin-stem-against-blue-sky-5743979/) (Pexels license).
 - `assets/sky.webp`: a gradient sky with a scattering of clouds taken from [a sky photo on Pexels](https://www.pexels.com/photo/blue-sky-and-white-clouds-231009/) (Pexels license).
 
-The screen-time line comes from [The Common Sense Census: Media Use by Tweens and Teens, 2021](https://www.commonsensemedia.org/kids-action/articles/kids-media-use-accelerated-rapidly-during-the-pandemic): 5 hours 33 minutes a day of entertainment screen media for US 8–12 year olds. It excludes schoolwork and counts two screens used at once twice.

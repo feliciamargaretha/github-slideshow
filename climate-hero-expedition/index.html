@@ -389,9 +389,10 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   }
   /* ---------- scrolling ----------
      Scrolling is the browser's own, so the flight follows your fingers and works wherever
-     the pointer is. When you pause, the camera settles on a place: the next one from where
-     that swipe began, even if momentum carried you further, unless you scrolled a long way
-     on purpose. Scrolling again during the glide hands control straight back to you. */
+     the pointer is. One swipe reaches at most the next place: while a swipe (and its
+     momentum) is still going, the page stops at that place like a soft wall, and when you
+     pause the camera settles there. Swipe again to go on. Scrolling during a glide hands
+     control straight back to you. */
 
   // Whatever element actually scrolls the page (the window, or the body inside some viewers).
   function scroller() {
@@ -433,18 +434,20 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
     const top = dolly.getBoundingClientRect().top;
     if (top !== lastTop) {
       if (!glide && !Number.isNaN(lastTop)) {
-        if (!movedAt) start = glide ? glide.n : Math.round(scrolled());   // a new swipe starts here
+        if (!movedAt) start = Math.round(scrolled());   // a new swipe starts here
         movedAt = now;
+        // the wall: this swipe can't carry the page past the places either side of its start
+        const el = scroller();
+        const lo = Math.round(offsetOf(Math.max(0, start - 1))), hi = Math.round(offsetOf(Math.min(RUN, start + 1)));
+        if (el.scrollTop > hi) el.scrollTop = hi; else if (el.scrollTop < lo) el.scrollTop = lo;
       }
-      lastTop = top; dirty = true;
+      lastTop = dolly.getBoundingClientRect().top; dirty = true;
     }
     if (dirty) { dirty = false; frame(); }
     if (!glide && !touching && movedAt && now - movedAt > SETTLE_AFTER) {
       movedAt = 0;
       const sc = scrolled(), d = sc - start;
-      // one place per swipe; only a long, deliberate scroll goes further
-      const n = Math.abs(d) <= LEAN ? start
-        : Math.max(0, Math.min(RUN, start + Math.sign(d) * Math.max(1, Math.floor(Math.abs(d) + 0.2))));
+      const n = Math.abs(d) <= LEAN ? start : Math.max(0, Math.min(RUN, start + Math.sign(d)));
       if (Math.abs(n - sc) > 0.004) glideTo(n, Math.max(300, STEP_MS * Math.min(1.2, Math.abs(n - sc))));
     }
     requestAnimationFrame(watch);

@@ -7,10 +7,10 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=Jacquarda+Bastarda+9&family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="preload" as="image" href="assets/flower.webp">
 <style>
-/* Layout: one full-viewport stage. Nav on top, pixelated headline above a flower that
+/* Layout: one full-viewport stage. Nav on top, pixel-script headline above a flower that
    rises from the bottom edge to 60% of the screen height; copy and controls flank the stem. */
 :root {
   --ink: #0b0c0b;          /* page ground, a green-biased near-black */
@@ -22,6 +22,8 @@
   --sky-shade: rgba(6, 30, 62, .38);
 
   --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-pixel: "Jacquarda Bastarda 9", "Courier New", monospace;
+  --f-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
   --f-body: "Geist", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
@@ -180,22 +182,40 @@ a { color: inherit; }
   70%, 100% { box-shadow: 0 0 0 8px rgba(198, 244, 50, 0); }
 }
 
-/* Pixelated display type: the real, selectable text runs through an SVG mosaic
-   filter that samples one pixel per block and fills the block with it. Blocks
-   shrink to nothing while the real flower is showing. */
+/* Two copies of the headline share one grid cell: a pixel calligraphy (the
+   render) and a smooth serif (the real thing). Hover wipes one into the other. */
 .headline {
   margin: 0;
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-stretch: 100%;
-  font-size: clamp(2.6rem, 6.3vw, 6.9rem);
-  line-height: .98;
-  letter-spacing: -0.03em;
+  display: grid;
+  justify-items: stretch;
+  align-items: center;
+  text-align: center;
+  font-weight: 400;
+  font-size: clamp(2.5rem, 6vw, 6.5rem);
+  line-height: 1;
   text-wrap: balance;
-  padding: 0.04em 0.06em;
-  filter: url(#px6);
+  pointer-events: auto;
+  cursor: default;
 }
-@media (max-width: 860px) { .headline { filter: url(#px3); } }
+.headline > span {
+  grid-area: 1 / 1;
+  padding: 0.06em 0.08em;
+  transition: clip-path .75s cubic-bezier(.65, 0, .25, 1);
+}
+.h-px {
+  font-family: var(--f-pixel);
+  letter-spacing: -0.01em;
+  clip-path: inset(0 0 0 0);
+}
+.h-serif {
+  font-family: var(--f-serif);
+  font-size: 1.14em;
+  letter-spacing: -0.015em;
+  clip-path: inset(0 100% 0 0);
+}
+.h-serif em { font-style: italic; }
+.headline:hover .h-px, .hero.is-real .h-px { clip-path: inset(0 0 0 100%); }
+.headline:hover .h-serif, .hero.is-real .h-serif { clip-path: inset(0 0 0 0); }
 
 /* ---------- bottom row ---------- */
 .foot {
@@ -305,46 +325,13 @@ a { color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eyebrow, .caption { transition: none; }
+  .eyebrow, .caption, .headline > span { transition: none; }
   .dot { animation: none; }
   .real { transition: opacity .4s; }
 }
 </style>
 </head>
 <body>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <defs>
-    <filter id="px6" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feFlood x="3" y="3" width="1" height="1" flood-color="#fff"/>
-      <feComposite width="6" height="6"/>
-      <feTile result="grid"/>
-      <feComposite in="SourceGraphic" in2="grid" operator="in"/>
-      <feMorphology operator="dilate" radius="3"/>
-    </filter>
-    <filter id="px4" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feFlood x="2" y="2" width="1" height="1" flood-color="#fff"/>
-      <feComposite width="4" height="4"/>
-      <feTile result="grid"/>
-      <feComposite in="SourceGraphic" in2="grid" operator="in"/>
-      <feMorphology operator="dilate" radius="2"/>
-    </filter>
-    <filter id="px3" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feFlood x="1" y="1" width="1" height="1" flood-color="#fff"/>
-      <feComposite width="3" height="3"/>
-      <feTile result="grid"/>
-      <feComposite in="SourceGraphic" in2="grid" operator="in"/>
-      <feMorphology operator="dilate" radius="1"/>
-    </filter>
-    <filter id="px2" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feFlood x="1" y="1" width="1" height="1" flood-color="#fff"/>
-      <feComposite width="2" height="2"/>
-      <feTile result="grid"/>
-      <feComposite in="SourceGraphic" in2="grid" operator="in"/>
-      <feMorphology operator="dilate" radius="1"/>
-    </filter>
-  </defs>
-</svg>
 
 <header class="hero" id="hero">
   <canvas class="ascii" id="ascii" aria-hidden="true"></canvas>
@@ -377,7 +364,10 @@ a { color: inherit; }
 
     <div class="intro">
       <p class="eyebrow"><span class="nw"><span class="dot" aria-hidden="true"></span>Atmospheric CO₂</span> &nbsp;<span class="nw"><b>315 ppm</b> in 1958</span> &nbsp;·&nbsp; <span class="nw"><b>424.6 ppm</b> in 2024</span></p>
-      <h1 class="headline">Don’t let this be the <br class="br-wide">only flower they know.</h1>
+      <h1 class="headline" aria-label="Don’t let this be the only flower they know.">
+        <span class="h-px" aria-hidden="true">Don’t let this be the <br class="br-wide">only flower they know.</span>
+        <span class="h-serif" aria-hidden="true">Don’t let this be the <br class="br-wide">only <em>flower</em> they know.</span>
+      </h1>
     </div>
 
     <div class="foot">
@@ -622,24 +612,10 @@ a { color: inherit; }
 
   function diag() { return Math.hypot(W, H) * 1.05; }
 
-  const headline = document.querySelector('.headline');
-  const narrowMq = matchMedia('(max-width: 860px)');
-  let pxTimers = [];
-  function pixelSteps(on) {
-    pxTimers.forEach(clearTimeout); pxTimers = [];
-    const base = narrowMq.matches ? 'px3' : 'px6';
-    const steps = on ? ['px4', 'px2', 'none'] : ['px2', 'px4', base];
-    if (reduce) steps.splice(0, 2);
-    steps.forEach((id, k) => pxTimers.push(setTimeout(() => {
-      headline.style.filter = id === 'none' ? 'none' : (id === base && !on ? '' : 'url(#' + id + ')');
-    }, k * 110)));
-  }
-
   function setReal(on) {
     if (hero.classList.contains('is-real') === on) return;
     hero.classList.toggle('is-real', on);
     capRender.hidden = on; capReal.hidden = !on;
-    pixelSteps(on);
   }
 
   function revealFrame(now) {

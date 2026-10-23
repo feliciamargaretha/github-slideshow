@@ -4,18 +4,33 @@ An alternative to `../climate-hero/`. It's a night-time alpine scene in two gree
 
 - **Type:** Source Serif 4 for the headline, Geist for the subtitle, the button and the nav.
 - **Layout:** 120px side margins from 1024px wide, 24px below that. The nav has no borders. The button has 14px corners.
-- **Scene:** four depth layers in `assets/` (far range, main peak, snowfield with the climbers and right-hand pines, and the near pine bank). Each is greyscale tone with transparency. The page places them for the current camera position and dithers the result to the two colours at 2 CSS pixels per dot, so it stays crisp at any size. It fills the screen from the bottom right; on tall phone screens it keeps to the lower half so the copy sits on open sky.
-- **Scroll:** the header stays pinned for 1.4 screens of scroll while the camera walks toward the summit. It's a dolly, not a zoom: each layer grows by its distance from the camera. The bank and snowfield rush past and leave the frame first, the peak grows to twice its size, and the far range barely moves. The camera also drifts a little toward the peak, with each layer sliding in proportion to its nearness. The headline and copy fade out in the first fifth of the scroll. With reduced motion turned on, nothing is pinned and the scene stays still.
+- **Scenes:** four landscapes in `assets/<scene>/`, each split into depth layers (greyscale tone with transparency):
+  - **summit:** the opening peak, with a snowfield, climbers and pines
+  - **aletsch:** a glacier between rock walls, with crevasses, moraine stripes and a roped party on the ice
+  - **paradiso:** a snow dome above a meadow, with a larch line and big larches in front
+  - **tatras:** a sawtooth ridge, with a switchback trail up the scree to a hut on the saddle
 
-## How the scene is made
+  The page places the layers for the current camera position and dithers the result to the two colours at 2 CSS pixels per dot. Scenes fill the screen from the bottom right; on tall phone screens they keep to the lower half so the copy sits on open sky.
+- **Scroll:** the header stays pinned through the whole sequence (about 7.4 screens of scroll):
+  1. The camera walks toward the summit while the headline fades out.
+  2. The dots dissolve into each place in turn. The camera walks into it, and its field note (number, coordinates, place, one sentence, link) fades in over the sky and out again before the next dissolve.
 
-`tools/scene.py` draws the mountains as shaded relief: one ridge line per layer, plus noise for the gullies and lighting from the upper left. It also draws the pines and the snowfields. The climbers are cut from Edward Whymper's wood engravings for *Scrambles amongst the Alps* (1871, public domain), via [Project Gutenberg ebook 41234](https://www.gutenberg.org/ebooks/41234):
+  Each walk is a dolly, not a zoom: each layer grows by its distance from the camera, so near ground rushes past and leaves the frame while the far range barely moves, and the camera drifts slightly toward its subject. Scene settings (focus point, walk distance, drift, scroll length, layer depths) are in the `SCENES` list at the top of the script.
+- **Reduced motion:** with reduced motion turned on, the scenes don't move. They still change from one place to the next as you scroll, and the notes still appear, without sliding.
+- **Placeholder copy:** the three places, their notes and links are examples. Replace them with the organisation's real projects. The coordinates are approximate.
 
-- the roped party of three, from "The Matterhorn from near the summit of the Théodule Pass"
-- the lone climber with hat and axe, from "Glissading"
+## How the scenes are made
 
-To rebuild it, download those two plates (`images/fig27.jpg` and `images/fig92.jpg` from the Gutenberg HTML edition) into a folder, then run:
+`tools/scenes.py` builds every scene from the drawing kit in `tools/engrave.py`:
+- **Terrain:** shaded relief from one ridgeline per layer, with noise for the gullies and light from the upper left.
+- **Ground:** snowfields, meadows and glacier ice.
+- **Trees:** pines and larches.
+- **Climbers:** cut from Edward Whymper's wood engravings for *Scrambles amongst the Alps* (1871, public domain), via [Project Gutenberg ebook 41234](https://www.gutenberg.org/ebooks/41234):
+  - the roped party of three, from "The Matterhorn from near the summit of the Théodule Pass"
+  - the lone climber with hat and axe, from "Glissading"
+
+To rebuild, download those two plates (`images/fig27.jpg` and `images/fig92.jpg` from the Gutenberg HTML edition) into a folder, then run this from `tools/` (name scenes at the end to rebuild only those):
 
 ```
-python3 tools/scene.py <folder with fig27.jpg and fig92.jpg> assets preview.png
+python3 scenes.py <folder with the plates> ../assets [preview folder] [summit aletsch paradiso tatras]
 ```

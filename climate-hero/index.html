@@ -212,7 +212,8 @@ a { color: inherit; }
   margin: 0;
   font-family: var(--f-pixel);
   font-weight: 400;
-  font-size: clamp(26px, calc(6.2vw - 24px), calc(6.6rem - 24px));   /* keeps 26px on phones */
+  /* about 65px on a 1440px screen, 40px on a tablet, 30px on a phone */
+  font-size: clamp(30px, calc(3.9vw + 9px), 82px);
   line-height: 1.06;
   letter-spacing: -0.02em;
   -webkit-text-stroke: 0.022em currentColor;
@@ -325,6 +326,32 @@ a { color: inherit; }
     transition: background-color .4s;
   }
   .hero.is-real .foot { background: linear-gradient(to bottom, transparent, rgba(8, 36, 72, .35) 56px); }
+}
+
+/* Short, wide screens (a phone held sideways): no minimum height, copy on the left,
+   the flower to the right (placed by script), the caption dropped. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .hero { min-height: 0; }
+  .nav { height: 60px; }
+  .intro {
+    justify-items: start; text-align: left;
+    max-width: 52%;
+    padding-top: 4px; gap: 10px;
+  }
+  .eyebrow { display: none; }
+  .headline { font-size: clamp(24px, 7vh, 40px); }
+  .br-wide { display: inline; }
+  .foot {
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-inline: 0; padding: 0;
+    background: none;
+    align-items: end;
+  }
+  .hero.is-real .foot { background: none; }
+  .lede { font-size: 14px; max-width: 34ch; }
+  .lede-wrap { gap: 10px; }
+  .fig { justify-self: end; justify-items: end; }
+  .caption { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -482,9 +509,11 @@ a { color: inherit; }
   function layout() {
     W = hero.clientWidth; H = hero.clientHeight;
     const ar = src.naturalWidth / src.naturalHeight || 0.66;
-    const fh = Math.round(H * (W < 600 ? 0.52 : FLOWER_SHARE));
+    const short = H < 560 && W > H;                     // a phone held sideways
+    const fh = Math.round(H * (short ? 0.8 : W < 600 ? 0.52 : FLOWER_SHARE));
     const fw = Math.round(fh * ar);
-    rect = { x: Math.round((W - fw) / 2), y: H - fh, w: fw, h: fh };
+    const cx = short ? W * 0.72 : W / 2;                // sideways, the flower stands to the right of the copy
+    rect = { x: Math.round(cx - fw / 2), y: H - fh, w: fw, h: fh };
     hero.style.setProperty('--fx', rect.x + 'px');
     hero.style.setProperty('--fy', rect.y + 'px');
     hero.style.setProperty('--fw', rect.w + 'px');

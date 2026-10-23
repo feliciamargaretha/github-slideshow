@@ -114,7 +114,7 @@ a { color: inherit; }
 .note { gap: 16px; visibility: hidden; opacity: 0; }
 .headline {
   margin: 0;
-  font: 400 clamp(2.6rem, 4.6vw, 4.75rem)/1.04 var(--f-serif);
+  font: 400 clamp(2rem, min(4.6vw, 9vh), 4.75rem)/1.04 var(--f-serif);
   font-optical-sizing: auto;
   letter-spacing: -0.018em;
   text-wrap: balance;
@@ -156,7 +156,7 @@ a { color: inherit; }
 .note-meta .stop { color: var(--lichen); }
 .note-title {
   margin: 0;
-  font: 400 clamp(2.3rem, 3.8vw, 3.9rem)/1.04 var(--f-serif);
+  font: 400 clamp(1.8rem, min(3.8vw, 7.5vh), 3.9rem)/1.04 var(--f-serif);
   letter-spacing: -0.016em;
   text-wrap: balance;
 }
@@ -187,6 +187,16 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
 }
 @media (max-width: 520px) {
   .slot { padding-top: 24px; }
+}
+/* Short, wide screens (a phone held sideways): keep the copy to the left of the
+   mountain and tighten the spacing so it all fits. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .stage { min-height: 0; }
+  .nav { height: 64px; }
+  .slot { padding-top: 4px; }
+  .copy, .note { max-width: min(34rem, 46vw); gap: 12px; }
+  .sub, .note-body { font-size: 15px; }
+  .cta { height: 44px; margin-top: 2px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cta, .cta .arrow, .links a { transition: none; }
@@ -270,6 +280,7 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
   const DOT = 2;                              // CSS pixels per dither dot
   const INK = [0x17, 0x2f, 0x35], PAPER = [0xc2, 0xdc, 0x93];
   const SIZE = { w: 1920, h: 1080 };
+  const SUMMIT_Y = 160;                       // the peak's height in the scene, kept clear of the nav
   const FOCUS = { x: 1480, y: 20 };           // where the camera is headed, in scene pixels
   const HAZE = { from: 1.12, over: 0.3 };     // a range appears from this apparent scale on
 
@@ -297,7 +308,12 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
     // On tall, narrow screens the scene keeps to the lower half and the copy gets the sky.
     const share = cw / ch >= 1.2 ? 1 : 0.5;
     const s = Math.max(cw / SIZE.w, ch * share / SIZE.h);
-    base = { s, ox: cw - SIZE.w * s, oy: ch - SIZE.h * s };
+    // When the screen is wider than the scene, cropping comes off the top, except never so
+    // much that the peak slides up behind the nav: then the bottom gives way instead.
+    const dh = SIZE.h * s;
+    const navClear = (document.querySelector('.nav').offsetHeight + 16) / DOT;
+    const oy = Math.min(0, Math.max(ch - dh, navClear - SUMMIT_Y * s));
+    base = { s, ox: cw - SIZE.w * s, oy };
     img = ctx.createImageData(cw, ch);
   }
 

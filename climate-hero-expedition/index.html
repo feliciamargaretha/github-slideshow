@@ -312,7 +312,7 @@ button.textlink { background: none; border: 0; border-bottom: 1px solid currentC
     // much that the peak slides up behind the nav: then the bottom gives way instead.
     const dh = SIZE.h * s;
     const navClear = (document.querySelector('.nav').offsetHeight + 16) / DOT;
-    const oy = Math.min(0, Math.max(ch - dh, navClear - SUMMIT_Y * s));
+    const oy = dh > ch ? Math.min(0, Math.max(ch - dh, navClear - SUMMIT_Y * s)) : ch - dh;
     base = { s, ox: cw - SIZE.w * s, oy };
     img = ctx.createImageData(cw, ch);
   }

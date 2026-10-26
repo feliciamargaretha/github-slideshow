@@ -373,7 +373,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 }
 @media (prefers-reduced-motion: reduce) { .scene .steam { animation: none; } }
 /* second frame: a faint brick wall that fades in and out, with windows scattered over it */
-.windows { position: relative; height: clamp(1100px, 150vh, 1500px); overflow: hidden; }
+.windows { position: relative; height: clamp(860px, 115vh, 1150px); overflow: hidden; }
 .windows .wall {
   position: absolute; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='56'%3E%3Cpath d='M0 .5H112M0 28.5H112M.5 0V28M56.5 28V56' fill='none' stroke='%237c8aa0' stroke-opacity='.3'/%3E%3C/svg%3E");
@@ -392,8 +392,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 }
 .win.in { opacity: 1; transform: none; }
 .win img { display: block; width: 100%; height: auto; }
-@media (max-width: 900px) { .win { --k: .66; } .windows { height: clamp(900px, 130vh, 1200px); } }
-@media (max-width: 520px) { .win { --k: .44; } .windows { height: 900px; } }
+@media (max-width: 900px) { .win { --k: .66; } .windows { height: clamp(760px, 105vh, 1000px); } }
+@media (max-width: 520px) { .win { --k: .44; } .windows { height: 720px; } }
 @media (prefers-reduced-motion: reduce) { .win { opacity: 1; transform: none; transition: none; } }
 </style>
 </head>
@@ -439,18 +439,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <section class="windows" id="windows" aria-hidden="true">
   <div class="wall"></div>
-  <figure class="win" style="--x:8%; --y:5%; --w:300px" data-speed="0.1"><img src="assets/windows/cats.webp" width="196" height="161" alt=""></figure>
-  <figure class="win" style="--x:46%; --y:2%; --w:170px" data-speed="0.22"><img src="assets/windows/lamp.webp" width="112" height="107" alt=""></figure>
-  <figure class="win" style="--x:72%; --y:10%; --w:230px" data-speed="0.14"><img src="assets/windows/lace.webp" width="145" height="122" alt=""></figure>
-  <figure class="win" style="--x:33%; --y:21%; --w:112px" data-speed="0.26"><img src="assets/windows/lit-arch.webp" width="73" height="126" alt=""></figure>
-  <figure class="win" style="--x:56%; --y:28%; --w:224px" data-speed="0.08"><img src="assets/windows/cactus.webp" width="146" height="238" alt=""></figure>
-  <figure class="win" style="--x:13%; --y:33%; --w:165px" data-speed="0.18"><img src="assets/windows/blue-white.webp" width="107" height="147" alt=""></figure>
-  <figure class="win" style="--x:86%; --y:40%; --w:124px" data-speed="0.24"><img src="assets/windows/green-closed.webp" width="80" height="123" alt=""></figure>
-  <figure class="win" style="--x:37%; --y:54%; --w:140px" data-speed="0.12"><img src="assets/windows/yellow.webp" width="89" height="97" alt=""></figure>
-  <figure class="win" style="--x:70%; --y:62%; --w:230px" data-speed="0.2"><img src="assets/windows/pink-door.webp" width="148" height="126" alt=""></figure>
-  <figure class="win" style="--x:6%; --y:64%; --w:150px" data-speed="0.16"><img src="assets/windows/lilac.webp" width="96" height="112" alt=""></figure>
-  <figure class="win" style="--x:53%; --y:75%; --w:110px" data-speed="0.28"><img src="assets/windows/small-frame.webp" width="73" height="97" alt=""></figure>
-  <figure class="win" style="--x:24%; --y:82%; --w:146px" data-speed="0.1"><img src="assets/windows/grille.webp" width="94" height="121" alt=""></figure>
+  <figure class="win" style="--x:9%; --y:12%; --w:320px" data-speed="0.12"><img src="assets/windows/cats.webp" width="196" height="161" alt=""></figure>
+  <figure class="win" style="--x:68%; --y:26%; --w:250px" data-speed="0.2"><img src="assets/windows/lace.webp" width="145" height="122" alt=""></figure>
+  <figure class="win" style="--x:40%; --y:46%; --w:240px" data-speed="0.08"><img src="assets/windows/cactus.webp" width="146" height="238" alt=""></figure>
+  <figure class="win" style="--x:14%; --y:70%; --w:190px" data-speed="0.18"><img src="assets/windows/lamp.webp" width="112" height="107" alt=""></figure>
 </section>
 
 <section class="meet wrap" id="about" aria-labelledby="programs-title">

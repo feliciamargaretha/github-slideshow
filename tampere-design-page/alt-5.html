@@ -520,6 +520,38 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .mode-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--ink); cursor: pointer; }
 .mode-switch button[aria-pressed="true"] { background: #e3effd; color: #1b5fb8; }
 @media (prefers-reduced-motion: reduce) { .tower .art { transition: opacity .2s; transform: none !important; } }
+/* split header (review option): title, intro and button on the left (40%), a few words about us on the right (60%) */
+.hero.split {
+  width: min(1240px, 100%); display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  gap: 48px clamp(48px, 7vw, 120px); align-items: center; justify-items: stretch; text-align: left;
+}
+.hero.split .hero-left { justify-items: start; }
+.split .tower { margin: 0 0 24px; width: clamp(130px, 11vw, 168px); }
+.split .tower-hint { right: -72px; }
+.split .title { justify-items: start; }
+.split .line { display: block; white-space: normal; font-size: clamp(2.6rem, 5.4vw, 5rem); line-height: 1.02; }
+.split .lede { max-width: 30ch; }
+.about-copy { display: grid; gap: 24px; min-width: 0; padding-left: clamp(24px, 3vw, 48px);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='400'%3E%3Cpath d='M3 0C1.6 50 4.4 100 3 150S1.8 250 3.4 300S2.2 380 3 400' fill='none' stroke='%23141414' stroke-opacity='.45' stroke-width='1.3'/%3E%3C/svg%3E") left top / 6px 400px repeat-y; }
+.about-copy p { margin: 0; max-width: 54ch; color: var(--soft); font-size: clamp(17px, 1.3vw, 19px); }
+.about-copy .big { color: var(--ink); font: 400 clamp(1.5rem, 2.3vw, 2.1rem)/1.3 var(--f-display); letter-spacing: -.01em; max-width: 30ch; text-wrap: pretty; }
+@media (max-width: 900px) {
+  .hero.split { grid-template-columns: 1fr; }
+  .about-copy { padding-left: 0; padding-top: 32px; background: var(--rule) left top / 400px 6px repeat-x; }
+}
+
+.hero-left { display: grid; justify-items: center; min-width: 0; }
+.about-copy, .split-br { display: none; }
+.hero.split .about-copy { display: grid; }
+.hero.split .split-br { display: inline; }
+
+/* window option: a squiggly rectangle where an illustration will go */
+.win .sketch { display: none; position: relative; aspect-ratio: var(--ar); }
+.win .sketch span { position: absolute; inset: 0; display: grid; place-items: center; font: 400 17px/1 var(--f-hand); color: #a3a3a8; }
+.windows.sketchy .win img { display: none; }
+.windows.sketchy .win .sketch { display: block; }
+.windows.sketchy .win { filter: none; }
+.win .sketch .sq { inset: auto; left: -3.2%; top: -3.2%; width: 106.4%; height: 106.4%; }
 </style>
 </head>
 <body>
@@ -541,6 +573,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <div class="bricks" aria-hidden="true"></div>
   <canvas class="px" id="px" aria-hidden="true"></canvas>
   <div class="hero" id="hero">
+    <div class="hero-left">
     <button class="tower" id="tower" type="button" aria-label="Näsinneula. Change the drawing style">
       <span class="art on"><img src="assets/nasinneula-stamp.webp" width="900" height="1160" alt=""></span>
       <span class="art"><svg class="pen" viewBox="18 18 324 404" role="img" aria-label="Pen drawing of Näsinneula tower on a postage stamp, value 50, with clouds, sparkles and the lake"><defs><filter id="crayon2"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter><pattern id="wash2" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)"><path d="M0 2.5H5" stroke="#2457d6" stroke-opacity=".16" stroke-width="1.2"/></pattern></defs><rect x="52" y="54" width="256" height="337" fill="url(#wash2)"/><g fill="none" stroke="#2457d6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" filter="url(#crayon2)"><path d="M28 28 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 Z"/><path d="M51.6 53.2 Q73.8 52.5 94.7 53.4 Q114.6 53.5 136.3 53.2 Q157.3 51.9 179.8 53.7 Q200.1 51.9 222.9 53.7 Q244.2 52.2 266.4 51.3 Q287.8 51.5 307.2 51.2 M307.6 52.7 Q307.1 73.4 308.6 94.0 Q308.5 114.0 307.5 135.9 Q309.2 157.4 308.3 178.9 Q308.7 199.2 309.6 221.4 Q308.3 242.4 309.3 264.1 Q310.1 283.7 310.6 304.7 Q309.4 327.4 309.0 347.7 Q308.4 369.4 310.6 390.2 M310.8 389.6 Q289.1 390.5 267.2 390.2 Q246.6 391.9 223.9 391.0 Q201.1 391.5 181.3 392.1 Q160.5 390.5 137.7 391.7 Q115.0 391.4 94.3 390.8 Q72.1 392.7 51.2 391.4 M51.8 392.8 Q50.7 370.7 52.1 350.6 Q53.0 329.8 51.5 307.3 Q51.5 287.6 53.0 264.5 Q51.0 243.3 51.4 223.0 Q52.3 201.1 50.9 180.6 Q51.6 159.8 53.0 138.9 Q52.0 117.8 52.4 95.3 Q53.3 76.0 52.8 54.7"/><text x="66" y="86" class="val">50</text><path d="M84 139Q85 149 95 150Q85 151 84 161Q83 151 73 150Q83 149 84 139Z"/><path d="M98 199Q99 205 105 206Q99 207 98 213Q97 207 91 206Q97 205 98 199Z"/><path d="M270 242Q271 249 278 250Q271 251 270 258Q269 251 262 250Q269 249 270 242Z"/><path d="M222 104q-2-14 13-15q6-11 19-5q15-3 16 11q10 3 6 12q-24 3-54-3z"/><path d="M70 118q0-10 10-10q6-8 16-2q11 0 10 10q-18 3-36 2z" stroke-width="1.8"/><path d="M179.8 93.8 Q178.7 106.4 179.0 117.0 Q179.1 128.9 179.6 141.0"/><path d="M175.9 103.2 Q178.7 103.6 182.0 104.8 M176.3 117.2 Q179.2 117.5 183.7 117.2" stroke-width="1.6"/><path d="M168.8 143.1 Q173.9 141.9 179.1 141.1 Q185.5 141.2 192.7 141.3 M191.0 143.0 Q192.1 147.9 192.1 155.0 M168.1 157.1 Q169.2 149.6 167.5 141.7"/><path d="M149.3 156.6 Q160.1 156.9 169.6 155.4 Q181.0 157.6 190.8 156.7 Q201.0 156.8 209.4 156.0 M209.7 155.0 Q216.0 158.8 224.5 163.4 Q234.0 166.3 241.0 171.1 M151.0 155.7 Q141.6 158.6 134.3 162.3 Q127.9 167.8 120.7 170.0"/><path d="M120.3 170.7 Q130.7 170.5 144.9 170.6 Q156.8 169.9 167.3 170.6 Q179.5 171.0 193.0 169.8 Q203.7 171.4 216.5 169.3 Q226.8 168.9 240.9 170.7 M239.2 170.7 Q241.5 177.5 239.7 184.1 M119.2 182.9 Q121.5 177.5 120.1 171.0 M119.9 184.8 Q133.0 183.1 143.5 183.5 Q155.2 184.3 167.5 183.8 Q178.8 185.3 191.7 183.9 Q204.3 185.3 215.8 184.9 Q228.0 184.1 240.1 182.9"/><path d="M127.9 171.3 Q126.4 178.0 127.3 181.9 M137.5 172.1 Q136.4 177.1 137.1 182.6 M145.1 172.1 Q145.2 176.3 146.6 182.0 M155.1 172.6 Q156.3 176.8 155.2 182.0 M164.0 172.4 Q163.8 177.1 164.0 183.0 M173.4 172.8 Q174.4 176.2 173.1 183.0 M182.7 171.2 Q180.8 176.8 181.1 181.4 M190.1 172.4 Q191.9 178.3 190.2 182.5 M200.4 171.2 Q201.2 178.5 199.4 183.0 M208.8 172.0 Q210.6 178.1 208.3 181.8 M218.0 171.6 Q217.0 176.4 218.5 180.9 M227.1 171.9 Q225.5 176.5 227.3 182.0" stroke-width="1.5"/><path d="M119.0 185.1 Q133.7 189.5 144.6 191.5 Q156.8 196.9 170.5 199.2 M239.8 184.9 Q228.3 187.2 213.7 192.9 Q202.0 196.6 188.1 199.0"/><path d="M171.4 199.8 Q169.4 212.4 170.8 222.7 Q168.9 234.1 169.0 244.8 Q169.6 254.5 169.6 266.9 Q168.5 275.8 169.1 287.4 Q167.5 297.9 167.5 309.3 Q167.6 320.4 168.6 331.5 M189.0 199.3 Q188.8 209.5 189.0 220.9 Q190.5 233.2 189.3 243.9 Q191.6 253.7 191.2 265.9 Q190.7 278.1 190.8 288.0 Q191.9 300.5 191.2 310.7 Q192.4 321.4 191.8 331.7"/><path d="M167.0 331.2 Q161.6 339.8 157.5 345.3 M191.1 332.8 Q198.2 339.5 201.5 345.4 M157.5 345.9 Q167.9 345.8 179.5 347.0 Q192.5 346.2 201.4 347.0"/><path d="M181.6 209.7 Q183.9 206.6 189.0 204.0 M181.3 216.0 Q184.0 212.2 188.3 209.8 M181.0 220.9 Q185.0 218.1 189.5 216.1 M182.6 228.3 Q186.4 226.2 189.2 221.6 M183.1 233.2 Q186.5 231.5 188.6 228.7 M182.9 240.3 Q186.6 238.0 189.0 234.1 M182.0 246.7 Q186.9 244.0 190.1 240.9 M182.4 252.4 Q185.1 247.5 189.2 245.7 M181.1 258.7 Q186.3 255.4 190.4 252.4 M182.0 262.9 Q187.1 261.8 190.3 258.1 M182.4 269.0 Q187.0 266.2 189.5 263.5 M182.5 275.4 Q187.0 274.5 190.5 269.7 M182.0 282.4 Q187.2 279.4 191.0 275.1 M181.2 287.5 Q187.2 284.4 191.0 280.9 M181.0 293.5 Q187.0 291.6 191.3 287.5 M182.0 299.9 Q186.4 295.8 191.9 293.3 M183.1 307.0 Q185.1 302.9 191.9 301.0 M181.9 311.5 Q185.7 310.4 190.7 306.2 M181.2 318.1 Q188.2 313.8 192.2 312.0 M182.9 324.4 Q185.9 322.3 191.6 317.0 M180.9 330.0 Q186.7 326.4 190.9 323.7" stroke-width="1.3" opacity=".8"/><path d="M185.6 186.7 Q188.4 191.8 194.7 195.2 M193.9 186.5 Q198.3 190.3 200.7 195.8 M201.1 186.2 Q203.6 190.8 207.5 195.0 M206.1 186.7 Q210.3 192.4 214.4 195.5 M214.0 185.3 Q217.6 192.5 222.8 196.7 M221.3 186.9 Q226.4 191.2 229.5 195.0 M228.5 185.9 Q232.8 191.5 235.5 195.0" stroke-width="1.3" opacity=".8"/><path d="M188.9 157.2 Q190.9 162.5 193.6 168.5 M196.0 157.5 Q198.5 162.4 201.1 167.8 M201.3 157.3 Q204.1 164.3 208.0 167.4 M209.9 159.1 Q211.8 161.8 214.3 167.1 M215.7 157.1 Q218.2 162.2 222.2 168.9 M223.5 157.8 Q225.7 163.1 228.7 167.6" stroke-width="1.2" opacity=".6"/><path d="M60 346q8-22 18-2q6-16 14 0q8-20 18 0q5-12 12 2M244 346q8-18 16 0q7-14 14 0q8-22 18 0q6-10 12 2" /><path d="M60 352q10-5 20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0 M70 360q10-5 20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0" stroke-width="1.5"/><text x="180" y="386" class="word" text-anchor="middle">TAMPERE</text></g></svg></span>
@@ -585,7 +618,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       <span class="tower-hint" aria-hidden="true">tap me</span>
     </button>
     <h1 class="title">
-      <span class="line">Hi, <span class="hl" id="hl">Tampere Designers</span></span>
+      <span class="line">Hi, <span class="hl">Tampere</span> <br class="split-br"><span class="hl">Designers</span></span>
     </h1>
     <p class="lede">Glad you found us. We host meetups, critiques and good company for anyone who designs anything.</p>
     <a class="cta" href="#">
@@ -601,6 +634,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       </svg>
       Come say hi
     </a>
+    </div>
+    <div class="about-copy">
+      <p class="big">We're a volunteer-run community for anyone who designs in and around Tampere: interfaces and services, type and posters, objects, games and everything in between.</p>
+      <p>Students, seniors, career switchers and the design-curious all sit at the same table. Once a month we meet for short talks and show-and-tell, and in between there are crit clubs, hands-on workshops and visits to studios around the city. Come to one, come to all, or just come and listen.</p>
+    </div>
   </div>
   <div class="cursor" id="cursor" aria-hidden="true" hidden>
     <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--blue)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
@@ -609,10 +647,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <section class="windows" id="windows" aria-hidden="true">
   <div class="wall"></div>
-  <figure class="win" style="--x:14%; --w:250px"><img src="assets/windows/blue-white.webp" width="107" height="147" alt=""></figure>
-  <figure class="win" style="--x:62%; --w:250px"><img src="assets/windows/green-open.webp" width="124" height="147" alt=""></figure>
-  <figure class="win" style="--x:18%; --w:320px"><img src="assets/windows/cats.webp" width="196" height="161" alt=""></figure>
-  <figure class="win" style="--x:60%; --w:250px"><img src="assets/windows/cactus.webp" width="146" height="238" alt=""></figure>
+  <figure class="win" style="--x:14%; --w:250px"><img src="assets/windows/blue-white.webp" width="107" height="147" alt=""><div class="sketch" style="--ar: 107 / 147"><svg class="sq" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M3.0 4.0 Q3.0 4.0 7.7 3.5 Q12.4 3.0 17.1 2.5 Q21.8 2.0 26.5 2.4 Q31.2 2.9 35.9 3.2 Q40.6 3.6 45.3 3.7 Q50.0 3.8 54.7 3.1 Q59.4 2.4 64.1 2.5 Q68.8 2.7 73.5 2.6 Q78.2 2.5 82.9 2.2 Q87.6 1.9 92.2 2.5 Q96.9 3.0 97.3 7.7 Q97.7 12.4 97.9 17.1 Q98.0 21.8 97.8 26.5 Q97.6 31.2 96.8 35.9 Q95.9 40.6 96.2 45.3 Q96.6 50.0 96.3 54.7 Q95.9 59.4 96.0 64.1 Q96.2 68.8 96.9 73.5 Q97.6 78.2 97.5 82.9 Q97.4 87.6 97.2 91.9 Q97.0 96.1 92.3 96.3 Q87.6 96.5 82.9 97.1 Q78.2 97.7 73.5 97.3 Q68.8 96.9 64.1 97.4 Q59.4 97.8 54.7 97.9 Q50.0 97.9 45.3 97.9 Q40.6 97.8 35.9 96.9 Q31.2 95.9 26.5 95.9 Q21.8 95.9 17.1 96.2 Q12.4 96.6 8.0 96.8 Q3.6 97.0 3.1 92.3 Q2.5 87.6 2.6 82.9 Q2.7 78.2 2.4 73.5 Q2.1 68.8 3.1 64.1 Q4.1 59.4 3.9 54.7 Q3.8 50.0 3.3 45.3 Q2.8 40.6 3.5 35.9 Q4.1 31.2 3.2 26.5 Q2.3 21.8 2.3 17.1 Q2.3 12.4 2.6 8.2 Z" vector-effect="non-scaling-stroke"/></svg><span>illustration</span></div></figure>
+  <figure class="win" style="--x:62%; --w:250px"><img src="assets/windows/green-open.webp" width="124" height="147" alt=""><div class="sketch" style="--ar: 124 / 147"><svg class="sq" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M3.0 3.7 Q3.0 3.7 7.7 2.8 Q12.4 1.9 17.1 2.0 Q21.8 2.2 26.5 2.8 Q31.2 3.4 35.9 3.7 Q40.6 4.0 45.3 3.1 Q50.0 2.2 54.7 2.8 Q59.4 3.4 64.1 2.7 Q68.8 2.1 73.5 3.0 Q78.2 4.0 82.9 3.9 Q87.6 3.8 91.8 3.4 Q95.9 3.0 96.2 7.7 Q96.5 12.4 97.1 17.1 Q97.7 21.8 97.8 26.5 Q97.9 31.2 96.9 35.9 Q95.9 40.6 96.8 45.3 Q97.8 50.0 97.5 54.7 Q97.2 59.4 97.6 64.1 Q98.0 68.8 98.0 73.5 Q98.0 78.2 97.7 82.9 Q97.3 87.6 97.2 91.8 Q97.0 95.9 92.3 96.8 Q87.6 97.6 82.9 97.8 Q78.2 98.0 73.5 97.9 Q68.8 97.8 64.1 97.2 Q59.4 96.5 54.7 96.6 Q50.0 96.6 45.3 97.2 Q40.6 97.8 35.9 97.7 Q31.2 97.6 26.5 96.8 Q21.8 96.1 17.1 96.6 Q12.4 97.1 8.1 97.0 Q3.9 97.0 3.4 92.3 Q2.9 87.6 2.4 82.9 Q1.9 78.2 3.0 73.5 Q4.0 68.8 3.0 64.1 Q2.1 59.4 3.0 54.7 Q4.0 50.0 3.2 45.3 Q2.5 40.6 2.8 35.9 Q3.0 31.2 3.2 26.5 Q3.4 21.8 2.7 17.1 Q2.0 12.4 2.5 8.1 Z" vector-effect="non-scaling-stroke"/></svg><span>illustration</span></div></figure>
+  <figure class="win" style="--x:18%; --w:320px"><img src="assets/windows/cats.webp" width="196" height="161" alt=""><div class="sketch" style="--ar: 196 / 161"><svg class="sq" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M3.0 3.5 Q3.0 3.5 7.7 3.7 Q12.4 3.9 17.1 3.1 Q21.8 2.3 26.5 2.4 Q31.2 2.5 35.9 3.0 Q40.6 3.6 45.3 3.3 Q50.0 3.0 54.7 2.5 Q59.4 1.9 64.1 2.8 Q68.8 3.6 73.5 3.9 Q78.2 4.1 82.9 3.2 Q87.6 2.4 91.8 2.7 Q95.9 3.0 95.9 7.7 Q95.9 12.4 96.7 17.1 Q97.5 21.8 97.7 26.5 Q98.0 31.2 97.3 35.9 Q96.6 40.6 96.2 45.3 Q95.9 50.0 96.9 54.7 Q97.9 59.4 98.0 64.1 Q98.1 68.8 97.9 73.5 Q97.8 78.2 97.8 82.9 Q97.7 87.6 97.4 91.8 Q97.0 95.9 92.3 96.5 Q87.6 97.2 82.9 96.7 Q78.2 96.3 73.5 97.2 Q68.8 98.1 64.1 97.2 Q59.4 96.3 54.7 96.6 Q50.0 96.8 45.3 97.1 Q40.6 97.4 35.9 96.7 Q31.2 96.0 26.5 96.1 Q21.8 96.2 17.1 96.3 Q12.4 96.4 7.9 96.7 Q3.5 97.0 3.6 92.3 Q3.7 87.6 2.9 82.9 Q2.1 78.2 2.0 73.5 Q2.0 68.8 2.9 64.1 Q3.8 59.4 3.0 54.7 Q2.2 50.0 3.1 45.3 Q4.0 40.6 3.0 35.9 Q2.0 31.2 3.0 26.5 Q4.1 21.8 3.2 17.1 Q2.2 12.4 2.6 7.9 Z" vector-effect="non-scaling-stroke"/></svg><span>illustration</span></div></figure>
+  <figure class="win" style="--x:60%; --w:250px"><img src="assets/windows/cactus.webp" width="146" height="238" alt=""><div class="sketch" style="--ar: 146 / 238"><svg class="sq" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M3.0 4.0 Q3.0 4.0 7.7 4.0 Q12.4 3.9 17.1 3.8 Q21.8 3.7 26.5 3.6 Q31.2 3.5 35.9 3.7 Q40.6 3.8 45.3 3.8 Q50.0 3.8 54.7 3.3 Q59.4 2.7 64.1 3.4 Q68.8 4.1 73.5 3.6 Q78.2 3.2 82.9 3.5 Q87.6 3.8 92.2 3.4 Q96.7 3.0 97.3 7.7 Q97.9 12.4 97.9 17.1 Q97.9 21.8 98.0 26.5 Q98.1 31.2 97.0 35.9 Q95.9 40.6 96.2 45.3 Q96.5 50.0 96.2 54.7 Q95.9 59.4 96.7 64.1 Q97.5 68.8 97.7 73.5 Q97.9 78.2 97.6 82.9 Q97.3 87.6 97.1 92.2 Q97.0 96.8 92.3 96.3 Q87.6 95.9 82.9 96.8 Q78.2 97.7 73.5 97.3 Q68.8 96.9 64.1 96.7 Q59.4 96.5 54.7 96.6 Q50.0 96.6 45.3 96.3 Q40.6 96.0 35.9 96.1 Q31.2 96.2 26.5 97.1 Q21.8 98.0 17.1 97.6 Q12.4 97.3 8.2 97.1 Q4.1 97.0 3.1 92.3 Q2.0 87.6 2.3 82.9 Q2.6 78.2 2.9 73.5 Q3.1 68.8 2.5 64.1 Q1.9 59.4 2.4 54.7 Q2.9 50.0 3.3 45.3 Q3.6 40.6 3.0 35.9 Q2.4 31.2 2.2 26.5 Q1.9 21.8 2.2 17.1 Q2.5 12.4 2.7 8.2 Z" vector-effect="non-scaling-stroke"/></svg><span>illustration</span></div></figure>
 </section>
 
 <section class="sec wrap about" id="about" aria-labelledby="programs-title">
@@ -714,6 +752,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <button type="button" data-mode="auto" aria-pressed="false">1 · Auto</button>
   <button type="button" data-mode="once" aria-pressed="true">2 · Once, then click</button>
   <button type="button" data-mode="egg" aria-pressed="false">3 · Click only</button>
+  <span>Window</span>
+  <button type="button" data-win="photo" aria-pressed="true">Photo</button>
+  <button type="button" data-win="sketch" aria-pressed="false">Squiggle</button>
+  <span>Header</span>
+  <button type="button" data-head="center" aria-pressed="true">Centred</button>
+  <button type="button" data-head="split" aria-pressed="false">Split</button>
   <span>Join in</span>
   <button type="button" data-photos="yes" aria-pressed="true">Photos</button>
   <button type="button" data-photos="no" aria-pressed="false">No photos</button>
@@ -945,6 +989,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   };
   tower.addEventListener("click", () => { if (mode !== "auto") stop(); tower.classList.remove("hinting"); show(cur + 1); });
   document.querySelectorAll(".mode-switch [data-mode]").forEach((b) => b.addEventListener("click", () => start(b.dataset.mode)));
+  const group = (attr, apply) => document.querySelectorAll(`.mode-switch [data-${attr}]`).forEach((b) => b.addEventListener("click", () => {
+    apply(b.dataset[attr]);
+    document.querySelectorAll(`.mode-switch [data-${attr}]`).forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+  }));
+  group("win", (v) => document.querySelector(".windows").classList.toggle("sketchy", v === "sketch"));
+  group("head", (v) => document.querySelector(".hero").classList.toggle("split", v === "split"));
   document.querySelectorAll(".mode-switch [data-photos]").forEach((b) => b.addEventListener("click", () => {
     document.querySelector(".peeks").classList.toggle("no-photos", b.dataset.photos === "no");
     document.querySelectorAll(".mode-switch [data-photos]").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
@@ -970,7 +1020,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 120); });
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
     layout();
-    setTimeout(() => $("hl").classList.add("on"), reduce ? 0 : 500);
+    document.querySelectorAll(".title .hl").forEach((h, i) => setTimeout(() => h.classList.add("on"), reduce ? 0 : 500 + i * 450));
   });
 })();
 </script>

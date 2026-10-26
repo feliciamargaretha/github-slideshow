@@ -19,12 +19,12 @@
   --soft: #55585e;
   --line: #ececee;
   --select: #0d99ff;
-  --violet: #6b6ff0;
-  --pink: #f07fc0;
-  --lime: #a3dd73;
-  --aqua: #5fcfcf;
-  --tangerine: #ff9a52;
-  --butter: #f6d05a;
+  --violet: #5b5cff;
+  --pink: #ff4fb8;
+  --lime: #8ee83a;
+  --aqua: #1fd3e0;
+  --tangerine: #ff7a1f;
+  --butter: #ffd21a;
 
   --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
   --f-body: "Geist", "Helvetica Neue", Arial, sans-serif;
@@ -45,7 +45,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .top { position: relative; min-height: clamp(620px, 92svh, 900px); display: grid; place-items: center; padding-block: 120px 160px; }
 .px { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .hero { position: relative; z-index: 2; display: grid; justify-items: center; text-align: center; }
-.title { margin: 0 0 28px; display: grid; justify-items: center; gap: 6px; font-weight: 400; }
+.title { margin: 0 0 28px; display: grid; justify-items: center; gap: 22px; font-weight: 400; }
 .kicker { font: 400 clamp(1.5rem, 2.4vw, 2.2rem)/1 var(--f-hand); color: var(--ink); transform: rotate(-2deg); }
 .line {
   display: flex; align-items: baseline; justify-content: center; gap: .24em;
@@ -127,8 +127,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .two .photo { --a: #cdeedb; --b: #bfe7e7; }
 .photo span { font: 400 15px/1 var(--f-body); color: rgba(20,20,20,.5); letter-spacing: .02em; }
 .polaroid figcaption { position: absolute; left: 18px; right: 18px; bottom: 14px; text-align: left; font: 400 22px/1 var(--f-hand); color: var(--ink); }
-.magnet { position: absolute; left: 50%; top: -26px; width: 64px; height: 64px; margin-left: -32px; filter: drop-shadow(0 5px 4px rgba(20,20,20,.28)); }
-.two .magnet { width: 70px; height: 70px; margin-left: -35px; top: -30px; transform: rotate(-12deg); }
+.magnet { position: absolute; left: 50%; top: -34px; width: 74px; height: auto; margin-left: -37px; filter: drop-shadow(0 6px 5px rgba(20,20,20,.3)); }
+.two .magnet { width: 66px; margin-left: -33px; top: -38px; transform: rotate(-10deg); }
 .one .magnet { transform: rotate(8deg); }
 
 .programs { min-width: 0; }
@@ -196,39 +196,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     <figure class="polaroid one" style="margin:0">
       <div class="photo"><span>Event photo</span></div>
       <figcaption>meetup night</figcaption>
-      <!-- clay heart magnet -->
-      <svg class="magnet" viewBox="0 0 64 64" aria-hidden="true">
-        <defs>
-          <radialGradient id="heart-g" cx="38%" cy="32%" r="75%">
-            <stop offset="0" stop-color="#ff8a8f"/><stop offset=".45" stop-color="#e2343f"/><stop offset="1" stop-color="#9e1420"/>
-          </radialGradient>
-          <filter id="soft"><feGaussianBlur stdDeviation="1.6"/></filter>
-        </defs>
-        <path d="M32 57 C 12 45 3.5 33 5 20.5 C 6.5 8.5 21 4.5 31.5 15.5 C 43 4 57.5 8 59.2 20.5 C 60.8 33.5 51.5 45 32 57 Z" fill="url(#heart-g)"/>
-        <path d="M32 57 C 12 45 3.5 33 5 20.5 C 6.5 8.5 21 4.5 31.5 15.5 C 43 4 57.5 8 59.2 20.5 C 60.8 33.5 51.5 45 32 57 Z" fill="none" stroke="#7d0d18" stroke-opacity=".35" stroke-width="1.2"/>
-        <ellipse cx="18" cy="18" rx="7" ry="4" transform="rotate(-30 18 18)" fill="#fff" opacity=".75" filter="url(#soft)"/>
-        <ellipse cx="45" cy="17" rx="3" ry="1.6" transform="rotate(25 45 17)" fill="#fff" opacity=".55" filter="url(#soft)"/>
-      </svg>
+      <img class="magnet" src="assets/magnet-strawberry.webp" width="175" height="179" alt="">
     </figure>
     <figure class="polaroid two" style="margin:0">
       <div class="photo"><span>Event photo</span></div>
       <figcaption>workshop day</figcaption>
-      <!-- clay fried egg magnet -->
-      <svg class="magnet" viewBox="0 0 64 64" aria-hidden="true">
-        <defs>
-          <radialGradient id="white-g" cx="40%" cy="35%" r="70%">
-            <stop offset="0" stop-color="#fffefa"/><stop offset=".7" stop-color="#f6efe0"/><stop offset="1" stop-color="#dcd0b8"/>
-          </radialGradient>
-          <radialGradient id="yolk-g" cx="38%" cy="32%" r="70%">
-            <stop offset="0" stop-color="#ffe680"/><stop offset=".55" stop-color="#ffc21a"/><stop offset="1" stop-color="#e08a00"/>
-          </radialGradient>
-          <filter id="soft2"><feGaussianBlur stdDeviation="1.2"/></filter>
-        </defs>
-        <path d="M30 4.5 C 41 3 47 11 53 15 C 61 20.5 61.5 31 58 39 C 54.5 47.5 48 51 44 56 C 38 62.5 26 61.5 19.5 56.5 C 13 51.5 5 49 3.5 39 C 2 29 6.5 24 9.5 17.5 C 13 9.5 20.5 6 30 4.5 Z" fill="url(#white-g)" stroke="#a9987a" stroke-opacity=".5" stroke-width="1"/>
-        <circle cx="31" cy="31" r="12" fill="url(#yolk-g)" stroke="#b86e00" stroke-opacity=".35" stroke-width="1"/>
-        <ellipse cx="27" cy="26" rx="4.2" ry="2.6" transform="rotate(-30 27 26)" fill="#fff" opacity=".85" filter="url(#soft2)"/>
-        <ellipse cx="15" cy="15" rx="5" ry="2.2" transform="rotate(-40 15 15)" fill="#fff" opacity=".9" filter="url(#soft2)"/>
-      </svg>
+      <img class="magnet" src="assets/magnet-cat.webp" width="156" height="183" alt="">
     </figure>
   </div>
 
@@ -294,7 +267,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     const avoid = { x0: b.left - t.left - pad, y0: b.top - t.top - pad, x1: b.right - t.left + pad, y1: b.bottom - t.top + pad };
     const cols = Math.floor(w / G), rows = Math.floor(h / G), off = (w - cols * G) / 2;
     for (let row = 0; row < rows; row++) {
-      const k = row / rows, p = .003 + .07 * Math.pow(k, 3.2);
+      const k = row / rows, p = .0025 + .011 * Math.pow(k, 2);
       for (let col = 0; col < cols; col++) {
         if (r() > p) continue;
         const shape = SHAPES[Math.floor(r() * SHAPES.length)];

@@ -53,10 +53,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 
 /* hero */
-.hero { position: relative; z-index: 2; display: grid; justify-items: center; text-align: center; max-width: 60rem; }
+.hero { position: relative; z-index: 2; display: grid; justify-items: center; text-align: center; max-width: 100%; }
 .title {
   margin: 0;
-  font: 400 clamp(3.1rem, 8.4vw, 7.6rem)/1 var(--f-display);
+  font: 400 clamp(2.4rem, calc(8.4vw - 8px), calc(7.6rem - 8px))/1 var(--f-display);
+  white-space: nowrap;
   font-optical-sizing: auto;
   letter-spacing: -0.025em;
 }
@@ -155,9 +156,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   clip-path: polygon(100% calc(100% - var(--d)), calc(100% - var(--d)) 100%, 100% 100%);
 }
 .sticker .flap img { filter: brightness(0) invert(.94); }
-.sticker.good { --W: 250px; --ratio: calc(372 / 451); --r: 4deg; left: max(24px, 5vw); top: 44px; }
-.sticker.craft { --W: 186px; --ratio: calc(446 / 339); --r: -5deg; left: max(32px, 8vw); bottom: 14%; }
-.sticker.sleep { --W: 222px; --ratio: calc(292 / 407); --r: -3deg; right: max(24px, 7vw); top: 90px; }
+.sticker.good { --W: 234px; --ratio: calc(372 / 451); --r: 4deg; left: max(24px, 5vw); top: 44px; }
+.sticker.craft { --W: 170px; --ratio: calc(446 / 339); --r: -5deg; left: max(32px, 8vw); bottom: 14%; }
+.sticker.sleep { --W: 206px; --ratio: calc(292 / 407); --r: -3deg; right: max(24px, 7vw); top: 90px; }
 
 /* other cursors */
 .cursor { position: absolute; left: 0; top: 0; z-index: 25; pointer-events: none; will-change: transform; }
@@ -214,6 +215,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 @media (max-width: 600px) {
   .canvas { padding-block: 210px 230px; }
+  .title { white-space: normal; font-size: 3.1rem; }
+  .title .rest { white-space: normal; }
   .sticker { --s: .62; }
   .sticker.good { left: -6px; top: 18px; }
   .sticker.sleep { right: -4px; top: 34px; }
@@ -248,7 +251,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   </div>
 
   <div class="hero" id="hero">
-    <h1 class="title"><span class="slot pre" id="slot"><span class="sel" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="tag" id="tag" aria-hidden="true">tap to switch</span><button class="hi" id="hi" type="button" aria-describedby="hi-hint" disabled><span class="word" id="word">Hi</span><span class="comma">,</span></button></span><span class="rest">designers</span><br> of Tampere</h1>
+    <h1 class="title"><span class="slot pre" id="slot"><span class="sel" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="tag" id="tag" aria-hidden="true">tap to switch</span><button class="hi" id="hi" type="button" aria-describedby="hi-hint" disabled><span class="word" id="word">Hi</span><span class="comma">,</span></button></span><span class="rest">designers</span> of Tampere!</h1>
     <span class="sr" id="hi-hint">Changes the greeting</span>
     <div class="gap" aria-hidden="true"><span class="guide top"></span><span class="guide bottom"></span><span class="redline"><b>24</b></span></div>
     <p class="lede">Glad you found us. We host meetups, critiques and good company for anyone who designs anything.</p>
@@ -341,12 +344,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   };
   const peerHome = () => {
     const cw = canvas.clientWidth;
-    const l = rel(lede);
-    if (cw > 900) {
-      return { x: Math.min(l.x + l.w + 28, cw - 260), y: l.y + 4 };
-    }
-    const cta = rel(document.querySelector(".cta"));
-    return { x: Math.min(cta.x + cta.w - 8, cw - 240), y: cta.y + cta.h + 14 };
+    // centred above the title, pointing at it
+    const t = rel(document.querySelector(".title"));
+    return { x: Math.max(16, Math.min(t.x + t.w / 2, cw - 236)), y: t.y - 74 };
   };
 
   // the greeting

@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Designers of Tampere, Windows</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: techy meets tactile. A white header with the title in the middle and coloured
+   pixels scattered around it, thickening towards the bottom. Scrolling draws a pixel
+   staircase down to the right and back to the left, where two polaroids (held by clay
+   fridge magnets) sit beside the list of programs, in two equal columns. */
+:root {
+  --paper: #ffffff;
+  --ink: #141414;
+  --soft: #55585e;
+  --line: #ececee;
+  --select: #0d99ff;
+  --blue: #4386e9;
+  --pink: #e43cf7;
+  --green: #9bfcb5;
+  --yellow: #fcef51;
+  --tangerine: #ff7a1f;
+  --butter: #ffd21a;
+
+  --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --f-body: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-hand: "Patrick Hand", "Comic Neue", "Segoe Print", sans-serif;
+  --gutter: max(16px, env(safe-area-inset-left, 0px));
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+:focus-visible { outline: 2px solid var(--select); outline-offset: 3px; }
+.wrap {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* header */
+.top { position: relative; min-height: clamp(620px, 92svh, 900px); display: grid; place-items: center; padding-block: 120px 160px; }
+.px { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hero { position: relative; z-index: 2; display: grid; justify-items: center; text-align: center; }
+.title { margin: 0 0 28px; display: grid; justify-items: center; gap: 22px; font-weight: 400; }
+.kicker { font: 400 clamp(1.5rem, 2.4vw, 2.2rem)/1 var(--f-hand); color: var(--ink); transform: rotate(-2deg); }
+.line {
+  display: flex; align-items: baseline; justify-content: center; gap: max(8px, .24em);
+  font: 400 clamp(2rem, 6.2vw, 5.5rem)/1 var(--f-display);
+  font-optical-sizing: auto; letter-spacing: -0.025em; white-space: nowrap;
+}
+.w { display: inline-block; position: relative; }
+.w-tampere { order: 1; }
+.w-design { order: 2; }
+.w-of { order: 3; display: none; }
+.swapped .w-design { order: 1; }
+.swapped .w-of { order: 2; }
+.swapped .w-tampere { order: 3; }
+.of-on .w-of { display: inline-block; }
+.typing::after {
+  content: ""; display: inline-block; width: .045em; height: .78em; margin-left: .03em;
+  background: var(--ink); vertical-align: -.04em; animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* selection box with resize handles */
+.sel { position: absolute; left: -.1em; top: -.02em; width: 0; height: 0; border: 1.5px solid var(--select); opacity: 0; pointer-events: none; }
+.sel i { position: absolute; width: 9px; height: 9px; background: var(--paper); border: 1.5px solid var(--select); opacity: 0; transition: opacity .2s; }
+.sel i:nth-child(1) { left: -5px; top: -5px; } .sel i:nth-child(2) { right: -5px; top: -5px; }
+.sel i:nth-child(3) { left: -5px; bottom: -5px; } .sel i:nth-child(4) { right: -5px; bottom: -5px; }
+.selected .sel { width: calc(100% + .2em) !important; height: calc(100% + .14em) !important; }
+.selected .sel i { opacity: 1; }
+
+.lede { margin: 0 0 32px; max-width: 34ch; font-size: clamp(17px, 1.5vw, 20px); color: var(--soft); text-wrap: pretty; }
+.cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 54px; padding: 0 26px 0 22px; border-radius: 999px;
+  background: var(--ink); color: var(--paper); text-decoration: none;
+  font: 500 17px/1 var(--f-body); transition: transform .2s;
+}
+.cta svg { width: 24px; height: 24px; overflow: visible; }
+.cta .hand { transform-origin: 60% 85%; transform-box: view-box; }
+.cta:hover .hand, .cta:focus-visible .hand { animation: wave 1s ease-in-out; }
+.cta:active { transform: scale(.98); }
+@keyframes wave {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(16deg); } 30% { transform: rotate(-9deg); }
+  45% { transform: rotate(14deg); } 60% { transform: rotate(-5deg); }
+  75% { transform: rotate(9deg); }
+}
+
+.cursor { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity .3s; will-change: transform; }
+.cursor.on { opacity: 1; }
+.cursor svg { display: block; width: 22px; height: 22px; filter: drop-shadow(0 1px 1px rgba(20,20,20,.2)); }
+
+/* scroll staircase */
+.trail { position: relative; }
+.trail canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* polaroids + programs */
+.meet {
+  display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+  gap: clamp(32px, 6vw, 96px);
+  max-width: 1240px; margin: 0 auto; padding-block: 24px 140px;
+}
+.photos { position: relative; min-height: 500px; min-width: 0; }
+.polaroid {
+  position: absolute; width: min(270px, 62%);
+  padding: 14px 14px 52px; background: #fff;
+  box-shadow: 0 1px 2px rgba(20,20,20,.08), 0 18px 34px -16px rgba(20,20,20,.35);
+  opacity: 0; transform: translateY(24px) rotate(var(--r)) scale(.96);
+  transition: opacity .5s ease, transform .7s cubic-bezier(.2,.9,.3,1.2);
+}
+.polaroid.one { --r: -6deg; left: 4%; top: 20px; }
+.polaroid.two { --r: 5deg; left: 40%; top: 150px; transition-delay: .18s; }
+.in .polaroid { opacity: 1; transform: translateY(0) rotate(var(--r)) scale(1); }
+.in .polaroid:not(.placed) { animation: drag-in .7s cubic-bezier(.22,.8,.25,1) both; }
+.in .polaroid.two:not(.placed) { animation-delay: .3s; }
+@keyframes drag-in {
+  0% { opacity: 1; transform: translate(-70vw, 60px) rotate(calc(var(--r) - 16deg)) scale(1.04); }
+  50% { transform: translate(24px, -10px) rotate(calc(var(--r) + 5deg)) scale(1.04); }
+  72% { transform: translate(-8px, 4px) rotate(calc(var(--r) - 2deg)) scale(1.02); }
+  88% { transform: translate(3px, 0) rotate(calc(var(--r) + .6deg)) scale(1); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(var(--r)) scale(1); }
+}
+.polaroid.placed { transition-delay: 0s; }
+.polaroid .magnet { opacity: 0; }
+.in .polaroid .magnet { animation: stick .35s cubic-bezier(.3,1.5,.5,1) both; animation-delay: .65s; }
+.in .polaroid.two .magnet { animation-delay: .95s; }
+@keyframes stick {
+  0% { opacity: 0; transform: translateY(-36px) rotate(var(--mr)) scale(1.5); filter: drop-shadow(0 22px 14px rgba(20,20,20,.22)); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) rotate(var(--mr)) scale(1); filter: drop-shadow(0 6px 5px rgba(20,20,20,.3)); }
+}
+.in .polaroid.placed:hover {
+  z-index: 3; transition-delay: 0s;
+  transform: translateY(-10px) rotate(calc(var(--r) * -.4)) scale(1.03);
+  box-shadow: 0 2px 3px rgba(20,20,20,.08), 0 28px 40px -18px rgba(20,20,20,.4);
+}
+.photo {
+  aspect-ratio: 1; display: grid; place-items: center;
+  background:
+    radial-gradient(120% 90% at 20% 15%, rgba(255,255,255,.55), transparent 55%),
+    linear-gradient(135deg, var(--a), var(--b));
+}
+.one .photo { --a: #c9cbfa; --b: #f7c4e2; }
+.two .photo { --a: #cdeedb; --b: #bfe7e7; }
+.photo span { font: 400 15px/1 var(--f-body); color: rgba(20,20,20,.5); letter-spacing: .02em; }
+.polaroid figcaption { position: absolute; left: 18px; right: 18px; bottom: 14px; text-align: left; font: 400 22px/1 var(--f-hand); color: var(--ink); }
+.magnet { position: absolute; left: 50%; top: -28px; width: 60px; height: auto; margin-left: -30px; filter: drop-shadow(0 6px 5px rgba(20,20,20,.3)); }
+.two .magnet { --mr: -10deg; width: 54px; margin-left: -27px; top: -32px; transform: rotate(var(--mr)); }
+.one .magnet { --mr: 8deg; transform: rotate(var(--mr)); }
+
+.programs { min-width: 0; }
+.eyebrow { margin: 0 0 8px; font: 400 24px/1 var(--f-hand); color: var(--blue); }
+.programs h2 { margin: 0 0 28px; font: 400 clamp(2rem, 3.6vw, 3.2rem)/1.05 var(--f-display); letter-spacing: -0.02em; text-wrap: balance; }
+.programs ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.programs li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; padding: 18px 0; border-top: 1px solid var(--line); }
+.programs li:last-child { border-bottom: 1px solid var(--line); }
+.programs h3 { margin: 0 0 4px; font: 600 18px/1.3 var(--f-body); }
+.programs p { margin: 0; color: var(--soft); }
+.bullet { position: relative; width: 26px; height: 26px; margin-top: 4px; }
+.flying .bullet i { opacity: 0; }
+.fly { position: absolute; z-index: 40; width: 12px; height: 12px; pointer-events: none; }
+.bullet i { position: absolute; width: 10px; height: 10px; background: var(--c); }
+
+@media (max-width: 800px) {
+  .meet { grid-template-columns: 1fr; padding-bottom: 96px; }
+  .photos { min-height: 420px; }
+}
+@media (max-width: 480px) {
+  .photos { min-height: 380px; }
+  .polaroid.one { left: 0; }
+  .polaroid.two { left: 40%; }
+  .polaroid { padding: 10px 10px 42px; }
+  .polaroid figcaption { font-size: 18px; bottom: 11px; left: 12px; right: 12px; }
+  .polaroid.two { top: 100px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .polaroid { transition: none; }
+  .in .polaroid:not(.placed), .in .polaroid .magnet { animation: none; opacity: 1; }
+  .cta:hover .hand, .cta:focus-visible .hand { animation: none; }
+}
+/* shared section rhythm */
+.sec { max-width: 1240px; margin: 0 auto; padding-block: clamp(48px, 6vw, 80px); }
+.sec + .sec { padding-top: 0; }
+.h2 { margin: 0; font: 400 clamp(2rem, 3.6vw, 3.2rem)/1.05 var(--f-display); letter-spacing: -0.02em; text-wrap: balance; }
+.sec-head { margin: 0 0 32px; }
+
+/* next event, as a ticket */
+.ticket {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: minmax(200px, 1fr) 3fr;
+  border: 1.5px solid var(--ink); border-radius: 20px; background: var(--paper);
+}
+.stub {
+  position: relative; display: grid; place-content: center; justify-items: center; gap: 8px;
+  padding: 32px 24px; background: var(--yellow); border-right: 2px dashed var(--ink);
+}
+.stub::before, .stub::after {
+  content: ""; position: absolute; right: -13px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--paper); border: 1.5px solid var(--ink);
+}
+.stub::before { top: -13px; } .stub::after { bottom: -13px; }
+.dow { font: 400 24px/1 var(--f-hand); }
+.day { font: 400 clamp(4.5rem, 9vw, 7rem)/1 var(--f-display); letter-spacing: -0.03em; }
+.mon { font: 600 15px/1 var(--f-body); letter-spacing: .14em; text-transform: uppercase; }
+.tbody { display: grid; gap: 16px; align-content: center; justify-items: start; padding: clamp(24px, 4vw, 48px); min-width: 0; }
+.tbody h3 { margin: 0; font: 400 clamp(1.6rem, 2.6vw, 2.4rem)/1.1 var(--f-display); letter-spacing: -.015em; text-wrap: balance; }
+.meta { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; font-weight: 500; }
+.meta li { display: inline-flex; align-items: center; gap: 8px; }
+.meta svg { width: 20px; height: 20px; overflow: visible; }
+.tbody p { margin: 0; max-width: 52ch; color: var(--soft); }
+.tbody .cta { margin-top: 8px; }
+
+/* FAQ */
+.faq { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 96px); align-items: start; }
+.faq-side { min-width: 0; }
+.faq-side p { margin: 16px 0 0; max-width: 36ch; color: var(--soft); }
+.faq-list { min-width: 0; }
+.qa { border-top: 1px solid var(--line); }
+.qa:last-child { border-bottom: 1px solid var(--line); }
+.qa summary {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 20px 0; cursor: pointer; list-style: none; font: 600 18px/1.35 var(--f-body);
+}
+.qa summary::-webkit-details-marker { display: none; }
+.qa summary svg { flex: none; width: 22px; height: 22px; overflow: visible; transition: transform .25s ease; }
+.qa[open] summary svg { transform: rotate(45deg); }
+.qa p { margin: 0 0 20px; max-width: 56ch; color: var(--soft); }
+
+/* footer options */
+.opt {
+  display: inline-block; margin: 0 0 16px; padding: 4px 8px;
+  border: 1px dashed var(--select); border-radius: 4px;
+  font: 500 12px/1.2 var(--f-body); color: var(--select);
+}
+.foot-bar {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;
+  padding-block: 24px; font-size: 15px; color: var(--soft);
+}
+.foot-bar nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.foot-bar a { color: var(--ink); text-decoration: none; }
+.foot-bar a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.brand { font: 400 20px/1 var(--f-display); color: var(--ink); }
+
+/* option A: words in boxes drop in and can be thrown around */
+.foot-a { position: relative; background: #f4f4f2; padding-top: 32px; }
+.foot-a .in, .foot-b .in { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; }
+.drop { position: relative; height: clamp(260px, 30vw, 380px); overflow: hidden; touch-action: pan-y; }
+.word-box {
+  position: absolute; left: 0; top: 0;
+  padding: .06em .3em .14em; background: var(--c); color: var(--ink);
+  font: 500 clamp(30px, 4.8vw, 66px)/1 var(--f-body); letter-spacing: -.02em; white-space: nowrap;
+  user-select: none; cursor: grab; will-change: transform;
+}
+.word-box:active { cursor: grabbing; }
+.drop.armed .word-box { visibility: hidden; }
+.foot-a .foot-bar { border-top: 1px solid #e3e3e0; }
+
+/* option B: pixel bands spreading left to right */
+.foot-b { position: relative; padding-top: 32px; }
+.foot-b .big { margin: 8px 0 24px; text-align: center; font: 400 clamp(2.4rem, 6vw, 5rem)/1 var(--f-display); letter-spacing: -.025em; text-wrap: balance; }
+.foot-b .foot-bar { justify-content: center; padding-bottom: 48px; }
+.bands { display: block; width: 100%; }
+
+@media (max-width: 800px) {
+  .faq { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .ticket { grid-template-columns: 1fr; }
+  .stub { grid-auto-flow: column; align-items: baseline; justify-content: start; gap: 12px; padding: 20px 24px; border-right: 0; border-bottom: 2px dashed var(--ink); }
+  .stub::before, .stub::after { top: auto; bottom: -13px; }
+  .stub::before { left: -13px; right: auto; }
+  .day { font-size: 4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qa summary svg { transition: none; }
+}
+/* bricks: a soft running-bond line pattern, a nod to Tampere's red-brick mills.
+   Each brick is 8 x 4 pixel cells, so the pixels sit in the courses. */
+.bricks {
+  position: absolute; inset: 0; display: none; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='56'%3E%3Cpath d='M0 .5H112M0 28.5H112M.5 0V28M56.5 28V56' fill='none' stroke='%237c8aa0' stroke-opacity='.13'/%3E%3C/svg%3E");
+  background-size: 112px 56px; background-position: var(--bx, 0) 0;
+}
+.b-header .top > .bricks {
+  display: block;
+  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 30%, #000 78%);
+  mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 30%, #000 78%);
+}
+.b-footer footer > .bricks {
+  display: block;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 90%);
+  mask-image: linear-gradient(to top, #000, transparent 90%);
+}
+.b-footer .foot-b .bands { position: relative; }
+
+/* review switch, for trying the bricks in different places */
+.review {
+  position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 4px; padding: 4px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(20,20,20,.12);
+  font: 500 13px/1 var(--f-body);
+}
+.review span { padding: 0 8px; color: var(--soft); }
+.review button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--ink); cursor: pointer; }
+.review button:hover { background: #f2f2f4; }
+.review button[aria-pressed="true"] { background: #e3effd; color: #1b5fb8; }
+/* navbar */
+.nav {
+  position: absolute; z-index: 3; top: 0; left: 0; right: 0;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+  padding-block: 24px;
+  padding-left: max(24px, 4vw, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, 4vw, env(safe-area-inset-right, 0px));
+  transition: opacity .5s ease;
+}
+.logo { justify-self: start; display: inline-flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; font: 400 22px/1 var(--f-display); letter-spacing: -.01em; white-space: nowrap; }
+.logo-mark { display: grid; grid-template-columns: repeat(2, 9px); gap: 2px; }
+.logo-mark i { width: 9px; height: 9px; background: var(--c); }
+.nav-links { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; }
+.nav-links a { display: block; padding: 8px 0; color: var(--ink); text-decoration: none; font: 500 16px/1 var(--f-body); }
+.nav-links a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.join {
+  justify-self: end; display: inline-flex; align-items: center; height: 44px; padding: 0 20px;
+  border-radius: 999px; background: var(--ink); color: var(--paper); text-decoration: none;
+  font: 500 15px/1 var(--f-body); white-space: nowrap;
+}
+.menu-btn { display: none; }
+@media (max-width: 720px) {
+  .nav { grid-template-columns: 1fr auto auto; gap: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .logo { font-size: 19px; gap: 8px; }
+  .nav-links {
+    display: none; position: absolute; top: calc(100% - 8px); left: 16px; right: 16px;
+    flex-direction: column; gap: 0; padding: 8px 16px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 28px rgba(20,20,20,.12);
+  }
+  .nav.open .nav-links { display: flex; }
+  .nav-links a { padding: 16px 0; }
+  .nav-links li + li { border-top: 1px solid var(--line); }
+  .menu-btn {
+    display: inline-flex; align-items: center; height: 44px; padding: 0 16px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--paper);
+    color: var(--ink); font: 500 15px/1 var(--f-body); cursor: pointer;
+  }
+  .join { padding: 0 16px; }
+}
+/* table header: the title and the drawing share the space; the drawing's white fills sit over the letters */
+.hero.split { width: min(1240px, 100%); display: grid; justify-items: start; text-align: left; }
+.split-title { justify-items: start; gap: 16px; margin: 0; }
+.split-title .kicker { margin-left: .2em; }
+.big { display: block; font: 400 clamp(3.4rem, 10.5vw, 9.5rem)/.92 var(--f-display); letter-spacing: -.035em; }
+.scene {
+  position: absolute; z-index: 0; right: 0; top: 50%; transform: translateY(-30%);
+  width: min(48vw, 640px); height: auto; overflow: visible;
+}
+.split-title { position: relative; z-index: 1; }
+.scene.front { z-index: 2; pointer-events: none; }
+.scene .note { transform-box: fill-box; }
+@keyframes steam { 0%, 100% { opacity: .9; transform: translateY(0); } 50% { opacity: .35; transform: translateY(-5px); } }
+.split-foot { position: relative; z-index: 3; margin-top: 32px; max-width: 34ch; }
+.split-foot .lede { text-align: left; }
+@media (min-width: 1200px) { .scene { right: -3%; } }
+@media (max-width: 900px) {
+  /* on small screens the drawing sits under the title; both layers share one grid cell */
+  .split-title { grid-row: 1; }
+  .scene, .scene.front { grid-row: 2; grid-column: 1; position: relative; right: auto; top: auto; transform: none; width: 100%; max-width: 560px; margin: 24px auto 0; justify-self: center; }
+  .split-foot { grid-row: 3; }
+}
+@media (prefers-reduced-motion: reduce) { .scene .steam { animation: none; } }
+/* second frame: a faint brick wall that fades in and out, with windows scattered over it */
+.windows { position: relative; height: clamp(1100px, 150vh, 1500px); overflow: hidden; }
+.windows .wall {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='56'%3E%3Cpath d='M0 .5H112M0 28.5H112M.5 0V28M56.5 28V56' fill='none' stroke='%237c8aa0' stroke-opacity='.3'/%3E%3C/svg%3E");
+  background-size: 112px 56px; background-position: center top;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+}
+.win {
+  --k: .88;
+  position: absolute; margin: 0;
+  left: min(var(--x), calc(100% - var(--w) * var(--k) - 12px)); top: var(--y);
+  width: calc(var(--w) * var(--k));
+  filter: drop-shadow(0 8px 10px rgba(20,20,20,.16));
+  opacity: 0; transform: translateY(40px) scale(.94);
+  transition: opacity .6s ease, transform .8s cubic-bezier(.2,.8,.2,1);
+}
+.win.in { opacity: 1; transform: none; }
+.win img { display: block; width: 100%; height: auto; }
+@media (max-width: 900px) { .win { --k: .66; } .windows { height: clamp(900px, 130vh, 1200px); } }
+@media (max-width: 520px) { .win { --k: .44; } .windows { height: 900px; } }
+@media (prefers-reduced-motion: reduce) { .win { opacity: 1; transform: none; transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="top wrap" id="top">
+  <nav class="nav" id="nav" aria-label="Main">
+    <a class="logo" href="#top"><span class="logo-mark" aria-hidden="true"><i style="--c:var(--blue)"></i><i style="--c:var(--pink)"></i><i style="--c:var(--yellow)"></i><i style="--c:var(--green)"></i></span>Tampere Design</a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#events">Events</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#faq">Contribute</a></li>
+    </ul>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <a class="join" href="#">Join Us</a>
+  </nav>
+  <div class="bricks" aria-hidden="true"></div>
+  <canvas class="px" id="px" aria-hidden="true"></canvas>
+  <div class="hero" id="hero">
+    <h1 class="title">
+      <span class="kicker">Hi, we are</span>
+      <span class="line">Designers of Tampere</span>
+    </h1>
+    <p class="lede">Glad you found us. We host meetups, critiques and good company for anyone who designs anything.</p>
+    <a class="cta" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <g class="hand">
+          <path d="M8.1 13.9Q7.95 9.4 8.15 4.95Q8.3 3.75 9.3 3.75Q10.35 3.8 10.4 5Q10.3 7.9 10.5 10.8" stroke-width="1.52"/>
+          <path d="M10.4 10.6Q10.3 7.2 10.45 3.9Q10.6 2.7 11.65 2.7Q12.75 2.75 12.8 3.95Q12.7 7.4 12.9 10.85" stroke-width="1.7"/>
+          <path d="M12.85 10.7Q12.8 8.2 12.9 5.7Q13 4.55 14 4.55Q15.05 4.6 15.1 5.75Q15 8.6 15.2 11.45" stroke-width="1.5"/>
+          <path d="M15.1 11.3Q15.1 9.7 15.2 8.15Q15.3 7.1 16.2 7.1Q17.2 7.15 17.25 8.2Q17.35 11.6 17.1 14.95Q16.65 19.95 12.25 20.6Q8.6 20.95 6.9 18.25Q5.5 15.95 4.1 13.45Q3.6 12.3 4.5 11.85Q5.4 11.45 6.2 12.45Q7.2 13.65 8.15 14.95" stroke-width="1.62"/>
+        </g>
+        <path d="M19.5 3.4Q21 4.75 21.45 6.8" stroke-width="1.38"/>
+        <path d="M2.7 7.6Q3 5.6 4.55 4.3" stroke-width="1.44"/>
+      </svg>
+      Come say hi
+    </a>
+  </div>
+  <div class="cursor" id="cursor" aria-hidden="true" hidden>
+    <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--blue)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+  </div>
+</header>
+
+<section class="windows" id="windows" aria-hidden="true">
+  <div class="wall"></div>
+  <figure class="win" style="--x:8%; --y:5%; --w:300px" data-speed="0.1"><img src="assets/windows/cats.webp" width="196" height="161" alt=""></figure>
+  <figure class="win" style="--x:46%; --y:2%; --w:170px" data-speed="0.22"><img src="assets/windows/lamp.webp" width="112" height="107" alt=""></figure>
+  <figure class="win" style="--x:72%; --y:10%; --w:230px" data-speed="0.14"><img src="assets/windows/lace.webp" width="145" height="122" alt=""></figure>
+  <figure class="win" style="--x:33%; --y:21%; --w:112px" data-speed="0.26"><img src="assets/windows/lit-arch.webp" width="73" height="126" alt=""></figure>
+  <figure class="win" style="--x:56%; --y:28%; --w:224px" data-speed="0.08"><img src="assets/windows/cactus.webp" width="146" height="238" alt=""></figure>
+  <figure class="win" style="--x:13%; --y:33%; --w:165px" data-speed="0.18"><img src="assets/windows/blue-white.webp" width="107" height="147" alt=""></figure>
+  <figure class="win" style="--x:86%; --y:40%; --w:124px" data-speed="0.24"><img src="assets/windows/green-closed.webp" width="80" height="123" alt=""></figure>
+  <figure class="win" style="--x:37%; --y:54%; --w:140px" data-speed="0.12"><img src="assets/windows/yellow.webp" width="89" height="97" alt=""></figure>
+  <figure class="win" style="--x:70%; --y:62%; --w:230px" data-speed="0.2"><img src="assets/windows/pink-door.webp" width="148" height="126" alt=""></figure>
+  <figure class="win" style="--x:6%; --y:64%; --w:150px" data-speed="0.16"><img src="assets/windows/lilac.webp" width="96" height="112" alt=""></figure>
+  <figure class="win" style="--x:53%; --y:75%; --w:110px" data-speed="0.28"><img src="assets/windows/small-frame.webp" width="73" height="97" alt=""></figure>
+  <figure class="win" style="--x:24%; --y:82%; --w:146px" data-speed="0.1"><img src="assets/windows/grille.webp" width="94" height="121" alt=""></figure>
+</section>
+
+<section class="meet wrap" id="about" aria-labelledby="programs-title">
+  <div class="photos" id="photos">
+    <figure class="polaroid one" style="margin:0">
+      <div class="photo"><span>Event photo</span></div>
+      <figcaption>meetup night</figcaption>
+      <img class="magnet" src="assets/magnet-strawberry.webp" width="175" height="179" alt="">
+    </figure>
+    <figure class="polaroid two" style="margin:0">
+      <div class="photo"><span>Event photo</span></div>
+      <figcaption>workshop day</figcaption>
+      <img class="magnet" src="assets/magnet-cat.webp" width="156" height="183" alt="">
+    </figure>
+  </div>
+
+  <div class="programs">
+    <h2 id="programs-title">Ways to join in</h2>
+    <ul>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--blue);left:0;top:0"></i><i style="--c:var(--blue);left:12px;top:12px"></i></span>
+        <div><h3>Monthly meetups</h3><p>Short talks, show-and-tell and snacks, once a month.</p></div></li>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--pink);left:0;top:12px"></i><i style="--c:var(--pink);left:12px;top:12px"></i><i style="--c:var(--pink);left:12px;top:0"></i></span>
+        <div><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p></div></li>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--green);left:6px;top:6px"></i></span>
+        <div><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p></div></li>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--yellow);left:0;top:0"></i><i style="--c:var(--yellow);left:0;top:12px"></i><i style="--c:var(--yellow);left:12px;top:12px"></i></span>
+        <div><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p></div></li>
+    </ul>
+  </div>
+</section>
+
+<section class="sec wrap" id="events" aria-labelledby="event-title">
+  <div class="sec-head">
+    <h2 class="h2">Our next event</h2>
+  </div>
+  <article class="ticket">
+    <div class="stub"><span class="dow">Thursday</span><span class="day">19</span><span class="mon">November</span></div>
+    <div class="tbody">
+      <h3 id="event-title">Autumn meetup: show and tell</h3>
+      <ul class="meta">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.86C8.09 4.730 9.82 4.23 11.02 4.08C12.21 3.93 13.55 3.69 14.69 3.96C15.82 4.24 16.94 5 17.84 5.73C18.74 6.47 19.53 7.4 20.07 8.38C20.6 9.36 20.94 10.51 21.04 11.62C21.15 12.72 21.13 14 20.7 15.03C20.28 16.06 19.36 17 18.49 17.790C17.62 18.59 16.6 19.36 15.49 19.81C14.38 20.26 13.03 20.51 11.81 20.48C10.6 20.46 9.32 20.09 8.19 19.63C7.07 19.17 5.89 18.56 5.04 17.74C4.2 16.92 3.54 15.81 3.12 14.73C2.7 13.65 2.43 12.38 2.53 11.25C2.63 10.11 3.18 8.95 3.74 7.89C4.31 6.83 4.97 5.68 5.930 4.89C6.89 4.1 8.23 3.45 9.49 3.18C10.74 2.91 12.8 3.25 13.46 3.26" stroke-width="1.776"/><path d="M11.93 6.73Q12.08 9.46 11.87 12.2Q13.79 13.06 15.72 13.89" stroke-width="1.568"/></svg>17:30–20:00</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.24 12.8C6.11 12.34 5.46 10.94 5.47 10.02C5.47 9.1 5.88 8.12 6.28 7.26C6.68 6.4 7.16 5.45 7.87 4.83C8.58 4.22 9.6 3.76 10.53 3.56C11.46 3.36 12.52 3.44 13.45 3.65C14.39 3.86 15.4 4.23 16.15 4.81C16.9 5.39 17.55 6.27 17.97 7.14C18.38 8.01 18.64 9.06 18.64 10.02C18.64 10.98 18.08 12.42 17.97 12.9" stroke-width="1.68"/><path d="M5.89 11.7Q7.38 16.37 12.17 21.07" stroke-width="1.728"/><path d="M18.47 11.9Q16.4 16.35 11.66 21.29" stroke-width="1.488"/><circle cx="11.85" cy="10.2" r="2.6" stroke-width="1.392"/></svg>Venue to be announced</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.35 3.33Q7.51 3.48 11.67 3.67Q16.14 7.93 20.31 12.48Q16.23 16.43 12.45 20.66Q7.84 16.22 3.62 11.41Q3.47 7.37 3.35 3.33Q4.02 3.4 4.69 3.38" stroke-width="1.664"/><path d="M7.93 7.95l.01 0" stroke-width="2.48"/></svg>Free</li>
+      </ul>
+      <p>Three short talks, an open show-and-tell and plenty of time to chat. Bring something you're working on, finished or not.</p>
+      <a class="cta" href="#">
+      Save my spot
+      </a>
+    </div>
+  </article>
+</section>
+
+<section class="sec wrap faq" id="faq" aria-labelledby="faq-title">
+  <div class="faq-side">
+    <h2 class="h2" id="faq-title">Questions, answered</h2>
+    <p>Something else on your mind? Ask us at the next meetup or send us a message.</p>
+  </div>
+  <div class="faq-list">
+      <details class="qa"><summary>Who can join?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.09 4.82Q12.59 12.16 11.97 19.49" stroke-width="1.744"/><path d="M4.6 11.98Q11.98 11.47 19.36 12.19" stroke-width="1.376"/></svg></summary><p>Anyone who designs anything: UX and UI, graphic, service, industrial, students, career switchers and the design-curious.</p></details>
+      <details class="qa"><summary>Do I need a portfolio or a design job?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.09 4.82Q12.59 12.16 11.97 19.49" stroke-width="1.744"/><path d="M4.6 11.98Q11.98 11.47 19.36 12.19" stroke-width="1.376"/></svg></summary><p>No. Come as you are. Half-finished ideas are welcome, and so is just listening.</p></details>
+      <details class="qa"><summary>Does it cost anything?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.09 4.82Q12.59 12.16 11.97 19.49" stroke-width="1.744"/><path d="M4.6 11.98Q11.98 11.47 19.36 12.19" stroke-width="1.376"/></svg></summary><p>Meetups are free. If a workshop ever needs a small fee for materials, we say so up front.</p></details>
+      <details class="qa"><summary>Are events in English or Finnish?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.09 4.82Q12.59 12.16 11.97 19.49" stroke-width="1.744"/><path d="M4.6 11.98Q11.98 11.47 19.36 12.19" stroke-width="1.376"/></svg></summary><p>Mostly English, so everyone can follow along. Finnish is always welcome over coffee afterwards.</p></details>
+      <details class="qa"><summary>How do I hear about the next event?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.09 4.82Q12.59 12.16 11.97 19.49" stroke-width="1.744"/><path d="M4.6 11.98Q11.98 11.47 19.36 12.19" stroke-width="1.376"/></svg></summary><p>Follow us on Instagram or join the mailing list. We post each event at least two weeks ahead.</p></details>
+      <details class="qa"><summary>Can I give a talk or run a workshop?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.09 4.82Q12.59 12.16 11.97 19.49" stroke-width="1.744"/><path d="M4.6 11.98Q11.98 11.47 19.36 12.19" stroke-width="1.376"/></svg></summary><p>Yes, please. Tell us your idea at a meetup or send us a message, and we'll help you shape it.</p></details>
+  </div>
+</section>
+
+<footer class="foot-a" aria-label="Footer, option A">
+  <div class="bricks" aria-hidden="true"></div>
+  <div class="in wrap">
+    <span class="opt">Footer option A · boxes drop in, drag them around</span>
+    <div class="drop armed" id="drop" aria-label="your design people are here"><span class="word-box" style="--c:var(--pink)">your</span><span class="word-box" style="--c:var(--blue)">design</span><span class="word-box" style="--c:var(--green)">people</span><span class="word-box" style="--c:var(--yellow)">are</span><span class="word-box" style="--c:var(--pink)">here</span></div>
+      <div class="foot-bar">
+        <span class="brand">Tampere Design</span>
+        <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
+        <span>© 2026</span>
+      </div>
+  </div>
+</footer>
+
+<footer class="foot-b" aria-label="Footer, option B">
+  <div class="bricks" aria-hidden="true"></div>
+  <div class="in wrap">
+    <span class="opt">Footer option B · pixel bands spread left to right</span>
+    <p class="big">See you at the next one.</p>
+    <div class="foot-bar">
+        <span class="brand">Tampere Design</span>
+        <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
+        <span>© 2026</span>
+      </div>
+  </div>
+  <canvas class="bands" id="bands" aria-hidden="true"></canvas>
+</footer>
+
+<canvas id="cursor-px" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const css = getComputedStyle(document.documentElement);
+  const PALETTE = ["--blue", "--pink", "--green", "--yellow"].map((v) => css.getPropertyValue(v).trim());
+  const G = 14, P = 12;  // grid pitch and pixel size
+
+  // seeded random, so the scatter stays put between reloads
+  const rng = (seed) => () => {
+    seed |= 0; seed = seed + 0x6d2b79f5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  // clusters of one to three squares, never a straight line
+  const SHAPES = [
+    [[0, 0]],
+    [[0, 0], [1, 1]], [[0, 1], [1, 0]],
+    [[0, 0], [1, 0], [1, 1]], [[0, 0], [0, 1], [1, 1]], [[1, 0], [0, 1], [1, 1]],
+    [[0, 0], [1, 1], [2, 1]], [[0, 1], [1, 0], [2, 0]], [[0, 0], [1, 1], [1, 2]],
+  ];
+  const fit = (cv) => {
+    const dpr = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w, h };
+  };
+
+  /* header scatter: sparse at the top, denser towards the bottom, clear of the text */
+  const top = $("top"), hero = $("hero"), px = $("px");
+  const drawHeader = () => {
+    const { ctx, w, h } = fit(px);
+    // keep clear of the title as it ends up ("Designers of Tampere"), not as it starts
+    const saved = [line.className, ers.textContent, of.textContent];
+    line.classList.add("swapped", "of-on"); ers.textContent = "ers"; of.textContent = "of";
+    const r = rng(7), t = top.getBoundingClientRect(), b = hero.getBoundingClientRect();
+    const navBottom = $("nav").getBoundingClientRect().bottom - t.top + 8;
+    [line.className, ers.textContent, of.textContent] = saved;
+    const pad = 36;
+    const avoid = { x0: b.left - t.left - pad, y0: b.top - t.top - pad, x1: b.right - t.left + pad, y1: b.bottom - t.top + pad };
+    const cols = Math.floor(w / G), rows = Math.floor(h / G), off = (w - cols * G) / 2;
+    top.querySelector(".bricks").style.setProperty("--bx", off + "px");
+    for (let row = 0; row < rows; row++) {
+      const k = row / rows, p = .0025 + .011 * Math.pow(k, 2);
+      for (let col = 0; col < cols; col++) {
+        if (r() > p) continue;
+        const shape = SHAPES[Math.floor(r() * SHAPES.length)];
+        ctx.fillStyle = PALETTE[Math.floor(r() * PALETTE.length)];
+        for (const [dx, dy] of shape) {
+          const x = off + (col + dx) * G, y = (row + dy) * G;
+          if (y + P > h || x + P > w) continue;
+          if (x + P > avoid.x0 && x < avoid.x1 && y + P > avoid.y0 && y < avoid.y1) continue;
+          if (y < navBottom) continue;
+          ctx.fillRect(x, y, P, P);
+        }
+      }
+    }
+  };
+
+  /* cursor: a pencil scratch that follows the pointer, and a burst of strokes on click */
+  const ccv = $("cursor-px");
+  let cctx, pts = [], bursts = [], running = false;
+  const sizeCursor = () => ({ ctx: cctx } = fit(ccv));
+  const LIFE = 520, GRAPHITE = "#262626";
+  const jitter = () => Array.from({ length: 3 }, () => [(Math.random() - .5) * 2.6, (Math.random() - .5) * 2.6]);
+  const strands = (ctx, a, b, ka, kb, alpha) => {
+    // three rough strands per segment, each a little off the path, like graphite on paper
+    for (let s = 0; s < 3; s++) {
+      ctx.globalAlpha = alpha * (s === 0 ? .85 : .45);
+      ctx.lineWidth = s === 0 ? 1.6 : .9;
+      ctx.beginPath();
+      ctx.moveTo(a.x + ka[s][0], a.y + ka[s][1]);
+      ctx.lineTo(b.x + kb[s][0], b.y + kb[s][1]);
+      ctx.stroke();
+    }
+  };
+  const loop = () => {
+    const now = performance.now();
+    cctx.clearRect(0, 0, ccv.width, ccv.height);
+    cctx.strokeStyle = cctx.fillStyle = GRAPHITE; cctx.lineCap = "round";
+    pts = pts.filter((q) => now - q.t < LIFE);
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i];
+      if (b.t - a.t > 120) continue;  // a pause breaks the line
+      const fade = 1 - (now - a.t) / LIFE;
+      strands(cctx, a, b, a.j, b.j, fade * .9);
+      cctx.globalAlpha = fade * .5;
+      for (const [gx, gy] of b.g) cctx.fillRect(b.x + gx, b.y + gy, 1, 1);  // grain
+    }
+    bursts = bursts.filter((u) => now - u.t < 480);
+    for (const u of bursts) {
+      const k = (now - u.t) / 480, fade = 1 - k, grow = 1 - Math.pow(1 - Math.min(1, k * 2.2), 3);
+      for (const r of u.rays) {
+        const a = { x: u.x + Math.cos(r.a) * (r.r0 + 6 * grow), y: u.y + Math.sin(r.a) * (r.r0 + 6 * grow) };
+        const b = { x: u.x + Math.cos(r.a + r.bend) * (r.r0 + r.len * grow), y: u.y + Math.sin(r.a + r.bend) * (r.r0 + r.len * grow) };
+        strands(cctx, a, b, r.ja, r.jb, fade);
+      }
+    }
+    cctx.globalAlpha = 1;
+    running = pts.length > 0 || bursts.length > 0;
+    if (running) requestAnimationFrame(loop);
+  };
+  const kick = () => { if (!cctx) sizeCursor(); if (!running) { running = true; requestAnimationFrame(loop); } };
+  let wob = 0;
+  if (!reduce) {
+    addEventListener("pointermove", (e) => {
+      if (e.pointerType === "touch") return;
+      wob += .35;
+      // a slow wobble so the line never looks ruler-straight
+      const w = Math.sin(wob) * 1.6 + Math.sin(wob * 2.7) * .8;
+      pts.push({ x: e.clientX + w, y: e.clientY - w * .6, t: performance.now(), j: jitter(),
+        g: Array.from({ length: 2 }, () => [(Math.random() - .5) * 6, (Math.random() - .5) * 6]) });
+      if (pts.length > 80) pts.shift();
+      kick();
+    });
+    addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "touch") return;
+      const n = 7, base = Math.random() * Math.PI;
+      bursts.push({ x: e.clientX, y: e.clientY, t: performance.now(), rays: Array.from({ length: n }, (_, i) => ({
+        a: base + i * (Math.PI * 2 / n) + (Math.random() - .5) * .4, r0: 10 + Math.random() * 4,
+        len: 12 + Math.random() * 10, bend: (Math.random() - .5) * .25, ja: jitter(), jb: jitter() })) });
+      kick();
+    });
+  }
+
+  /* windows: each one settles in when it scrolls into view, then drifts at its own pace */
+  const wins = [...document.querySelectorAll(".win")];
+  const winIO = new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add("in"); winIO.unobserve(e.target); }
+  }), { threshold: .2, rootMargin: "0px 0px -8% 0px" });
+  wins.forEach((w, i) => { w.style.transitionDelay = (i % 3) * 90 + "ms"; winIO.observe(w); });
+  const drift = () => {
+    if (reduce) return;
+    const vh = innerHeight;
+    for (const w of wins) {
+      const r = w.getBoundingClientRect(), mid = r.top + r.height / 2 - vh / 2;
+      w.style.translate = `0 ${(-mid * +w.dataset.speed * (innerWidth < 520 ? .4 : 1)).toFixed(1)}px`;
+    }
+  };
+
+  /* footer A: the word boxes drop in when the footer comes into view */
+  const drop = $("drop"), wordEls = [...drop.querySelectorAll(".word-box")];
+  const restAt = () => {  // where the boxes rest without physics
+    const W = drop.clientWidth, H = drop.clientHeight;
+    let x = 16;
+    wordEls.forEach((el, i) => {
+      const y = H - el.offsetHeight - (i % 2 ? 20 : 8);
+      el.style.transform = `translate(${Math.min(x, W - el.offsetWidth - 8)}px, ${y}px) rotate(${(i % 2 ? 4 : -5) * (i % 3 ? 1 : -1)}deg)`;
+      x += el.offsetWidth + 16;
+    });
+  };
+  const dropIn = () => {
+    drop.classList.remove("armed");
+    if (reduce || !window.Matter) { restAt(); return; }
+    const { Engine, Bodies, Composite, Runner, Mouse, MouseConstraint, Body } = Matter;
+    const W = drop.clientWidth, H = drop.clientHeight, T = 100, r = rng(3);
+    const engine = Engine.create();
+    const floor = Bodies.rectangle(W / 2, H + T / 2, W * 3, T, { isStatic: true });
+    const wallL = Bodies.rectangle(-T / 2, H / 2, T, H * 6, { isStatic: true });
+    const wallR = Bodies.rectangle(W + T / 2, H / 2, T, H * 6, { isStatic: true });
+    const bodies = wordEls.map((el, i) => {
+      const w = el.offsetWidth, h = el.offsetHeight;
+      const b = Bodies.rectangle(w / 2 + r() * Math.max(1, W - w), -h - i * 90, w, h,
+        { restitution: .3, friction: .5, angle: (r() - .5) * .6, chamfer: { radius: 2 } });
+      b.el = el; b.w = w; b.h = h;
+      return b;
+    });
+    Composite.add(engine.world, [floor, wallL, wallR, ...bodies]);
+    if (matchMedia("(pointer: fine)").matches) {
+      const mouse = Mouse.create(drop);
+      ["mousewheel", "DOMMouseScroll", "wheel"].forEach((ev) => mouse.element.removeEventListener(ev, mouse.mousewheel));
+      Composite.add(engine.world, MouseConstraint.create(engine, { mouse, constraint: { stiffness: .2, render: { visible: false } } }));
+    }
+    Runner.run(Runner.create(), engine);
+    const frame = () => {
+      for (const b of bodies) b.el.style.transform = `translate(${b.position.x - b.w / 2}px, ${b.position.y - b.h / 2}px) rotate(${b.angle}rad)`;
+      requestAnimationFrame(frame);
+    };
+    frame();
+    addEventListener("resize", () => {
+      const w = drop.clientWidth;
+      Body.setPosition(wallR, { x: w + T / 2, y: H / 2 });
+      Body.setPosition(floor, { x: w / 2, y: H + T / 2 });
+      for (const b of bodies) if (b.position.x > w) Body.setPosition(b, { x: w - b.w / 2, y: b.position.y - 40 });
+    });
+  };
+  new IntersectionObserver((es, io) => {
+    if (es[0].isIntersecting) { io.disconnect(); dropIn(); }
+  }, { threshold: .4 }).observe(drop);
+
+  /* footer B: pixel bands, each a bit wider than the last, spreading from the left */
+  const bands = $("bands");
+  const BANDS = [[.22, 0, 3], [.36, 3, 1], [.5, 1, 2], [.64, 2, 0], [.8, 0, 1], [1, 1, 3]];  // width, colour from, colour to
+  let bandsT0 = null;
+  const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+  const mix = (c1, c2, t) => { const A = hex(c1), B = hex(c2); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(",")})`; };
+  const drawBands = (now) => {
+    const small = innerWidth < 600, bh = small ? 18 : 28, cell = small ? 4 : 5;
+    bands.style.height = BANDS.length * bh + "px";
+    const { ctx, w } = fit(bands);
+    const r = rng(11);
+    let done = true;
+    BANDS.forEach(([frac, a, b], i) => {
+      const k = reduce || bandsT0 === null ? (bandsT0 === null ? 0 : 1) : Math.min(1, Math.max(0, (now - bandsT0 - i * 90) / 1100));
+      if (k < 1) done = false;
+      const bw = w * frac * (1 - Math.pow(1 - k, 3));
+      for (let y = i * bh; y < (i + 1) * bh; y += cell) {
+        for (let x = 0; x < bw; x += cell) {
+          // blend from one colour to the next across the band, with a little grain
+          const t = Math.min(1, Math.max(0, x / (w * frac) + (r() - .5) * .12));
+          ctx.fillStyle = mix(PALETTE[a], PALETTE[b], t);
+          ctx.fillRect(x, y, cell - 1, cell - 1);
+        }
+      }
+    });
+    if (!done) requestAnimationFrame(drawBands);
+  };
+  drawBands(0);
+  new IntersectionObserver((es, io) => {
+    if (es[0].isIntersecting) { io.disconnect(); bandsT0 = performance.now(); requestAnimationFrame(drawBands); }
+  }, { threshold: .3 }).observe(bands);
+  addEventListener("resize", () => { if (bandsT0 !== null) { bandsT0 = -1e9; drawBands(performance.now()); } });
+
+  /* brick placement switch */
+  const setBricks = (where) => {
+    document.body.classList.toggle("b-header", where === "header");
+    document.body.classList.toggle("b-footer", where === "footer");
+    document.querySelectorAll(".review button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.b === where)));
+  };
+  document.querySelectorAll(".review button").forEach((b) => b.addEventListener("click", () => setBricks(b.dataset.b)));
+
+  /* wiring */
+  /* placed polaroids hand their transform back to the hover styles */
+  document.querySelectorAll(".polaroid").forEach((el) => el.addEventListener("animationend", (e) => {
+    if (e.animationName === "drag-in") el.classList.add("placed");
+  }));
+
+  /* polaroids are placed once they scroll into view */
+  new IntersectionObserver((es, io) => {
+    if (es[0].isIntersecting) { io.disconnect(); $("photos").classList.add("in"); }
+  }, { threshold: .35 }).observe($("photos"));
+
+  /* navbar: menu toggle on small screens */
+  const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");
+  menuBtn.addEventListener("click", () => {
+    const open = nav.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded", String(open));
+  });
+  nav.querySelectorAll(".nav-links a").forEach((a) => a.addEventListener("click", () => {
+    nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false");
+  }));
+
+  const layout = () => { sizeCursor(); drift(); };
+  addEventListener("scroll", () => requestAnimationFrame(drift), { passive: true });
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 120); });
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+    layout();
+  });
+})();
+</script>
+</body>
+</html>

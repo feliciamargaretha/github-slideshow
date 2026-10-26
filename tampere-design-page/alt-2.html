@@ -310,11 +310,60 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .review button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--ink); cursor: pointer; }
 .review button:hover { background: #f2f2f4; }
 .review button[aria-pressed="true"] { background: #e3effd; color: #1b5fb8; }
+/* navbar */
+.nav {
+  position: absolute; z-index: 3; top: 0; left: 0; right: 0;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+  padding-block: 24px;
+  padding-left: max(24px, 4vw, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, 4vw, env(safe-area-inset-right, 0px));
+  transition: opacity .5s ease;
+}
+.logo { justify-self: start; display: inline-flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; font: 400 22px/1 var(--f-display); letter-spacing: -.01em; white-space: nowrap; }
+.logo-mark { display: grid; grid-template-columns: repeat(2, 9px); gap: 2px; }
+.logo-mark i { width: 9px; height: 9px; background: var(--c); }
+.nav-links { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; }
+.nav-links a { display: block; padding: 8px 0; color: var(--ink); text-decoration: none; font: 500 16px/1 var(--f-body); }
+.nav-links a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.join {
+  justify-self: end; display: inline-flex; align-items: center; height: 44px; padding: 0 20px;
+  border-radius: 999px; background: var(--ink); color: var(--paper); text-decoration: none;
+  font: 500 15px/1 var(--f-body); white-space: nowrap;
+}
+.menu-btn { display: none; }
+@media (max-width: 720px) {
+  .nav { grid-template-columns: 1fr auto auto; gap: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .logo { font-size: 19px; gap: 8px; }
+  .nav-links {
+    display: none; position: absolute; top: calc(100% - 8px); left: 16px; right: 16px;
+    flex-direction: column; gap: 0; padding: 8px 16px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 28px rgba(20,20,20,.12);
+  }
+  .nav.open .nav-links { display: flex; }
+  .nav-links a { padding: 16px 0; }
+  .nav-links li + li { border-top: 1px solid var(--line); }
+  .menu-btn {
+    display: inline-flex; align-items: center; height: 44px; padding: 0 16px;
+    border: 1px solid var(--line); border-radius: 999px; background: var(--paper);
+    color: var(--ink); font: 500 15px/1 var(--f-body); cursor: pointer;
+  }
+  .join { padding: 0 16px; }
+}
 </style>
 </head>
 <body>
 
 <header class="top wrap" id="top">
+  <nav class="nav" id="nav" aria-label="Main">
+    <a class="logo" href="#top"><span class="logo-mark" aria-hidden="true"><i style="--c:var(--blue)"></i><i style="--c:var(--pink)"></i><i style="--c:var(--yellow)"></i><i style="--c:var(--green)"></i></span>Tampere Design</a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#events">Events</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#faq">Contribute</a></li>
+    </ul>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <a class="join" href="#">Join Us</a>
+  </nav>
   <div class="bricks" aria-hidden="true"></div>
   <canvas class="px" id="px" aria-hidden="true"></canvas>
   <div class="hero" id="hero">
@@ -344,7 +393,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <div class="trail" id="trail" aria-hidden="true"><canvas id="trail-px"></canvas></div>
 
-<section class="meet wrap" aria-labelledby="programs-title">
+<section class="meet wrap" id="about" aria-labelledby="programs-title">
   <div class="photos" id="photos">
     <figure class="polaroid one" style="margin:0">
       <div class="photo"><span>Event photo</span></div>
@@ -373,7 +422,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </section>
 
-<section class="sec wrap" aria-labelledby="event-title">
+<section class="sec wrap" id="events" aria-labelledby="event-title">
   <div class="sec-head">
     <h2 class="h2">Our next event</h2>
   </div>
@@ -394,7 +443,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </article>
 </section>
 
-<section class="sec wrap faq" aria-labelledby="faq-title">
+<section class="sec wrap faq" id="faq" aria-labelledby="faq-title">
   <div class="faq-side">
     <h2 class="h2" id="faq-title">Questions, answered</h2>
     <p>Something else on your mind? Ask us at the next meetup or send us a message.</p>
@@ -415,7 +464,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     <span class="opt">Footer option A · boxes drop in, drag them around</span>
     <div class="drop armed" id="drop" aria-label="your design people are here"><span class="word-box" style="--c:var(--pink)">your</span><span class="word-box" style="--c:var(--blue)">design</span><span class="word-box" style="--c:var(--green)">people</span><span class="word-box" style="--c:var(--yellow)">are</span><span class="word-box" style="--c:var(--pink)">here</span></div>
       <div class="foot-bar">
-        <span class="brand">Designers of Tampere</span>
+        <span class="brand">Tampere Design</span>
         <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
         <span>© 2026</span>
       </div>
@@ -428,7 +477,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     <span class="opt">Footer option B · pixel bands spread left to right</span>
     <p class="big">See you at the next one.</p>
     <div class="foot-bar">
-        <span class="brand">Designers of Tampere</span>
+        <span class="brand">Tampere Design</span>
         <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
         <span>© 2026</span>
       </div>
@@ -484,6 +533,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     const saved = [line.className, ers.textContent, of.textContent];
     line.classList.add("swapped", "of-on"); ers.textContent = "ers"; of.textContent = "of";
     const r = rng(7), t = top.getBoundingClientRect(), b = hero.getBoundingClientRect();
+    const navBottom = $("nav").getBoundingClientRect().bottom - t.top + 8;
     [line.className, ers.textContent, of.textContent] = saved;
     const pad = 36;
     const avoid = { x0: b.left - t.left - pad, y0: b.top - t.top - pad, x1: b.right - t.left + pad, y1: b.bottom - t.top + pad };
@@ -499,6 +549,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
           const x = off + (col + dx) * G, y = (row + dy) * G;
           if (y + P > h || x + P > w) continue;
           if (x + P > avoid.x0 && x < avoid.x1 && y + P > avoid.y0 && y < avoid.y1) continue;
+          if (y < navBottom) continue;
           ctx.fillRect(x, y, P, P);
         }
       }
@@ -811,6 +862,16 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     const m = c.match(/\d+/g);
     return m ? "#" + m.slice(0, 3).map((v) => (+v).toString(16).padStart(2, "0")).join("") : c;
   }
+
+  /* navbar: menu toggle on small screens */
+  const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");
+  menuBtn.addEventListener("click", () => {
+    const open = nav.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded", String(open));
+  });
+  nav.querySelectorAll(".nav-links a").forEach((a) => a.addEventListener("click", () => {
+    nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false");
+  }));
 
   const layout = () => { drawHeader(); buildTrail(); sizeCursor(); };
   addEventListener("scroll", () => requestAnimationFrame(drawTrail), { passive: true });

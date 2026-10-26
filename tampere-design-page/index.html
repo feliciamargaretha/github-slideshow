@@ -296,11 +296,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     </button>
     <span class="sep" aria-hidden="true"></span>
     <span role="radiogroup" aria-label="Colour" style="display:contents">
-      <button class="swatch" type="button" role="radio" aria-checked="true" aria-label="Charcoal" style="--c:#4a4858"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Blue" style="--c:#74a9e6"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Pink" style="--c:#ea8fc0"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Green" style="--c:#8cc96b"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Yellow" style="--c:#f2c75e"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="true" aria-label="Violet" style="--c:#6b6ff0"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Pink" style="--c:#f07fc0"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Lime" style="--c:#a3dd73"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Aqua" style="--c:#5fcfcf"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Tangerine" style="--c:#ff9a52"><span></span></button>
     </span>
     <span class="sep" aria-hidden="true"></span>
     <button type="button" id="clear" aria-label="Clear drawings" title="Clear">
@@ -490,7 +490,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   // drawing
   const ink = $("ink"), ctx = ink.getContext("2d");
   const strokes = [];
-  let tool = "move", color = "#4a4858", live = null;
+  let tool = "move", color = "#6b6ff0", live = null;
 
   const draw = () => {
     const dpr = devicePixelRatio || 1;

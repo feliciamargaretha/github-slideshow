@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400&display=swap">
 <style>
 /* Layout: the header is a design file's canvas. Dotted paper, the headline in the middle,
    a few things a designer leaves lying around scattered at the edges, and a toolbar
@@ -19,16 +19,22 @@
   --dot: rgba(20, 20, 20, .16);
   --select: #0d99ff;        /* selection blue, as in Figma */
   --redline: #f24822;       /* spacing measurements */
-  --peer: #9747ff;          /* Aino, the other cursor on the file */
-  --me: #14ae5c;            /* the visitor's cursor */
-  --sticky: #ffe27a;
+  --peer: #8b6fe0;          /* the organisers' cursor */
+  --peer-bg: #e6dcfb;
+  --peer-ink: #45288f;
+  --me: #5fb87a;            /* the visitor's cursor */
+  --me-bg: #d7f2c8;
+  --me-ink: #24561b;
+  /* stickers: pastel fill, linework and type in a deep shade of the same hue */
+  --pink: #fbd3ee;  --pink-ink: #c4248d;
+  --sky: #cfe2f8;   --sky-ink: #1f3f7d;
+  --lilac: #e4dafb; --lilac-ink: #4b2c93;
   --chrome: #ffffff;
   --chrome-line: #e7e7e9;
   --shadow: 0 1px 2px rgba(20, 20, 20, .06), 0 8px 24px rgba(20, 20, 20, .10);
 
   --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
   --f-body: "Geist", "Helvetica Neue", Arial, sans-serif;
-  --f-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
@@ -128,20 +134,24 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 /* scattered things */
 .thing { position: absolute; z-index: 1; }
-.sticky {
-  left: max(24px, 5vw); top: 56px;
-  width: 176px; padding: 18px 18px 22px;
-  background: var(--sticky); box-shadow: 0 1px 1px rgba(20,20,20,.06), 0 10px 18px -8px rgba(20,20,20,.28);
-  transform: rotate(-4deg);
-  font: 500 27px/1.05 var(--f-hand); color: var(--ink);
+.sticker {
+  --r: 0deg; --s: 1;
+  display: grid; gap: 10px; padding: 18px 20px;
+  border-radius: 24px; background: var(--fill); color: var(--line);
+  box-shadow: 0 0 0 6px var(--paper), 0 0 0 7px rgba(20,20,20,.05), 0 14px 24px -14px rgba(20,20,20,.4);
+  transform: rotate(var(--r)) scale(var(--s));
+  font: 700 23px/1.02 var(--f-body); letter-spacing: -0.025em;
   cursor: grab; touch-action: none; user-select: none;
+  transition: box-shadow .2s;
 }
-.sticky.dragging { cursor: grabbing; box-shadow: 0 2px 2px rgba(20,20,20,.06), 0 18px 28px -10px rgba(20,20,20,.35); }
-.sticky small { display: block; margin-top: 8px; font-size: 21px; color: var(--soft); }
-
-.bezier { left: max(24px, 8vw); bottom: 19%; width: 260px; }
-.bezier svg { display: block; width: 100%; height: auto; overflow: visible; }
-.bezier .label { display: block; margin: 0 0 6px 2px; font: 500 12px/1 var(--f-body); color: var(--select); }
+.sticker.dragging { cursor: grabbing; box-shadow: 0 0 0 6px var(--paper), 0 0 0 7px rgba(20,20,20,.05), 0 22px 30px -14px rgba(20,20,20,.45); }
+.sticker svg { display: block; overflow: visible; }
+.sticker.good { --fill: var(--pink); --line: var(--pink-ink); --r: 5deg; left: max(24px, 6vw); top: 64px; grid-template-columns: auto auto; align-items: center; font-size: 25px; }
+.sticker.good svg { width: 62px; height: 62px; }
+.sticker.craft { --fill: var(--sky); --line: var(--sky-ink); --r: -6deg; left: max(24px, 8vw); bottom: 18%; justify-items: center; text-align: center; border-radius: 40px; padding: 18px 26px 22px; }
+.sticker.craft svg { width: 72px; height: 72px; }
+.sticker.sleep { --fill: var(--lilac); --line: var(--lilac-ink); --r: -3deg; right: max(24px, 7vw); top: 88px; font-size: 27px; }
+.sticker.sleep svg { width: 34px; height: 34px; }
 
 /* other cursors */
 .cursor { position: absolute; left: 0; top: 0; z-index: 25; pointer-events: none; will-change: transform; }
@@ -151,7 +161,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   padding: 4px 8px; border-radius: 4px 999px 999px 999px;
   font: 500 12px/1.2 var(--f-body); color: #fff; white-space: nowrap;
 }
-.peer .name { background: var(--peer); }
+.peer .name { background: var(--peer-bg); color: var(--peer-ink); }
 .peer .chat {
   display: block; max-width: 0; max-height: 0; overflow: hidden; opacity: 0;
   transition: max-width .6s ease, max-height .3s ease, opacity .3s;
@@ -159,15 +169,16 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 .peer.talking .name { padding: 6px 12px 8px; border-radius: 4px 16px 16px 16px; }
 .peer.talking .chat { max-width: 16rem; max-height: 2em; opacity: 1; }
-.peer .who { display: block; font-size: 11px; opacity: .8; }
+.peer .who { display: block; font-size: 11px; font-weight: 600; opacity: .75; }
 .me { opacity: 0; transition: opacity .2s; }
 .me.on { opacity: 1; }
-.me .name { background: var(--me); }
+.me .name { background: var(--me-bg); color: var(--me-ink); }
 .drawing .me { opacity: 0; }
 
 /* drawing layer and toolbar */
 .ink { position: absolute; inset: 0; z-index: 20; width: 100%; height: 100%; pointer-events: none; }
 .drawing .ink { pointer-events: auto; cursor: crosshair; touch-action: none; }
+.canvas[data-tool="eraser"] .ink { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Ccircle cx='14' cy='14' r='12' fill='white' fill-opacity='.6' stroke='%23141414' stroke-width='1.2'/%3E%3C/svg%3E") 14 14, crosshair; }
 .toolbar {
   position: absolute; z-index: 30; left: 50%; transform: translateX(-50%);
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
@@ -179,7 +190,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   border: 0; border-radius: 9px; background: none; color: var(--ink); cursor: pointer;
 }
 .toolbar button:hover { background: #f2f2f4; }
-.toolbar .tool[aria-pressed="true"] { background: var(--select); color: #fff; }
+.toolbar .tool[aria-pressed="true"] { background: #e3effd; color: #1b5fb8; }
 .toolbar svg { width: 22px; height: 22px; overflow: visible; }
 .toolbar .sep { width: 1px; height: 24px; margin: 0 4px; background: var(--chrome-line); }
 .toolbar .swatch { width: 30px; }
@@ -190,14 +201,17 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 /* tablet and phone */
 @media (max-width: 900px) {
-  .bezier { width: 200px; left: auto; right: max(16px, 5vw); bottom: auto; top: 12%; }
-  .sticky { left: max(16px, 5vw); top: 9%; width: 150px; font-size: 24px; }
+  .sticker { --s: .8; }
+  .sticker.good { left: max(12px, 3vw); top: 40px; }
+  .sticker.sleep { right: max(12px, 3vw); top: 56px; }
+  .sticker.craft { left: max(16px, 4vw); bottom: 120px; }
 }
 @media (max-width: 600px) {
-  .canvas { padding-block: 200px 150px; }
-  .sticky { top: 36px; width: 138px; padding: 14px 14px 16px; font-size: 22px; }
-  .sticky small { font-size: 18px; }
-  .bezier { top: 52px; width: 150px; }
+  .canvas { padding-block: 210px 230px; }
+  .sticker { --s: .62; }
+  .sticker.good { left: -6px; top: 18px; }
+  .sticker.sleep { right: -4px; top: 34px; }
+  .sticker.craft { left: 0; bottom: 92px; }
   .toolbar { gap: 2px; padding: 4px; }
   .toolbar button { width: 34px; height: 34px; }
   .toolbar .swatch { width: 24px; }
@@ -206,7 +220,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cta:hover .hand, .cta:focus-visible .hand { animation: none; }
-  .peer .chat, .redline, .guide, .tag, .sel i { transition: none; }
+  .peer .chat, .redline, .guide, .tag, .sel i, .sticker { transition: none; }
 }
 </style>
 </head>
@@ -214,24 +228,20 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 <header class="canvas" id="canvas">
 
-  <div class="thing sticky" id="sticky" aria-hidden="true">No portfolio needed :)<small>just bring yourself</small></div>
+  <!-- Sticker art: Matita icons (brush, laptop, sparkles, moon) drawn large -->
+  <div class="thing sticker good" aria-hidden="true">
+    <span>Good<br>Design<br>Only</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.92 3.34Q16.02 7.68 11.56 12.46" stroke-width="1.456"/><path d="M10 10.41Q11.78 12.21 13.46 14.11Q12.14 15.28 10.97 16.62Q9.34 14.64 7.44 12.91Q8.83 11.78 10 10.41Q10.38 10.83 10.77 11.23" stroke-width="1.696"/><path d="M7.63 12.77Q4.43 15.04 3.38 20.79" stroke-width="1.6"/><path d="M3.36 20.71Q9.03 19.7 11.2 16.4" stroke-width="1.728"/></svg>
+  </div>
 
-  <div class="thing bezier" aria-hidden="true">
-    <span class="label">tammerkoski</span>
-    <svg viewBox="0 0 260 120">
-      <g stroke="var(--select)" stroke-width="1" fill="none">
-        <line x1="10" y1="60" x2="50" y2="10"/>
-        <line x1="90" y1="10" x2="170" y2="110"/>
-        <line x1="210" y1="110" x2="250" y2="60"/>
-      </g>
-      <path d="M10 60 C50 10 90 10 130 60 S210 110 250 60" fill="none" stroke="var(--ink)" stroke-width="2"/>
-      <g fill="var(--chrome)" stroke="var(--select)" stroke-width="1.5">
-        <circle cx="50" cy="10" r="3.5"/><circle cx="90" cy="10" r="3.5"/>
-        <circle cx="170" cy="110" r="3.5"/><circle cx="210" cy="110" r="3.5"/>
-        <rect x="5.5" y="55.5" width="9" height="9"/><rect x="245.5" y="55.5" width="9" height="9"/>
-      </g>
-      <rect x="125.5" y="55.5" width="9" height="9" fill="var(--select)" stroke="var(--select)" stroke-width="1.5"/>
-    </svg>
+  <div class="thing sticker craft" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2.92 4.55Q11.8 4.6 20.68 4.48M19.3 3.7Q19.1 9.88 19.45 16.06M20.1 15.36Q11.76 14.94 3.42 15.36M4.54 16.45Q4.64 10.11 4.36 3.77" stroke-width="1.2"/><path d="M4.64 15.13Q3.51 16.93 2.66 18.87Q12.09 18.87 21.52 18.98Q20.34 17.2 19.49 15.23" stroke-width="1.1"/><g transform="translate(6.6 5.2) scale(.42)"><path d="M10.16 3.15Q10.72 5.89 11.69 8.5Q14.43 9.02 17.07 9.9Q14.21 10.69 11.37 11.53Q10.76 14.26 10.1 16.98Q9.49 14.17 8.44 11.5Q5.61 10.82 2.83 9.95Q5.74 9.36 8.52 8.34Q9.14 5.68 10.16 3.15Q10.35 3.76 10.51 4.38" stroke-width="3"/><path d="M18.09 14.16Q18.02 17.47 18 20.77" stroke-width="3.2"/><path d="M14.67 17.4Q18.04 17.24 21.42 17.45" stroke-width="3"/></g></svg>
+    <span>Crafting<br>experience</span>
+  </div>
+
+  <div class="thing sticker sleep" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11.72 3.63C11.14 3.75 9.27 3.82 8.24 4.32C7.21 4.83 6.28 5.75 5.57 6.66C4.86 7.57 4.29 8.66 3.96 9.77C3.62 10.87 3.43 12.14 3.57 13.29C3.7 14.44 4.14 15.7 4.78 16.67C5.42 17.64 6.42 18.45 7.41 19.1C8.4 19.74 9.55 20.35 10.69 20.53C11.84 20.72 13.14 20.52 14.28 20.21C15.41 19.89 16.61 19.37 17.51 18.63C18.41 17.89 19.19 16.82 19.68 15.76C20.18 14.7 20.34 12.86 20.48 12.28" stroke-width="1.6"/><path d="M21.14 12.68C20.71 12.87 19.47 13.65 18.57 13.85C17.67 14.05 16.67 14.05 15.75 13.89C14.84 13.74 13.87 13.43 13.09 12.93C12.31 12.43 11.57 11.68 11.09 10.9C10.6 10.12 10.36 9.15 10.19 8.23C10.03 7.32 9.9 6.31 10.09 5.42C10.28 4.52 11.11 3.29 11.32 2.86" stroke-width="1.8"/></svg>
+    <span>Sleep.<br>Design.<br>Repeat.</span>
   </div>
 
   <div class="hero" id="hero">
@@ -256,7 +266,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
   <div class="cursor peer" id="peer" aria-hidden="true">
     <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--peer)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
-    <span class="name"><span class="who">Aino</span><span class="chat">half-finished ideas welcome</span></span>
+    <span class="name"><span class="who">Organisers</span><span class="chat">any designers are welcome</span></span>
   </div>
   <div class="cursor me" id="me" aria-hidden="true">
     <span class="name">You</span>
@@ -265,7 +275,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   <canvas class="ink" id="ink" aria-hidden="true"></canvas>
 
   <div class="toolbar" role="toolbar" aria-label="Draw on the canvas">
-    <!-- Icons: Matita (matita.dev, MIT): mouse-pointer, pencil, brush, trash-2 -->
+    <!-- Icons: Matita (matita.dev, MIT): mouse-pointer, pencil, brush, eraser, trash-2 -->
     <button class="tool" type="button" data-tool="move" aria-pressed="true" aria-label="Select" title="Select (Esc)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5.05 3.04Q5.19 10.7 5.16 18.37Q6.93 16.35 8.99 14.62Q10.06 17.61 11.54 20.42Q12.8 19.99 14.09 19.64Q12.89 16.77 11.63 13.93Q14.04 13.89 16.44 14.1Q11.05 8.26 5.05 3.04Q5.07 3.7 5.06 4.35" stroke-width="1.44"/></svg>
     </button>
@@ -275,13 +285,16 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     <button class="tool" type="button" data-tool="marker" aria-pressed="false" aria-label="Highlighter" title="Highlighter">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.92 3.34Q16.02 7.68 11.56 12.46" stroke-width="1.456"/><path d="M10 10.41Q11.78 12.21 13.46 14.11Q12.14 15.28 10.97 16.62Q9.34 14.64 7.44 12.91Q8.83 11.78 10 10.41Q10.38 10.83 10.77 11.23" stroke-width="1.696"/><path d="M7.63 12.77Q4.43 15.04 3.38 20.79" stroke-width="1.6"/><path d="M3.36 20.71Q9.03 19.7 11.2 16.4" stroke-width="1.728"/></svg>
     </button>
+    <button class="tool" type="button" data-tool="eraser" aria-pressed="false" aria-label="Eraser" title="Eraser">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3.86 14.44Q8.33 9.82 12.98 5.38Q16.03 8.37 19.11 11.33Q14.84 16.25 10.03 20.65Q6.96 17.53 3.86 14.44Q4.22 14.03 4.63 13.67" stroke-width="1.424"/><path d="M7.98 9.62Q11.33 12.77 14.5 16.1" stroke-width="1.712"/><path d="M9.45 20.44Q15.08 20.8 20.7 20.61" stroke-width="1.52"/></svg>
+    </button>
     <span class="sep" aria-hidden="true"></span>
     <span role="radiogroup" aria-label="Colour" style="display:contents">
-      <button class="swatch" type="button" role="radio" aria-checked="true" aria-label="Black" style="--c:#141414"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Blue" style="--c:#0d99ff"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Red" style="--c:#f24822"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Green" style="--c:#14ae5c"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Yellow" style="--c:#ffcd29"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="true" aria-label="Charcoal" style="--c:#4a4858"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Blue" style="--c:#74a9e6"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Pink" style="--c:#ea8fc0"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Green" style="--c:#8cc96b"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Yellow" style="--c:#f2c75e"><span></span></button>
     </span>
     <span class="sep" aria-hidden="true"></span>
     <button type="button" id="clear" aria-label="Clear drawings" title="Clear">
@@ -316,7 +329,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     requestAnimationFrame(step);
   });
 
-  // Aino's cursor
+  // the organisers' cursor
   let peerAt = { x: 0, y: 0 };
   const placePeer = (p) => { peerAt = p; peer.style.transform = `translate(${p.x}px, ${p.y}px)`; };
   const movePeer = (to, ms) => {
@@ -449,9 +462,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     canvas.addEventListener("pointerleave", () => me.classList.remove("on"));
   }
 
-  // the sticky note can be moved around
-  const sticky = $("sticky");
-  sticky.addEventListener("pointerdown", (e) => {
+  // stickers can be moved around
+  document.querySelectorAll(".sticker").forEach((sticky) => sticky.addEventListener("pointerdown", (e) => {
     const c = canvas.getBoundingClientRect(), r = sticky.getBoundingClientRect();
     const dx = e.clientX - r.left, dy = e.clientY - r.top;
     sticky.setPointerCapture(e.pointerId);
@@ -461,6 +473,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
       const y = Math.max(0, Math.min(ev.clientY - c.top - dy, c.height - r.height));
       sticky.style.left = x + "px";
       sticky.style.top = y + "px";
+      sticky.style.right = sticky.style.bottom = "auto";
     };
     const up = () => {
       sticky.classList.remove("dragging");
@@ -469,12 +482,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     };
     sticky.addEventListener("pointermove", move);
     sticky.addEventListener("pointerup", up);
-  });
+  }));
 
   // drawing
   const ink = $("ink"), ctx = ink.getContext("2d");
   const strokes = [];
-  let tool = "move", color = "#141414", live = null;
+  let tool = "move", color = "#4a4858", live = null;
 
   const draw = () => {
     const dpr = devicePixelRatio || 1;
@@ -485,8 +498,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
       ctx.save();
       ctx.lineCap = ctx.lineJoin = "round";
       ctx.strokeStyle = s.color;
-      ctx.lineWidth = s.tool === "marker" ? 22 : 3;
-      if (s.tool === "marker") { ctx.globalAlpha = .38; ctx.globalCompositeOperation = "multiply"; }
+      ctx.lineWidth = { marker: 22, eraser: 26 }[s.tool] || 3;
+      if (s.tool === "marker") { ctx.globalAlpha = .45; ctx.globalCompositeOperation = "multiply"; }
+      if (s.tool === "eraser") ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       if (pts.length === 1) ctx.lineTo(pts[0].x + .1, pts[0].y);
@@ -532,12 +546,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     tool = t;
     tools.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tool === t)));
     canvas.classList.toggle("drawing", t !== "move");
+    canvas.dataset.tool = t;
   };
   tools.forEach((b) => b.addEventListener("click", () => setTool(b.dataset.tool)));
   document.querySelectorAll(".swatch").forEach((b) => b.addEventListener("click", () => {
     document.querySelectorAll(".swatch").forEach((o) => o.setAttribute("aria-checked", String(o === b)));
     color = getComputedStyle(b).getPropertyValue("--c").trim();
-    if (tool === "move") setTool("pen");
+    if (tool === "move" || tool === "eraser") setTool("pen");
   }));
   $("clear").addEventListener("click", () => { strokes.length = 0; draw(); });
   addEventListener("keydown", (e) => { if (e.key === "Escape") setTool("move"); });

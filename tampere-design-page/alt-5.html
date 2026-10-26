@@ -373,13 +373,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 }
 @media (prefers-reduced-motion: reduce) { .scene .steam { animation: none; } }
 /* second frame: a faint brick wall that fades in and out, with windows scattered over it */
-.windows { position: relative; height: clamp(860px, 115vh, 1150px); overflow: hidden; }
+.windows { position: relative; height: max(2000px, 260vh); overflow: hidden; }
 .windows .wall {
   position: absolute; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='56'%3E%3Cpath d='M0 .5H112M0 28.5H112M.5 0V28M56.5 28V56' fill='none' stroke='%237c8aa0' stroke-opacity='.3'/%3E%3C/svg%3E");
   background-size: 112px 56px; background-position: center top;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 22%, #000 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 88%, transparent 100%);
 }
 .win {
   --k: .88;
@@ -392,8 +392,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 }
 .win.in { opacity: 1; transform: none; }
 .win img { display: block; width: 100%; height: auto; }
-@media (max-width: 900px) { .win { --k: .66; } .windows { height: clamp(760px, 105vh, 1000px); } }
-@media (max-width: 520px) { .win { --k: .44; } .windows { height: 720px; } }
+@media (max-width: 900px) { .win { --k: .66; } .windows { height: max(1700px, 230vh); } }
+@media (max-width: 520px) { .win { --k: .44; } .windows { height: max(1400px, 200vh); } }
 @media (prefers-reduced-motion: reduce) { .win { opacity: 1; transform: none; transition: none; } }
 </style>
 </head>
@@ -439,10 +439,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <section class="windows" id="windows" aria-hidden="true">
   <div class="wall"></div>
-  <figure class="win" style="--x:9%; --y:12%; --w:320px" data-speed="0.12"><img src="assets/windows/cats.webp" width="196" height="161" alt=""></figure>
-  <figure class="win" style="--x:68%; --y:26%; --w:250px" data-speed="0.2"><img src="assets/windows/lace.webp" width="145" height="122" alt=""></figure>
-  <figure class="win" style="--x:40%; --y:46%; --w:240px" data-speed="0.08"><img src="assets/windows/cactus.webp" width="146" height="238" alt=""></figure>
-  <figure class="win" style="--x:14%; --y:70%; --w:190px" data-speed="0.18"><img src="assets/windows/lamp.webp" width="112" height="107" alt=""></figure>
+  <figure class="win" style="--x:14%; --y:6%; --w:250px" data-speed="0.1"><img src="assets/windows/blue-white.webp" width="107" height="147" alt=""></figure>
+  <figure class="win" style="--x:60%; --y:30%; --w:330px" data-speed="0.14"><img src="assets/windows/pink-door.webp" width="148" height="126" alt=""></figure>
+  <figure class="win" style="--x:22%; --y:54%; --w:230px" data-speed="0.1"><img src="assets/windows/lilac.webp" width="96" height="112" alt=""></figure>
+  <figure class="win" style="--x:66%; --y:77%; --w:180px" data-speed="0.14"><img src="assets/windows/lit-arch.webp" width="73" height="126" alt=""></figure>
 </section>
 
 <section class="meet wrap" id="about" aria-labelledby="programs-title">
@@ -672,8 +672,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   const wins = [...document.querySelectorAll(".win")];
   const winIO = new IntersectionObserver((es) => es.forEach((e) => {
     if (e.isIntersecting) { e.target.classList.add("in"); winIO.unobserve(e.target); }
-  }), { threshold: .2, rootMargin: "0px 0px -8% 0px" });
-  wins.forEach((w, i) => { w.style.transitionDelay = (i % 3) * 90 + "ms"; winIO.observe(w); });
+  }), { threshold: .35, rootMargin: "0px 0px -12% 0px" });
+  wins.forEach((w) => winIO.observe(w));
   const drift = () => {
     if (reduce) return;
     const vh = innerHeight;

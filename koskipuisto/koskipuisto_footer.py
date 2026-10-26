@@ -153,7 +153,6 @@ for _ in range(400):
 for x, hh, ww, k, s in [(160, 280, 230, "lime", 31), (900, 330, 270, "spring", 32), (1520, 300, 250, "lime", 34)]:
     canopy_tree(x, LAWN_TOP + 26, hh, ww, k, s)
 conifer(700, LAWN_TOP + 22, 300, 120, "dark", 22)
-willow(2230, LAWN_TOP + 30, 300, 300, 41)
 
 # ---------- two benches and a few street lights ----------
 def bench(x, y, sc):

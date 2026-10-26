@@ -410,12 +410,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .title .line { position: relative; z-index: 0; }
 .hl { position: relative; white-space: nowrap; }
 .hl::before {
-  content: ""; position: absolute; z-index: -1; left: -.08em; right: -.1em; top: .46em; bottom: .02em;
-  background: var(--marker); border-radius: .1em .35em .2em .4em; filter: url(#pencil);
-  transform: skewX(-8deg) scaleX(0); transform-origin: left center;
-  transition: transform 1.1s cubic-bezier(.6,.05,.25,1);
+  content: ""; position: absolute; z-index: -1; left: -.14em; right: -.14em; top: .34em; bottom: -.1em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 60' preserveAspectRatio='none'%3E%3Cpath d='M10 34C70 20 130 44 200 30S330 42 400 27S468 38 490 31' fill='none' stroke='%23c9f5d6' stroke-width='34' stroke-linecap='round'/%3E%3Cpath d='M16 38C80 28 140 46 210 36S340 44 410 33S470 40 486 37' fill='none' stroke='%23b8f0c9' stroke-opacity='.55' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; filter: url(#pencil);
+  clip-path: inset(0 100% 0 0); transition: clip-path 1.1s cubic-bezier(.6,.05,.25,1);
 }
-.hl.on::before { transform: skewX(-8deg) scaleX(1); }
+.hl.on::before { clip-path: inset(0 0 0 0); }
+.h2 .hl, .h2 { position: relative; z-index: 0; }
 .logo-mark { width: 24px; height: 24px; filter: url(#pencil); }
 .programs li, .qa { border-top: 0; background: var(--rule) left top / 400px 6px repeat-x; }
 .programs li:last-child, .qa:last-child { border-bottom: 0; box-shadow: none; }
@@ -430,6 +430,59 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .word-box { background: var(--c, var(--paper)); }
 .word-box::after { content: ""; position: absolute; inset: 0; border: 2px solid var(--ink); filter: url(#pencil); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .hl::before { transition: none; } }
+/* ways to join in: photos seen through hand-drawn windows */
+.about-head { max-width: 40rem; margin: 0 0 48px; }
+.about-head p { margin: 16px 0 0; color: var(--soft); }
+.peeks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 48px 32px; align-items: start; }
+.peek { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .8s cubic-bezier(.2,.8,.2,1); }
+.peek:nth-child(even) { margin-top: 64px; }
+.peek:nth-child(2) { transition-delay: .1s; } .peek:nth-child(3) { transition-delay: .2s; } .peek:nth-child(4) { transition-delay: .3s; }
+.peeks.in .peek { opacity: 1; transform: none; }
+.pane { position: relative; margin: 0; aspect-ratio: 5 / 6; padding: 6px; }
+.pane .photo {
+  aspect-ratio: auto; height: 100%; display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(120% 90% at 20% 15%, rgba(255,255,255,.6), transparent 55%), linear-gradient(135deg, var(--a), var(--b));
+  transition: transform .5s ease;
+}
+.pane .photo span { font: 400 14px/1 var(--f-body); color: rgba(20,20,20,.45); }
+.pane .frame { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; filter: url(#pencil); }
+.pane .bars { transition: opacity .35s ease; }
+.peek:hover .bars { opacity: 0; }
+.peek:hover .photo { transform: scale(1.04); }
+.ledge { height: 14px; margin: 0 -8px; background: var(--sill); box-shadow: inset 0 -2px 0 rgba(20,20,20,.07), 0 6px 8px -4px rgba(20,20,20,.18); }
+.peek h3 { display: flex; align-items: center; gap: 8px; margin: 24px 0 8px; font: 600 18px/1.3 var(--f-body); }
+.peek h3 svg { width: 22px; height: 22px; flex: none; overflow: visible; }
+.peek p { margin: 0; color: var(--soft); }
+@media (max-width: 960px) { .peeks { grid-template-columns: repeat(2, minmax(0, 1fr)); } .peek:nth-child(even) { margin-top: 48px; } }
+@media (max-width: 520px) { .peeks { grid-template-columns: 1fr; } .peek:nth-child(even) { margin-top: 0; } .pane { aspect-ratio: 4 / 3; } }
+
+/* next event: an open row between two hand-drawn rules, the date circled in pencil */
+.event .h2 { margin-bottom: 32px; }
+.event-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 32px 56px;
+  padding-block: 40px; background: var(--rule) left top / 400px 6px repeat-x, var(--rule) left bottom / 400px 6px repeat-x;
+}
+.when { display: grid; justify-items: center; gap: 16px; padding-inline: 32px; }
+.when .day { position: relative; font: 400 clamp(4.5rem, 8vw, 6.5rem)/1 var(--f-display); letter-spacing: -.03em; }
+.ring { position: absolute; left: -46%; top: -20%; width: 192%; height: 140%; overflow: visible; fill: none; stroke: var(--ink); stroke-width: 2.6; stroke-linecap: round; filter: url(#pencil);
+  stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1s cubic-bezier(.6,.05,.25,1) .2s; }
+.event-row.in .ring { stroke-dashoffset: 0; }
+.what { display: grid; gap: 16px; min-width: 0; }
+.what h3 { margin: 0; font: 400 clamp(1.6rem, 2.6vw, 2.4rem)/1.1 var(--f-display); letter-spacing: -.015em; text-wrap: balance; }
+.what p { margin: 0; max-width: 52ch; color: var(--soft); }
+@media (max-width: 760px) {
+  .event-row { grid-template-columns: 1fr; justify-items: start; }
+  .when { grid-auto-flow: column; align-items: baseline; padding-inline: 24px 0; }
+}
+
+/* questions: one centred column */
+.faq-col { max-width: 760px; }
+.faq-head { text-align: center; margin: 0 0 32px; }
+.faq-head p { margin: 16px auto 0; max-width: 40ch; color: var(--soft); }
+@media (prefers-reduced-motion: reduce) {
+  .peek { opacity: 1; transform: none; transition: none; }
+  .ring { transition: none; stroke-dashoffset: 0; }
+}
 </style>
 </head>
 <body>
@@ -482,42 +535,48 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <figure class="win" style="--x:58%; --w:330px"><img src="assets/windows/pink-door.webp" width="148" height="126" alt=""></figure>
 </section>
 
-<section class="meet wrap" id="about" aria-labelledby="programs-title">
-  <div class="photos" id="photos">
-    <figure class="polaroid one" style="margin:0">
-      <div class="photo"><span>Event photo</span></div>
-      <figcaption>meetup night</figcaption>
-      <img class="magnet" src="assets/magnet-strawberry.webp" width="175" height="179" alt="">
-    </figure>
-    <figure class="polaroid two" style="margin:0">
-      <div class="photo"><span>Event photo</span></div>
-      <figcaption>workshop day</figcaption>
-      <img class="magnet" src="assets/magnet-cat.webp" width="156" height="183" alt="">
-    </figure>
+<section class="sec wrap about" id="about" aria-labelledby="programs-title">
+  <div class="about-head">
+    <h2 class="h2" id="programs-title">Ways to <span class="hl">join in</span></h2>
+    <p>A peek through our windows: four ways to meet other designers in Tampere.</p>
   </div>
-
-  <div class="programs">
-    <h2 id="programs-title">Ways to join in</h2>
-    <ul>
-      <li><span class="bullet" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8.87 5.07C9.09 5.07 9.74 5.05 10.17 5.11C10.61 5.16 11.12 5.18 11.5 5.39C11.88 5.61 12.18 6.02 12.43 6.39C12.69 6.76 12.9 7.17 13.04 7.6C13.19 8.04 13.33 8.53 13.3 8.98C13.27 9.44 13.06 9.91 12.85 10.34C12.64 10.77 12.39 11.24 12.04 11.55C11.68 11.86 11.17 12.03 10.71 12.19C10.25 12.34 9.75 12.48 9.26 12.48C8.78 12.49 8.24 12.4 7.77 12.21C7.31 12.03 6.85 11.72 6.48 11.37C6.12 11.01 5.78 10.56 5.58 10.08C5.38 9.61 5.29 9.06 5.27 8.54C5.26 8.02 5.3 7.45 5.48 6.96C5.650 6.47 5.99 6.01 6.35 5.62C6.7 5.22 7.13 4.87 7.6 4.61C8.07 4.35 8.89 4.15 9.15 4.05" stroke-width="1.52"/><path d="M2.75 19.29C2.96 18.82 3.36 17.23 3.99 16.46C4.61 15.68 5.58 15.02 6.5 14.63C7.41 14.24 8.51 14.08 9.5 14.1C10.49 14.13 11.55 14.36 12.44 14.77C13.33 15.19 14.2 15.85 14.84 16.6C15.49 17.35 16.06 18.83 16.3 19.27" stroke-width="1.792"/><path d="M15.9 4.96C16.14 5.06 16.87 5.28 17.29 5.54C17.71 5.8 18.13 6.12 18.42 6.51C18.71 6.91 18.94 7.41 19.04 7.9C19.13 8.39 19.14 8.98 18.98 9.43C18.82 9.89 18.42 10.28 18.09 10.64C17.76 11.01 17.43 11.42 17.01 11.62C16.59 11.83 16.06 11.85 15.57 11.88C15.08 11.9 14.33 11.79 14.08 11.77" stroke-width="1.536"/><path d="M13.88 15.45C14.29 15.39 15.52 15.06 16.34 15.08C17.16 15.1 18.1 15.22 18.82 15.59C19.53 15.96 20.16 16.67 20.65 17.33C21.14 17.99 21.57 19.19 21.76 19.56" stroke-width="1.824"/></svg></span>
-        <div><h3>Monthly meetups</h3><p>Short talks, show-and-tell and snacks, once a month.</p></div></li>
-      <li><span class="bullet" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4.15 4.31Q12.05 4.67 19.96 4.31Q20.4 9.95 20.13 15.6Q15 15.88 9.88 15.62Q7.78 17.59 5.61 19.47Q5.42 17.47 5.32 15.46Q4.57 15.57 3.8 15.59Q3.8 9.94 4.15 4.31Q5.08 4.38 6.02 4.31" stroke-width="1.808"/></svg></span>
-        <div><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p></div></li>
-      <li><span class="bullet" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16.53 3.69Q18.37 5.8 20.5 7.63Q14.17 13.86 7.88 20.13Q5.78 20.33 3.7 20.63Q3.99 18.38 3.89 16.12Q10.46 10.15 16.53 3.69Q17.23 4.31 17.86 5.01" stroke-width="1.776"/><path d="M13.9 5.61Q16.1 7.76 18.25 9.96" stroke-width="1.696"/></svg></span>
-        <div><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p></div></li>
-      <li><span class="bullet" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5.52 20.93Q5.93 12.21 5.35 3.49Q11.98 3.54 18.62 3.44Q18.15 12.27 18.47 21.11" stroke-width="1.424"/><path d="M2.82 20.48Q12.01 20.88 21.2 20.33" stroke-width="1.792"/><path d="M10.01 20.58Q9.83 18.58 9.91 16.57Q11.94 16.63 13.96 16.69Q13.92 18.72 14.05 20.75" stroke-width="1.696"/><path d="M9.34 8.17l.01 0M14.63 8.14l.01 0M9.51 12.17l.01 0M14.58 12.01l.01 0" stroke-width="2.48"/></svg></span>
-        <div><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p></div></li>
-    </ul>
-  </div>
+  <ul class="peeks">
+    <li class="peek">
+      <figure class="pane" style="--a:#dfe3fb; --b:#f6dcef"><div class="photo"><span>Event photo</span></div><svg class="frame" viewBox="0 0 100 120" preserveAspectRatio="none" aria-hidden="true"><path d="M2.5 2.8Q50 1.6 97.4 2.6Q98.4 60 97.6 117.4Q50 118.6 2.6 117.6Q1.6 60 2.5 2.8Z" vector-effect="non-scaling-stroke"/><path class="bars" d="M50.4 2.6Q49.4 60 50.6 117.6M2.6 50.5Q50 49.2 97.6 50.8" vector-effect="non-scaling-stroke"/></svg></figure>
+      <div class="ledge" aria-hidden="true"></div>
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M8.87 5.07C9.09 5.07 9.74 5.05 10.17 5.11C10.61 5.16 11.12 5.18 11.5 5.39C11.88 5.61 12.18 6.02 12.43 6.39C12.69 6.76 12.9 7.17 13.04 7.6C13.19 8.04 13.33 8.53 13.3 8.98C13.27 9.44 13.06 9.91 12.85 10.34C12.64 10.77 12.39 11.24 12.04 11.55C11.68 11.86 11.17 12.03 10.71 12.19C10.25 12.34 9.75 12.48 9.26 12.48C8.78 12.49 8.24 12.4 7.77 12.21C7.31 12.03 6.85 11.72 6.48 11.37C6.12 11.01 5.78 10.56 5.58 10.08C5.38 9.61 5.29 9.06 5.27 8.54C5.26 8.02 5.3 7.45 5.48 6.96C5.650 6.47 5.99 6.01 6.35 5.62C6.7 5.22 7.13 4.87 7.6 4.61C8.07 4.35 8.89 4.15 9.15 4.05" stroke-width="1.52"/><path d="M2.75 19.29C2.96 18.82 3.36 17.23 3.99 16.46C4.61 15.68 5.58 15.02 6.5 14.63C7.41 14.24 8.51 14.08 9.5 14.1C10.49 14.13 11.55 14.36 12.44 14.77C13.33 15.19 14.2 15.85 14.84 16.6C15.49 17.35 16.06 18.83 16.3 19.27" stroke-width="1.792"/><path d="M15.9 4.96C16.14 5.06 16.87 5.28 17.29 5.54C17.71 5.8 18.13 6.12 18.42 6.51C18.71 6.91 18.94 7.41 19.04 7.9C19.13 8.39 19.14 8.98 18.98 9.43C18.82 9.89 18.42 10.28 18.09 10.64C17.76 11.01 17.43 11.42 17.01 11.62C16.59 11.83 16.06 11.85 15.57 11.88C15.08 11.9 14.33 11.79 14.08 11.77" stroke-width="1.536"/><path d="M13.88 15.45C14.29 15.39 15.52 15.06 16.34 15.08C17.16 15.1 18.1 15.22 18.82 15.59C19.53 15.96 20.16 16.67 20.65 17.33C21.14 17.99 21.57 19.19 21.76 19.56" stroke-width="1.824"/></svg>Monthly meetups</h3>
+      <p>Short talks, show-and-tell and snacks, once a month.</p>
+    </li>
+    <li class="peek">
+      <figure class="pane" style="--a:#d9f3e4; --b:#cfeef0"><div class="photo"><span>Event photo</span></div><svg class="frame" viewBox="0 0 100 120" preserveAspectRatio="none" aria-hidden="true"><path d="M2.5 2.8Q50 1.6 97.4 2.6Q98.4 60 97.6 117.4Q50 118.6 2.6 117.6Q1.6 60 2.5 2.8Z" vector-effect="non-scaling-stroke"/><path class="bars" d="M50.4 2.6Q49.4 60 50.6 117.6M2.6 50.5Q50 49.2 97.6 50.8" vector-effect="non-scaling-stroke"/></svg></figure>
+      <div class="ledge" aria-hidden="true"></div>
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4.15 4.31Q12.05 4.67 19.96 4.31Q20.4 9.95 20.13 15.6Q15 15.88 9.88 15.62Q7.78 17.59 5.61 19.47Q5.42 17.47 5.32 15.46Q4.57 15.57 3.8 15.59Q3.8 9.94 4.15 4.31Q5.08 4.38 6.02 4.31" stroke-width="1.808"/></svg>Crit club</h3>
+      <p>Bring work in progress and get kind, useful feedback.</p>
+    </li>
+    <li class="peek">
+      <figure class="pane" style="--a:#f6eedb; --b:#f3dfe6"><div class="photo"><span>Event photo</span></div><svg class="frame" viewBox="0 0 100 120" preserveAspectRatio="none" aria-hidden="true"><path d="M2.5 2.8Q50 1.6 97.4 2.6Q98.4 60 97.6 117.4Q50 118.6 2.6 117.6Q1.6 60 2.5 2.8Z" vector-effect="non-scaling-stroke"/><path class="bars" d="M50.4 2.6Q49.4 60 50.6 117.6M2.6 50.5Q50 49.2 97.6 50.8" vector-effect="non-scaling-stroke"/></svg></figure>
+      <div class="ledge" aria-hidden="true"></div>
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16.53 3.69Q18.37 5.8 20.5 7.63Q14.17 13.86 7.88 20.13Q5.78 20.33 3.7 20.63Q3.99 18.38 3.89 16.12Q10.46 10.15 16.53 3.69Q17.23 4.31 17.86 5.01" stroke-width="1.776"/><path d="M13.9 5.61Q16.1 7.76 18.25 9.96" stroke-width="1.696"/></svg>Workshops</h3>
+      <p>Hands-on sessions on tools, methods and craft.</p>
+    </li>
+    <li class="peek">
+      <figure class="pane" style="--a:#e2ecf8; --b:#e9e2f8"><div class="photo"><span>Event photo</span></div><svg class="frame" viewBox="0 0 100 120" preserveAspectRatio="none" aria-hidden="true"><path d="M2.5 2.8Q50 1.6 97.4 2.6Q98.4 60 97.6 117.4Q50 118.6 2.6 117.6Q1.6 60 2.5 2.8Z" vector-effect="non-scaling-stroke"/><path class="bars" d="M50.4 2.6Q49.4 60 50.6 117.6M2.6 50.5Q50 49.2 97.6 50.8" vector-effect="non-scaling-stroke"/></svg></figure>
+      <div class="ledge" aria-hidden="true"></div>
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5.52 20.93Q5.93 12.21 5.35 3.49Q11.98 3.54 18.62 3.44Q18.15 12.27 18.47 21.11" stroke-width="1.424"/><path d="M2.82 20.48Q12.01 20.88 21.2 20.33" stroke-width="1.792"/><path d="M10.01 20.58Q9.83 18.58 9.91 16.57Q11.94 16.63 13.96 16.69Q13.92 18.72 14.05 20.75" stroke-width="1.696"/><path d="M9.34 8.17l.01 0M14.63 8.14l.01 0M9.51 12.17l.01 0M14.58 12.01l.01 0" stroke-width="2.48"/></svg>Studio visits</h3>
+      <p>A look inside design studios and teams around Tampere.</p>
+    </li>
+  </ul>
 </section>
 
-<section class="sec wrap" id="events" aria-labelledby="event-title">
-  <div class="sec-head">
-    <h2 class="h2">Our next event</h2>
-  </div>
-  <article class="ticket">
-    <div class="stub"><span class="dow">Thursday</span><span class="day">19</span><span class="mon">November</span></div>
-    <div class="tbody">
+<section class="sec wrap event" id="events" aria-labelledby="event-title">
+  <h2 class="h2">Our next event</h2>
+  <article class="event-row">
+    <div class="when">
+      <span class="dow">Thursday</span>
+      <span class="day">19<svg class="ring" viewBox="0 0 120 100" aria-hidden="true"><path d="M70 9C40 5 12 22 10 50C8 76 34 93 62 91C92 89 112 70 110 46C108 22 86 8 58 10C46 11 36 15 28 20" pathLength="1"/></svg></span>
+      <span class="mon">November</span>
+    </div>
+    <div class="what">
       <h3 id="event-title">Autumn meetup: show and tell</h3>
       <ul class="meta">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.86C8.09 4.730 9.82 4.23 11.02 4.08C12.21 3.93 13.55 3.69 14.69 3.96C15.82 4.24 16.94 5 17.84 5.73C18.74 6.47 19.53 7.4 20.07 8.38C20.6 9.36 20.94 10.51 21.04 11.62C21.15 12.72 21.13 14 20.7 15.03C20.28 16.06 19.36 17 18.49 17.790C17.62 18.59 16.6 19.36 15.49 19.81C14.38 20.26 13.03 20.51 11.81 20.48C10.6 20.46 9.32 20.09 8.19 19.63C7.07 19.17 5.89 18.56 5.04 17.74C4.2 16.92 3.54 15.81 3.12 14.73C2.7 13.65 2.43 12.38 2.53 11.25C2.63 10.11 3.18 8.95 3.74 7.89C4.31 6.83 4.97 5.68 5.930 4.89C6.89 4.1 8.23 3.45 9.49 3.18C10.74 2.91 12.8 3.25 13.46 3.26" stroke-width="1.776"/><path d="M11.93 6.73Q12.08 9.46 11.87 12.2Q13.79 13.06 15.72 13.89" stroke-width="1.568"/></svg>17:30–20:00</li>
@@ -525,16 +584,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.35 3.33Q7.51 3.48 11.67 3.67Q16.14 7.93 20.31 12.48Q16.23 16.43 12.45 20.66Q7.84 16.22 3.62 11.41Q3.47 7.37 3.35 3.33Q4.02 3.4 4.69 3.38" stroke-width="1.664"/><path d="M7.93 7.95l.01 0" stroke-width="2.48"/></svg>Free</li>
       </ul>
       <p>Three short talks, an open show-and-tell and plenty of time to chat. Bring something you're working on, finished or not.</p>
-      <a class="cta" href="#">
-      Save my spot
-      </a>
     </div>
+    <a class="cta" href="#">Save my spot</a>
   </article>
 </section>
 
-<section class="sec wrap faq" id="faq" aria-labelledby="faq-title">
-  <div class="faq-side">
-    <h2 class="h2" id="faq-title">Questions, answered</h2>
+<section class="sec wrap faq-col" id="faq" aria-labelledby="faq-title">
+  <div class="faq-head">
+    <h2 class="h2" id="faq-title">Questions, <span class="hl">answered</span></h2>
     <p>Something else on your mind? Ask us at the next meetup or send us a message.</p>
   </div>
   <div class="faq-list">
@@ -807,15 +864,16 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   document.querySelectorAll(".review button").forEach((b) => b.addEventListener("click", () => setBricks(b.dataset.b)));
 
   /* wiring */
-  /* placed polaroids hand their transform back to the hover styles */
-  document.querySelectorAll(".polaroid").forEach((el) => el.addEventListener("animationend", (e) => {
-    if (e.animationName === "drag-in") el.classList.add("placed");
-  }));
-
-  /* polaroids are placed once they scroll into view */
-  new IntersectionObserver((es, io) => {
-    if (es[0].isIntersecting) { io.disconnect(); $("photos").classList.add("in"); }
-  }, { threshold: .35 }).observe($("photos"));
+  /* reveal on scroll: the windows, the circled date and the highlighters */
+  const reveal = (el, cls = "in", threshold = .3) => {
+    if (reduce) { el.classList.add(cls); return; }
+    new IntersectionObserver((es, io) => {
+      if (es[0].isIntersecting) { io.disconnect(); el.classList.add(cls); }
+    }, { threshold }).observe(el);
+  };
+  reveal(document.querySelector(".peeks"), "in", .15);
+  reveal(document.querySelector(".event-row"), "in", .5);
+  document.querySelectorAll(".h2 .hl").forEach((h) => reveal(h, "on", 1));
 
   /* navbar: menu toggle on small screens */
   const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");

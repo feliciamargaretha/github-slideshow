@@ -19,10 +19,10 @@
   --soft: #55585e;
   --line: #ececee;
   --select: #0d99ff;
-  --violet: #5b5cff;
-  --pink: #ff4fb8;
-  --lime: #8ee83a;
-  --aqua: #1fd3e0;
+  --blue: #4386e9;
+  --pink: #e43cf7;
+  --green: #9bfcb5;
+  --yellow: #fcef51;
   --tangerine: #ff7a1f;
   --butter: #ffd21a;
 
@@ -137,7 +137,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .one .magnet { transform: rotate(8deg); }
 
 .programs { min-width: 0; }
-.eyebrow { margin: 0 0 8px; font: 400 24px/1 var(--f-hand); color: var(--violet); }
+.eyebrow { margin: 0 0 8px; font: 400 24px/1 var(--f-hand); color: var(--blue); }
 .programs h2 { margin: 0 0 28px; font: 400 clamp(2rem, 3.6vw, 3.2rem)/1.05 var(--f-display); letter-spacing: -0.02em; text-wrap: balance; }
 .programs ul { list-style: none; margin: 0; padding: 0; display: grid; }
 .programs li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; padding: 18px 0; border-top: 1px solid var(--line); }
@@ -190,7 +190,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     </a>
   </div>
   <div class="cursor" id="cursor" aria-hidden="true">
-    <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--violet)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--blue)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
   </div>
 </header>
 
@@ -214,13 +214,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     <p class="eyebrow">what we do</p>
     <h2 id="programs-title">Ways to join in</h2>
     <ul>
-      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--violet);left:0;top:0"></i><i style="--c:var(--violet);left:12px;top:12px"></i></span>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--blue);left:0;top:0"></i><i style="--c:var(--blue);left:12px;top:12px"></i></span>
         <div><h3>Monthly meetups</h3><p>Short talks, show-and-tell and snacks, once a month.</p></div></li>
       <li><span class="bullet" aria-hidden="true"><i style="--c:var(--pink);left:0;top:12px"></i><i style="--c:var(--pink);left:12px;top:12px"></i><i style="--c:var(--pink);left:12px;top:0"></i></span>
         <div><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p></div></li>
-      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--lime);left:6px;top:6px"></i></span>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--green);left:6px;top:6px"></i></span>
         <div><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p></div></li>
-      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--aqua);left:0;top:0"></i><i style="--c:var(--aqua);left:0;top:12px"></i><i style="--c:var(--aqua);left:12px;top:12px"></i></span>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--yellow);left:0;top:0"></i><i style="--c:var(--yellow);left:0;top:12px"></i><i style="--c:var(--yellow);left:12px;top:12px"></i></span>
         <div><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p></div></li>
     </ul>
   </div>
@@ -235,7 +235,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   const css = getComputedStyle(document.documentElement);
-  const PALETTE = ["--violet", "--pink", "--lime", "--aqua"].map((v) => css.getPropertyValue(v).trim());
+  const PALETTE = ["--blue", "--pink", "--green", "--yellow"].map((v) => css.getPropertyValue(v).trim());
   const G = 14, P = 12;  // grid pitch and pixel size
 
   // seeded random, so the scatter stays put between reloads

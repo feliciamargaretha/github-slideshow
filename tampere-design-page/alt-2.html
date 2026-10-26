@@ -227,8 +227,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .brand { font: 400 20px/1 var(--f-display); color: var(--ink); }
 
 /* option A: words in boxes drop in and can be thrown around */
-.foot-a { background: #f4f4f2; padding-top: 32px; }
-.foot-a .in, .foot-b .in { max-width: 1240px; margin: 0 auto; }
+.foot-a { position: relative; background: #f4f4f2; padding-top: 32px; }
+.foot-a .in, .foot-b .in { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; }
 .drop { position: relative; height: clamp(260px, 30vw, 380px); overflow: hidden; touch-action: pan-y; }
 .word-box {
   position: absolute; left: 0; top: 0;
@@ -241,7 +241,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .foot-a .foot-bar { border-top: 1px solid #e3e3e0; }
 
 /* option B: pixel bands spreading left to right */
-.foot-b { padding-top: 32px; }
+.foot-b { position: relative; padding-top: 32px; }
 .foot-b .big { margin: 8px 0 24px; text-align: center; font: 400 clamp(2.4rem, 6vw, 5rem)/1 var(--f-display); letter-spacing: -.025em; text-wrap: balance; }
 .foot-b .foot-bar { justify-content: center; padding-bottom: 48px; }
 .bands { display: block; width: 100%; }
@@ -259,11 +259,42 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 @media (prefers-reduced-motion: reduce) {
   .qa summary svg { transition: none; }
 }
+/* bricks: a soft running-bond line pattern, a nod to Tampere's red-brick mills.
+   Each brick is 4 x 2 pixel cells, so the pixels sit in the courses. */
+.bricks {
+  position: absolute; inset: 0; display: none; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='28'%3E%3Cpath d='M0 .5H56M0 14.5H56M.5 0V14M28.5 14V28' fill='none' stroke='%23b5523b' stroke-opacity='.22'/%3E%3C/svg%3E");
+  background-size: 56px 28px; background-position: var(--bx, 0) 0;
+}
+.b-header .top > .bricks {
+  display: block;
+  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 30%, #000 78%);
+  mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 30%, #000 78%);
+}
+.b-footer footer > .bricks {
+  display: block;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 90%);
+  mask-image: linear-gradient(to top, #000, transparent 90%);
+}
+.b-footer .foot-b .bands { position: relative; }
+
+/* review switch, for trying the bricks in different places */
+.review {
+  position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 4px; padding: 4px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(20,20,20,.12);
+  font: 500 13px/1 var(--f-body);
+}
+.review span { padding: 0 8px; color: var(--soft); }
+.review button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--ink); cursor: pointer; }
+.review button:hover { background: #f2f2f4; }
+.review button[aria-pressed="true"] { background: #e3effd; color: #1b5fb8; }
 </style>
 </head>
 <body>
 
 <header class="top wrap" id="top">
+  <div class="bricks" aria-hidden="true"></div>
   <canvas class="px" id="px" aria-hidden="true"></canvas>
   <div class="hero" id="hero">
     <h1 class="title">
@@ -361,6 +392,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 </section>
 
 <footer class="foot-a" aria-label="Footer, option A">
+  <div class="bricks" aria-hidden="true"></div>
   <div class="in wrap">
     <span class="opt">Footer option A · boxes drop in, drag them around</span>
     <div class="drop armed" id="drop" aria-label="your design people are here"><span class="word-box" style="--c:var(--pink)">your</span><span class="word-box" style="--c:var(--blue)">design</span><span class="word-box" style="--c:var(--green)">people</span><span class="word-box" style="--c:var(--yellow)">are</span><span class="word-box" style="--c:var(--pink)">here</span></div>
@@ -373,6 +405,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 </footer>
 
 <footer class="foot-b" aria-label="Footer, option B">
+  <div class="bricks" aria-hidden="true"></div>
   <div class="in wrap">
     <span class="opt">Footer option B · pixel bands spread left to right</span>
     <p class="big">See you at the next one.</p>
@@ -385,6 +418,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <canvas class="bands" id="bands" aria-hidden="true"></canvas>
 </footer>
 
+<div class="review" role="group" aria-label="Brick pattern">
+  <span>Bricks</span>
+  <button type="button" data-b="header" aria-pressed="true">Header</button>
+  <button type="button" data-b="footer" aria-pressed="false">Footer</button>
+  <button type="button" data-b="off" aria-pressed="false">Off</button>
+</div>
 <canvas id="cursor-px" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50"></canvas>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
@@ -431,6 +470,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     const pad = 36;
     const avoid = { x0: b.left - t.left - pad, y0: b.top - t.top - pad, x1: b.right - t.left + pad, y1: b.bottom - t.top + pad };
     const cols = Math.floor(w / G), rows = Math.floor(h / G), off = (w - cols * G) / 2;
+    top.querySelector(".bricks").style.setProperty("--bx", off + "px");
     for (let row = 0; row < rows; row++) {
       const k = row / rows, p = .0025 + .011 * Math.pow(k, 2);
       for (let col = 0; col < cols; col++) {
@@ -696,6 +736,15 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     if (es[0].isIntersecting) { io.disconnect(); bandsT0 = performance.now(); requestAnimationFrame(drawBands); }
   }, { threshold: .3 }).observe(bands);
   addEventListener("resize", () => { if (bandsT0 !== null) { bandsT0 = -1e9; drawBands(performance.now()); } });
+
+  /* brick placement switch */
+  const setBricks = (where) => {
+    document.body.classList.toggle("b-header", where === "header");
+    document.body.classList.toggle("b-footer", where === "footer");
+    document.querySelectorAll(".review button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.b === where)));
+  };
+  document.querySelectorAll(".review button").forEach((b) => b.addEventListener("click", () => setBricks(b.dataset.b)));
+  setBricks("header");
 
   /* wiring */
   const layout = () => { drawHeader(); buildTrail(); sizeCursor(); };

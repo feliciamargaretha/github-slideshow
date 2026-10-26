@@ -303,7 +303,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   transform: translate(-50%, -50%); border: 1.5px solid var(--select); pointer-events: none; opacity: 0;
   transition: opacity .3s;
 }
-.frame.on { opacity: 1; }
+.frame.on { opacity: 1; animation: portal 1.8s ease-in-out infinite; }
+/* light spilling out of the opening onto the bricks, so it reads as a portal */
+@keyframes portal {
+  0%, 100% { box-shadow: 0 0 18px 4px rgba(255,255,255,.55), 0 0 70px 24px rgba(190,215,255,.28), 0 0 160px 70px rgba(150,190,255,.12); }
+  50% { box-shadow: 0 0 26px 8px rgba(255,255,255,.7), 0 0 96px 34px rgba(190,215,255,.36), 0 0 220px 96px rgba(150,190,255,.16); }
+}
+@media (prefers-reduced-motion: reduce) { .frame.on { animation: none; } }
 .frame i { position: absolute; width: 12px; height: 12px; background: var(--c); border: 1.5px solid var(--select); }
 .frame i:nth-child(1) { left: -7px; top: -7px; } .frame i:nth-child(2) { right: -7px; top: -7px; }
 .frame i:nth-child(3) { left: -7px; bottom: -7px; } .frame i:nth-child(4) { right: -7px; bottom: -7px; }

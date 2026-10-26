@@ -375,7 +375,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 /* second frame: a faint brick wall that fades in and out, with windows scattered over it */
 .windows {
   position: relative; overflow: hidden;
-  display: flex; flex-direction: column; gap: 18px;
+  display: flex; flex-direction: column; gap: 18vh;
   padding-block: clamp(160px, 22vh, 240px);
 }
 .windows .wall { z-index: 0;
@@ -448,10 +448,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <section class="windows" id="windows" aria-hidden="true">
   <div class="wall"></div>
-  <figure class="win" style="--x:14%; --y:6%; --w:250px" data-speed="0.1"><img src="assets/windows/blue-white.webp" width="107" height="147" alt=""></figure>
-  <figure class="win" style="--x:60%; --y:30%; --w:330px" data-speed="0.14"><img src="assets/windows/pink-door.webp" width="148" height="126" alt=""></figure>
-  <figure class="win" style="--x:22%; --y:54%; --w:230px" data-speed="0.1"><img src="assets/windows/lilac.webp" width="96" height="112" alt=""></figure>
-  <figure class="win" style="--x:66%; --y:77%; --w:180px" data-speed="0.14"><img src="assets/windows/lit-arch.webp" width="73" height="126" alt=""></figure>
+  <figure class="win" style="--x:14%; --w:250px"><img src="assets/windows/blue-white.webp" width="107" height="147" alt=""></figure>
+  <figure class="win" style="--x:60%; --w:330px"><img src="assets/windows/pink-door.webp" width="148" height="126" alt=""></figure>
+  <figure class="win" style="--x:18%; --w:320px"><img src="assets/windows/cats.webp" width="196" height="161" alt=""></figure>
+  <figure class="win" style="--x:66%; --w:170px"><img src="assets/windows/green-closed.webp" width="80" height="123" alt=""></figure>
 </section>
 
 <section class="meet wrap" id="about" aria-labelledby="programs-title">

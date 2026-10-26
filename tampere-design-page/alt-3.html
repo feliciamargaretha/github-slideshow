@@ -765,16 +765,17 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   /* opening: bricks, then a white frame that is stretched open */
   const wall = $("wall"), frame = $("frame");
   const drawWall = () => {
+    // bricks on the same 14px grid as the pixels: 4 x 2 cells each, 2px white joints
     const { ctx, w, h } = fit(wall), r = rng(13);
-    const BW = 56, BH = 28, M = 4;
-    const REDS = ["#b4472f", "#a63f2a", "#c0573e", "#9c3a27", "#b84e35", "#aa452f"];
-    ctx.fillStyle = "#e9ddd4"; ctx.fillRect(0, 0, w, h);
+    const BW = 4 * G, BH = 2 * G, gap = G - P;
+    const off = (w - Math.floor(w / G) * G) / 2;
+    // dark mode: near-black joints, charcoal bricks, a few lit up in the palette colours
+    ctx.fillStyle = "#0b0c10"; ctx.fillRect(0, 0, w, h);
     for (let row = 0, y = 0; y < h; row++, y += BH) {
-      for (let x = row % 2 ? -BW / 2 : 0; x < w; x += BW) {
-        ctx.fillStyle = REDS[Math.floor(r() * REDS.length)];
-        ctx.fillRect(x + M / 2, y + M / 2, BW - M, BH - M);
-        ctx.fillStyle = `rgba(255,255,255,${r() * .08})`;  // a little unevenness per brick
-        ctx.fillRect(x + M / 2, y + M / 2, BW - M, (BH - M) / 2);
+      for (let x = off - (row % 2 ? BW / 2 : 0) - BW; x < w; x += BW) {
+        const k = r();
+        ctx.fillStyle = k < .035 ? PALETTE[Math.floor(r() * PALETTE.length)] : k < .3 ? "#1d2029" : k < .65 ? "#181b22" : "#15171d";
+        ctx.fillRect(x, y, BW - gap, BH - gap);
       }
     }
   };

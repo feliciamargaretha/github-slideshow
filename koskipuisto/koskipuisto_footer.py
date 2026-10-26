@@ -11,7 +11,9 @@ from PIL import Image, ImageDraw, ImageFilter
 OUT = sys.argv[1]
 OUT_W = int(sys.argv[2]) if len(sys.argv) > 2 else 2400
 BG = sys.argv[3] if len(sys.argv) > 3 else None
-W, H = 2400, 800
+W, H = 2400, 820
+OY = 24                    # headroom so the tallest tree keeps its top
+CROP = (0, 0, 1640, 820)   # the zoomed-in view: four trees, two lamps, one bench
 S = 2
 rng = np.random.default_rng(11)
 
@@ -34,7 +36,7 @@ d = ImageDraw.Draw(img)
 
 
 def P(*v):
-    return [x * S for x in v]
+    return [(x + (OY if i % 2 else 0)) * S for i, x in enumerate(v)]
 
 
 def ell(cx, cy, rx, ry, fill, draw=None):
@@ -46,7 +48,7 @@ def rect(x0, y0, x1, y1, fill):
 
 
 def poly(pts, fill):
-    d.polygon([(x * S, y * S) for x, y in pts], fill=fill)
+    d.polygon([(x * S, (y + OY) * S) for x, y in pts], fill=fill)
 
 
 def lit_dabs(local, mask, cx, cy, rx, ry, pal, density, size, seed, light=(-0.65, -0.76)):
@@ -70,7 +72,7 @@ def canopy_tree(cx, base, h, w, kind, seed, trunk_h=0.3):
     r = np.random.default_rng(seed)
     rect(cx - w * 0.035, base - h * (trunk_h + 0.2), cx + w * 0.035, base, C["trunk"])
     ccy, rx, ry, pad = base - h * (trunk_h + (1 - trunk_h) / 2), w / 2, h * (1 - trunk_h) / 2, 30
-    bx0, by0 = int((cx - rx - pad) * S), int((ccy - ry - pad) * S)
+    bx0, by0 = int((cx - rx - pad) * S), int((ccy - ry - pad + OY) * S)
     bw, bh = int((2 * rx + 2 * pad) * S), int((2 * ry + 2 * pad) * S)
     mask = Image.new("L", (bw, bh), 0)
     md = ImageDraw.Draw(mask)
@@ -88,7 +90,7 @@ def conifer(cx, base, h, w, kind, seed):
     pal = TREES[kind]
     r = np.random.default_rng(seed)
     pad = 20
-    bx0, by0 = int((cx - w / 2 - pad) * S), int((base - h - pad) * S)
+    bx0, by0 = int((cx - w / 2 - pad) * S), int((base - h - pad + OY) * S)
     bw, bh = int((w + 2 * pad) * S), int((h + 2 * pad) * S)
     mask = Image.new("L", (bw, bh), 0)
     md = ImageDraw.Draw(mask)
@@ -194,7 +196,8 @@ for _ in range(50):
     d.line(P(x, y, x + rng.uniform(4, 14), y), fill=(236, 240, 228), width=int(1.6 * S))
 
 # ---------- print grain (on the painted parts only) ----------
-img = img.resize((OUT_W, int(OUT_W * H / W)), Image.LANCZOS)
+img = img.crop(tuple(v * S for v in CROP))
+img = img.resize((OUT_W, int(OUT_W * (CROP[3] - CROP[1]) / (CROP[2] - CROP[0]))), Image.LANCZOS)
 a = np.asarray(img).astype(np.float32)
 h, w = a.shape[:2]
 fine = rng.normal(0, 1, (h, w))

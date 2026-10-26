@@ -117,7 +117,25 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .polaroid.one { --r: -6deg; left: 4%; top: 20px; }
 .polaroid.two { --r: 5deg; left: 40%; top: 150px; transition-delay: .18s; }
 .in .polaroid { opacity: 1; transform: translateY(0) rotate(var(--r)) scale(1); }
-.in .polaroid:hover {
+.in .polaroid:not(.placed) { animation: drag-in 1.1s cubic-bezier(.22,.8,.25,1) both; }
+.in .polaroid.two:not(.placed) { animation-delay: .5s; }
+@keyframes drag-in {
+  0% { opacity: 1; transform: translate(-70vw, 60px) rotate(calc(var(--r) - 16deg)) scale(1.04); }
+  50% { transform: translate(24px, -10px) rotate(calc(var(--r) + 5deg)) scale(1.04); }
+  72% { transform: translate(-8px, 4px) rotate(calc(var(--r) - 2deg)) scale(1.02); }
+  88% { transform: translate(3px, 0) rotate(calc(var(--r) + .6deg)) scale(1); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(var(--r)) scale(1); }
+}
+.polaroid.placed { transition-delay: 0s; }
+.polaroid .magnet { opacity: 0; }
+.in .polaroid .magnet { animation: stick .5s cubic-bezier(.3,1.5,.5,1) both; animation-delay: 1.05s; }
+.in .polaroid.two .magnet { animation-delay: 1.55s; }
+@keyframes stick {
+  0% { opacity: 0; transform: translateY(-36px) rotate(var(--mr)) scale(1.5); filter: drop-shadow(0 22px 14px rgba(20,20,20,.22)); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) rotate(var(--mr)) scale(1); filter: drop-shadow(0 6px 5px rgba(20,20,20,.3)); }
+}
+.in .polaroid.placed:hover {
   z-index: 3; transition-delay: 0s;
   transform: translateY(-10px) rotate(calc(var(--r) * -.4)) scale(1.03);
   box-shadow: 0 2px 3px rgba(20,20,20,.08), 0 28px 40px -18px rgba(20,20,20,.4);
@@ -133,8 +151,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .photo span { font: 400 15px/1 var(--f-body); color: rgba(20,20,20,.5); letter-spacing: .02em; }
 .polaroid figcaption { position: absolute; left: 18px; right: 18px; bottom: 14px; text-align: left; font: 400 22px/1 var(--f-hand); color: var(--ink); }
 .magnet { position: absolute; left: 50%; top: -28px; width: 60px; height: auto; margin-left: -30px; filter: drop-shadow(0 6px 5px rgba(20,20,20,.3)); }
-.two .magnet { width: 54px; margin-left: -27px; top: -32px; transform: rotate(-10deg); }
-.one .magnet { transform: rotate(8deg); }
+.two .magnet { --mr: -10deg; width: 54px; margin-left: -27px; top: -32px; transform: rotate(var(--mr)); }
+.one .magnet { --mr: 8deg; transform: rotate(var(--mr)); }
 
 .programs { min-width: 0; }
 .eyebrow { margin: 0 0 8px; font: 400 24px/1 var(--f-hand); color: var(--blue); }
@@ -145,6 +163,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .programs h3 { margin: 0 0 4px; font: 600 18px/1.3 var(--f-body); }
 .programs p { margin: 0; color: var(--soft); }
 .bullet { position: relative; width: 26px; height: 26px; margin-top: 4px; }
+.flying .bullet i { opacity: 0; }
+.fly { position: absolute; z-index: 40; width: 12px; height: 12px; pointer-events: none; }
 .bullet i { position: absolute; width: 10px; height: 10px; background: var(--c); }
 
 @media (max-width: 800px) {
@@ -161,6 +181,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 }
 @media (prefers-reduced-motion: reduce) {
   .polaroid { transition: none; }
+  .in .polaroid:not(.placed), .in .polaroid .magnet { animation: none; opacity: 1; }
   .cta:hover .hand, .cta:focus-visible .hand { animation: none; }
 }
 /* shared section rhythm */
@@ -541,7 +562,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     const { ctx, w } = fit(tcv);
     const off = (w - Math.floor(w / G) * G) / 2;
     for (const q of cells) {
-      if (q.i >= upto) continue;
+      if (q.i >= upto || q.moved) continue;
       ctx.fillStyle = q.color;
       ctx.fillRect(off + q.c * G, q.row * G, P, P);
     }
@@ -747,6 +768,53 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   setBricks("header");
 
   /* wiring */
+  /* placed polaroids hand their transform back to the hover styles */
+  document.querySelectorAll(".polaroid").forEach((el) => el.addEventListener("animationend", (e) => {
+    if (e.animationName === "drag-in") el.classList.add("placed");
+  }));
+
+  /* activity icons: pixels leave the line and fly over to build each bullet */
+  const list = document.querySelector(".programs ul");
+  if (!reduce) {
+    list.classList.add("flying");
+    new IntersectionObserver((es, io) => {
+      if (!es[0].isIntersecting) return;
+      io.disconnect();
+      const tr = trail.getBoundingClientRect(), off = (tcv.clientWidth - Math.floor(tcv.clientWidth / G) * G) / 2;
+      const targets = [...list.querySelectorAll(".bullet i")];
+      const pool = cells.filter((q) => !q.moved && q.i < shown).slice(-160);
+      targets.forEach((t, n) => {
+        const colour = getComputedStyle(t).backgroundColor;
+        // take a pixel of the same colour from the bottom of the line, if there is one
+        let k = pool.findIndex((q) => q.color.toLowerCase() === rgbHex(colour));
+        if (k < 0) k = pool.length ? Math.floor(Math.random() * pool.length) : -1;
+        let from;
+        if (k >= 0) {
+          const q = pool.splice(k, 1)[0];
+          q.moved = true;
+          from = { x: tr.left + off + q.c * G + scrollX, y: tr.top + q.row * G + scrollY };
+        } else from = { x: Math.random() * innerWidth + scrollX, y: scrollY - 20 };
+        const to = t.getBoundingClientRect();
+        const fly = document.createElement("i");
+        fly.className = "fly";
+        fly.style.cssText = `left:${from.x}px; top:${from.y}px; background:${colour}`;
+        document.body.append(fly);
+        const dx = to.left + scrollX - from.x, dy = to.top + scrollY - from.y, s = to.width / P;
+        fly.animate([
+          { transform: "translate(0, 0) scale(1)" },
+          { transform: `translate(${dx * .5}px, ${dy * .5 - 80}px) rotate(90deg) scale(1)`, offset: .5 },
+          { transform: `translate(${dx}px, ${dy}px) rotate(180deg) scale(${s})` },
+        ], { duration: 1000 + Math.random() * 300, delay: n * 70, easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" })
+          .finished.then(() => { t.style.opacity = 1; fly.remove(); });
+      });
+      shown = -1; drawTrail();
+    }, { threshold: .5 }).observe(list);
+  }
+  function rgbHex(c) {
+    const m = c.match(/\d+/g);
+    return m ? "#" + m.slice(0, 3).map((v) => (+v).toString(16).padStart(2, "0")).join("") : c;
+  }
+
   const layout = () => { drawHeader(); buildTrail(); sizeCursor(); };
   addEventListener("scroll", () => requestAnimationFrame(drawTrail), { passive: true });
   let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 120); });

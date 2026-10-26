@@ -13,7 +13,9 @@ OUT_W = int(sys.argv[2]) if len(sys.argv) > 2 else 2400
 BG = sys.argv[3] if len(sys.argv) > 3 else None
 W, H = 2400, 820
 OY = 24                    # headroom so the tallest tree keeps its top
-CROP = (0, 0, 1640, 820)   # the zoomed-in view: four trees, two lamps, one bench
+import os
+# the zoomed-in view (four trees, two lamps, one bench); CROP=full renders the whole strip
+CROP = (0, 0, 2400, 820) if os.environ.get("CROP") == "full" else (0, 0, 1640, 820)
 S = 2
 rng = np.random.default_rng(11)
 

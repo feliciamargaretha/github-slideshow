@@ -25,11 +25,7 @@
   --me: #5fb87a;            /* the visitor's cursor */
   --me-bg: #d7f2c8;
   --me-ink: #24561b;
-  /* stickers: pastel fill, linework and type in a deep shade of the same hue */
-  --pink: #fbd3ee;  --pink-ink: #c4248d;
-  --sky: #cfe2f8;   --sky-ink: #1f3f7d;
-  --lilac: #e4dafb; --lilac-ink: #4b2c93;
-  --chrome: #ffffff;
+    --chrome: #ffffff;
   --chrome-line: #e7e7e9;
   --shadow: 0 1px 2px rgba(20, 20, 20, .06), 0 8px 24px rgba(20, 20, 20, .10);
 
@@ -134,24 +130,20 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 /* scattered things */
 .thing { position: absolute; z-index: 1; }
+/* stickers: cut straight from the reference sheet, so they keep their own colours and outlines */
 .sticker {
   --r: 0deg; --s: 1;
-  display: grid; gap: 10px; padding: 18px 20px;
-  border-radius: 24px; background: var(--fill); color: var(--line);
-  box-shadow: 0 0 0 6px var(--paper), 0 0 0 7px rgba(20,20,20,.05), 0 14px 24px -14px rgba(20,20,20,.4);
-  transform: rotate(var(--r)) scale(var(--s));
-  font: 700 23px/1.02 var(--f-body); letter-spacing: -0.025em;
-  cursor: grab; touch-action: none; user-select: none;
-  transition: box-shadow .2s;
+  display: block; height: auto;
+  transform: rotate(var(--r)) scale(var(--s)); transform-origin: center;
+  filter: drop-shadow(0 10px 14px rgba(20,20,20,.14));
+  cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none;
+  transition: filter .2s;
 }
-.sticker.dragging { cursor: grabbing; box-shadow: 0 0 0 6px var(--paper), 0 0 0 7px rgba(20,20,20,.05), 0 22px 30px -14px rgba(20,20,20,.45); }
-.sticker svg { display: block; overflow: visible; }
-.sticker.good { --fill: var(--pink); --line: var(--pink-ink); --r: 5deg; left: max(24px, 6vw); top: 64px; grid-template-columns: auto auto; align-items: center; font-size: 25px; }
-.sticker.good svg { width: 62px; height: 62px; }
-.sticker.craft { --fill: var(--sky); --line: var(--sky-ink); --r: -6deg; left: max(24px, 8vw); bottom: 18%; justify-items: center; text-align: center; border-radius: 40px; padding: 18px 26px 22px; }
-.sticker.craft svg { width: 72px; height: 72px; }
-.sticker.sleep { --fill: var(--lilac); --line: var(--lilac-ink); --r: -3deg; right: max(24px, 7vw); top: 88px; font-size: 27px; }
-.sticker.sleep svg { width: 34px; height: 34px; }
+.sticker.dragging { cursor: grabbing; filter: drop-shadow(0 18px 22px rgba(20,20,20,.22)); }
+.sticker.good { --r: 4deg; width: 230px; left: max(24px, 5vw); top: 48px; }
+.sticker.craft { --r: -5deg; width: 170px; left: max(32px, 8vw); bottom: 15%; }
+.sticker.sleep { --r: -3deg; width: 200px; right: max(24px, 7vw); top: 96px; filter: none; }
+.sticker.sleep.dragging { filter: none; }
 
 /* other cursors */
 .cursor { position: absolute; left: 0; top: 0; z-index: 25; pointer-events: none; will-change: transform; }
@@ -228,21 +220,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 <header class="canvas" id="canvas">
 
-  <!-- Sticker art: Matita icons (brush, laptop, sparkles, moon) drawn large -->
-  <div class="thing sticker good" aria-hidden="true">
-    <span>Good<br>Design<br>Only</span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.92 3.34Q16.02 7.68 11.56 12.46" stroke-width="1.456"/><path d="M10 10.41Q11.78 12.21 13.46 14.11Q12.14 15.28 10.97 16.62Q9.34 14.64 7.44 12.91Q8.83 11.78 10 10.41Q10.38 10.83 10.77 11.23" stroke-width="1.696"/><path d="M7.63 12.77Q4.43 15.04 3.38 20.79" stroke-width="1.6"/><path d="M3.36 20.71Q9.03 19.7 11.2 16.4" stroke-width="1.728"/></svg>
-  </div>
-
-  <div class="thing sticker craft" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2.92 4.55Q11.8 4.6 20.68 4.48M19.3 3.7Q19.1 9.88 19.45 16.06M20.1 15.36Q11.76 14.94 3.42 15.36M4.54 16.45Q4.64 10.11 4.36 3.77" stroke-width="1.2"/><path d="M4.64 15.13Q3.51 16.93 2.66 18.87Q12.09 18.87 21.52 18.98Q20.34 17.2 19.49 15.23" stroke-width="1.1"/><g transform="translate(6.6 5.2) scale(.42)"><path d="M10.16 3.15Q10.72 5.89 11.69 8.5Q14.43 9.02 17.07 9.9Q14.21 10.69 11.37 11.53Q10.76 14.26 10.1 16.98Q9.49 14.17 8.44 11.5Q5.61 10.82 2.83 9.95Q5.74 9.36 8.52 8.34Q9.14 5.68 10.16 3.15Q10.35 3.76 10.51 4.38" stroke-width="3"/><path d="M18.09 14.16Q18.02 17.47 18 20.77" stroke-width="3.2"/><path d="M14.67 17.4Q18.04 17.24 21.42 17.45" stroke-width="3"/></g></svg>
-    <span>Crafting<br>experience</span>
-  </div>
-
-  <div class="thing sticker sleep" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11.72 3.63C11.14 3.75 9.27 3.82 8.24 4.32C7.21 4.83 6.28 5.75 5.57 6.66C4.86 7.57 4.29 8.66 3.96 9.77C3.62 10.87 3.43 12.14 3.57 13.29C3.7 14.44 4.14 15.7 4.78 16.67C5.42 17.64 6.42 18.45 7.41 19.1C8.4 19.74 9.55 20.35 10.69 20.53C11.84 20.72 13.14 20.52 14.28 20.21C15.41 19.89 16.61 19.37 17.51 18.63C18.41 17.89 19.19 16.82 19.68 15.76C20.18 14.7 20.34 12.86 20.48 12.28" stroke-width="1.6"/><path d="M21.14 12.68C20.71 12.87 19.47 13.65 18.57 13.85C17.67 14.05 16.67 14.05 15.75 13.89C14.84 13.74 13.87 13.43 13.09 12.93C12.31 12.43 11.57 11.68 11.09 10.9C10.6 10.12 10.36 9.15 10.19 8.23C10.03 7.32 9.9 6.31 10.09 5.42C10.28 4.52 11.11 3.29 11.32 2.86" stroke-width="1.8"/></svg>
-    <span>Sleep.<br>Design.<br>Repeat.</span>
-  </div>
+  <img class="thing sticker good" src="assets/good-design-only.webp" width="419" height="340" alt="" draggable="false">
+  <img class="thing sticker craft" src="assets/crafting-experience.webp" width="307" height="414" alt="" draggable="false">
+  <img class="thing sticker sleep" src="assets/sleep-design-repeat.webp" width="371" height="256" alt="" draggable="false">
 
   <div class="hero" id="hero">
     <h1 class="title"><span class="slot pre" id="slot"><span class="sel" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="tag" id="tag" aria-hidden="true">tap to switch</span><button class="hi" id="hi" type="button" aria-describedby="hi-hint" disabled><span class="word" id="word">Hi</span><span class="comma">,</span></button></span><span class="rest">designers</span><br> of Tampere</h1>

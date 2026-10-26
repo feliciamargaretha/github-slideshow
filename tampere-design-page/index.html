@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Designers of Tampere</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&display=swap">
+<style>
+/* Layout: the header is a design file's canvas. Dotted paper, the headline in the middle,
+   a few things a designer leaves lying around scattered at the edges, and a toolbar
+   at the bottom so visitors can draw on it. A white canvas on purpose, in both themes. */
+:root {
+  --paper: #ffffff;
+  --ink: #141414;
+  --soft: #55585e;          /* body text, 7.2:1 on white */
+  --dot: rgba(20, 20, 20, .16);
+  --select: #0d99ff;        /* selection blue, as in Figma */
+  --redline: #f24822;       /* spacing measurements */
+  --peer: #9747ff;          /* Aino, the other cursor on the file */
+  --me: #14ae5c;            /* the visitor's cursor */
+  --sticky: #ffe27a;
+  --chrome: #ffffff;
+  --chrome-line: #e7e7e9;
+  --shadow: 0 1px 2px rgba(20, 20, 20, .06), 0 8px 24px rgba(20, 20, 20, .10);
+
+  --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --f-body: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--select); outline-offset: 3px; }
+
+/* canvas */
+.canvas {
+  position: relative; overflow: hidden;
+  min-height: clamp(640px, 100svh, 940px);
+  display: grid; place-items: center;
+  padding-block: 150px 140px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background-color: var(--paper);
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  background-position: center;
+}
+
+/* hero */
+.hero { position: relative; z-index: 2; display: grid; justify-items: center; text-align: center; max-width: 60rem; }
+.title {
+  margin: 0;
+  font: 400 clamp(3.1rem, 8.4vw, 7.6rem)/1 var(--f-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.025em;
+}
+.title .rest { white-space: nowrap; }
+.slot { position: relative; display: inline-block; width: 0; vertical-align: baseline; white-space: nowrap; }
+.hi {
+  display: inline-block; margin: 0; padding: .02em .1em .12em; border: 0; background: none;
+  font: inherit; letter-spacing: inherit; line-height: 1; color: inherit; cursor: pointer;
+  border-radius: 2px;
+}
+.hi:disabled { cursor: default; }
+.hi:focus-visible { outline-offset: 6px; }
+.hi .comma { opacity: 0; }
+.slot.pre .hi { visibility: hidden; }
+.typing .word::after {
+  content: ""; display: inline-block; width: .045em; height: .78em; margin-left: .03em;
+  background: var(--ink); vertical-align: -.04em; animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* the selection box that gets dragged out around the greeting */
+.sel { position: absolute; left: 0; top: 0; width: 0; height: 0; border: 1.5px solid var(--select); pointer-events: none; opacity: 0; }
+.sel i { position: absolute; width: 9px; height: 9px; background: var(--chrome); border: 1.5px solid var(--select); opacity: 0; transition: opacity .2s; }
+.sel i:nth-child(1) { left: -5px; top: -5px; }
+.sel i:nth-child(2) { right: -5px; top: -5px; }
+.sel i:nth-child(3) { left: -5px; bottom: -5px; }
+.sel i:nth-child(4) { right: -5px; bottom: -5px; }
+.slot.selected .sel { width: 100% !important; height: 100% !important; }
+.slot.selected .sel i { opacity: 1; }
+.tag {
+  position: absolute; left: -1px; bottom: calc(100% + 8px);
+  font: 500 12px/1 var(--f-body); letter-spacing: .01em; color: var(--select);
+  white-space: nowrap; opacity: 0; transition: opacity .25s; pointer-events: none;
+}
+.slot.selected .tag { opacity: 1; }
+
+/* redline: the 24px between the headline and the description */
+.gap { position: relative; width: 100%; height: 24px; }
+.redline { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--redline); opacity: 0; transition: opacity .4s; }
+.redline::before, .redline::after { content: ""; position: absolute; left: -4px; width: 9px; height: 1px; background: var(--redline); }
+.redline::before { top: 0; } .redline::after { bottom: 0; }
+.redline b {
+  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  padding: 2px 5px; border-radius: 3px; background: var(--redline); color: #fff;
+  font: 600 11px/1 var(--f-body); font-variant-numeric: tabular-nums;
+}
+.guide { position: absolute; left: 50%; width: min(22rem, 70vw); transform: translateX(-50%); border-top: 1px dashed var(--redline); opacity: 0; transition: opacity .4s; }
+.guide.top { top: 0; } .guide.bottom { bottom: 0; }
+.measured .redline { opacity: 1; }
+.measured .guide { opacity: .45; }
+
+.lede { margin: 0 0 32px; max-width: 34ch; font-size: clamp(17px, 1.5vw, 20px); color: var(--soft); text-wrap: pretty; }
+
+.cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 54px; padding: 0 26px 0 22px; border-radius: 999px;
+  background: var(--ink); color: var(--paper); text-decoration: none;
+  font: 500 17px/1 var(--f-body);
+  transition: transform .2s;
+}
+.cta svg { width: 24px; height: 24px; overflow: visible; }
+.cta .hand { transform-origin: 60% 85%; transform-box: view-box; }
+.cta:hover .hand, .cta:focus-visible .hand { animation: wave 1s ease-in-out; }
+.cta:active { transform: scale(.98); }
+@keyframes wave {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(16deg); } 30% { transform: rotate(-9deg); }
+  45% { transform: rotate(14deg); } 60% { transform: rotate(-5deg); }
+  75% { transform: rotate(9deg); }
+}
+
+/* scattered things */
+.thing { position: absolute; z-index: 1; }
+.sticky {
+  left: max(24px, 5vw); top: 56px;
+  width: 176px; padding: 18px 18px 22px;
+  background: var(--sticky); box-shadow: 0 1px 1px rgba(20,20,20,.06), 0 10px 18px -8px rgba(20,20,20,.28);
+  transform: rotate(-4deg);
+  font: 500 27px/1.05 var(--f-hand); color: var(--ink);
+  cursor: grab; touch-action: none; user-select: none;
+}
+.sticky.dragging { cursor: grabbing; box-shadow: 0 2px 2px rgba(20,20,20,.06), 0 18px 28px -10px rgba(20,20,20,.35); }
+.sticky small { display: block; margin-top: 8px; font-size: 21px; color: var(--soft); }
+
+.bezier { left: max(24px, 8vw); bottom: 19%; width: 260px; }
+.bezier svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bezier .label { display: block; margin: 0 0 6px 2px; font: 500 12px/1 var(--f-body); color: var(--select); }
+
+/* other cursors */
+.cursor { position: absolute; left: 0; top: 0; z-index: 25; pointer-events: none; will-change: transform; }
+.cursor svg { display: block; width: 22px; height: 22px; filter: drop-shadow(0 1px 1px rgba(20,20,20,.2)); }
+.cursor .name {
+  position: absolute; left: 16px; top: 18px;
+  padding: 4px 8px; border-radius: 4px 999px 999px 999px;
+  font: 500 12px/1.2 var(--f-body); color: #fff; white-space: nowrap;
+}
+.peer .name { background: var(--peer); }
+.peer .chat {
+  display: block; max-width: 0; max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-width .6s ease, max-height .3s ease, opacity .3s;
+  font-size: 14px;
+}
+.peer.talking .name { padding: 6px 12px 8px; border-radius: 4px 16px 16px 16px; }
+.peer.talking .chat { max-width: 16rem; max-height: 2em; opacity: 1; }
+.peer .who { display: block; font-size: 11px; opacity: .8; }
+.me { opacity: 0; transition: opacity .2s; }
+.me.on { opacity: 1; }
+.me .name { background: var(--me); }
+.drawing .me { opacity: 0; }
+
+/* drawing layer and toolbar */
+.ink { position: absolute; inset: 0; z-index: 20; width: 100%; height: 100%; pointer-events: none; }
+.drawing .ink { pointer-events: auto; cursor: crosshair; touch-action: none; }
+.toolbar {
+  position: absolute; z-index: 30; left: 50%; transform: translateX(-50%);
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 4px; padding: 6px;
+  background: var(--chrome); border: 1px solid var(--chrome-line); border-radius: 14px; box-shadow: var(--shadow);
+}
+.toolbar button {
+  display: grid; place-items: center; width: 38px; height: 38px; padding: 0;
+  border: 0; border-radius: 9px; background: none; color: var(--ink); cursor: pointer;
+}
+.toolbar button:hover { background: #f2f2f4; }
+.toolbar .tool[aria-pressed="true"] { background: var(--select); color: #fff; }
+.toolbar svg { width: 22px; height: 22px; overflow: visible; }
+.toolbar .sep { width: 1px; height: 24px; margin: 0 4px; background: var(--chrome-line); }
+.toolbar .swatch { width: 30px; }
+.toolbar .swatch span { width: 18px; height: 18px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(20,20,20,.12); transition: box-shadow .15s; }
+.toolbar .swatch[aria-checked="true"] span { box-shadow: 0 0 0 2px var(--chrome), 0 0 0 4px var(--c); }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* tablet and phone */
+@media (max-width: 900px) {
+  .bezier { width: 200px; left: auto; right: max(16px, 5vw); bottom: auto; top: 12%; }
+  .sticky { left: max(16px, 5vw); top: 9%; width: 150px; font-size: 24px; }
+}
+@media (max-width: 600px) {
+  .canvas { padding-block: 200px 150px; }
+  .sticky { top: 36px; width: 138px; padding: 14px 14px 16px; font-size: 22px; }
+  .sticky small { font-size: 18px; }
+  .bezier { top: 52px; width: 150px; }
+  .toolbar { gap: 2px; padding: 4px; }
+  .toolbar button { width: 34px; height: 34px; }
+  .toolbar .swatch { width: 24px; }
+  .toolbar .swatch span { width: 16px; height: 16px; }
+  .toolbar .sep { margin: 0 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta:hover .hand, .cta:focus-visible .hand { animation: none; }
+  .peer .chat, .redline, .guide, .tag, .sel i { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="canvas" id="canvas">
+
+  <div class="thing sticky" id="sticky" aria-hidden="true">No portfolio needed :)<small>just bring yourself</small></div>
+
+  <div class="thing bezier" aria-hidden="true">
+    <span class="label">tammerkoski</span>
+    <svg viewBox="0 0 260 120">
+      <g stroke="var(--select)" stroke-width="1" fill="none">
+        <line x1="10" y1="60" x2="50" y2="10"/>
+        <line x1="90" y1="10" x2="170" y2="110"/>
+        <line x1="210" y1="110" x2="250" y2="60"/>
+      </g>
+      <path d="M10 60 C50 10 90 10 130 60 S210 110 250 60" fill="none" stroke="var(--ink)" stroke-width="2"/>
+      <g fill="var(--chrome)" stroke="var(--select)" stroke-width="1.5">
+        <circle cx="50" cy="10" r="3.5"/><circle cx="90" cy="10" r="3.5"/>
+        <circle cx="170" cy="110" r="3.5"/><circle cx="210" cy="110" r="3.5"/>
+        <rect x="5.5" y="55.5" width="9" height="9"/><rect x="245.5" y="55.5" width="9" height="9"/>
+      </g>
+      <rect x="125.5" y="55.5" width="9" height="9" fill="var(--select)" stroke="var(--select)" stroke-width="1.5"/>
+    </svg>
+  </div>
+
+  <div class="hero" id="hero">
+    <h1 class="title"><span class="slot pre" id="slot"><span class="sel" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="tag" id="tag" aria-hidden="true">tap to switch</span><button class="hi" id="hi" type="button" aria-describedby="hi-hint" disabled><span class="word" id="word">Hi</span><span class="comma">,</span></button></span><span class="rest">designers</span><br> of Tampere</h1>
+    <span class="sr" id="hi-hint">Changes the greeting</span>
+    <div class="gap" aria-hidden="true"><span class="guide top"></span><span class="guide bottom"></span><span class="redline"><b>24</b></span></div>
+    <p class="lede">Glad you found us. We host meetups, critiques and good company for anyone who designs anything.</p>
+    <a class="cta" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <g class="hand">
+          <path d="M8.1 13.9Q7.95 9.4 8.15 4.95Q8.3 3.75 9.3 3.75Q10.35 3.8 10.4 5Q10.3 7.9 10.5 10.8" stroke-width="1.52"/>
+          <path d="M10.4 10.6Q10.3 7.2 10.45 3.9Q10.6 2.7 11.65 2.7Q12.75 2.75 12.8 3.95Q12.7 7.4 12.9 10.85" stroke-width="1.7"/>
+          <path d="M12.85 10.7Q12.8 8.2 12.9 5.7Q13 4.55 14 4.55Q15.05 4.6 15.1 5.75Q15 8.6 15.2 11.45" stroke-width="1.5"/>
+          <path d="M15.1 11.3Q15.1 9.7 15.2 8.15Q15.3 7.1 16.2 7.1Q17.2 7.15 17.25 8.2Q17.35 11.6 17.1 14.95Q16.65 19.95 12.25 20.6Q8.6 20.95 6.9 18.25Q5.5 15.95 4.1 13.45Q3.6 12.3 4.5 11.85Q5.4 11.45 6.2 12.45Q7.2 13.65 8.15 14.95" stroke-width="1.62"/>
+        </g>
+        <path d="M19.5 3.4Q21 4.75 21.45 6.8" stroke-width="1.38"/>
+        <path d="M2.7 7.6Q3 5.6 4.55 4.3" stroke-width="1.44"/>
+      </svg>
+      Come say hi
+    </a>
+  </div>
+
+  <div class="cursor peer" id="peer" aria-hidden="true">
+    <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--peer)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    <span class="name"><span class="who">Aino</span><span class="chat">half-finished ideas welcome</span></span>
+  </div>
+  <div class="cursor me" id="me" aria-hidden="true">
+    <span class="name">You</span>
+  </div>
+
+  <canvas class="ink" id="ink" aria-hidden="true"></canvas>
+
+  <div class="toolbar" role="toolbar" aria-label="Draw on the canvas">
+    <!-- Icons: Matita (matita.dev, MIT): mouse-pointer, pencil, brush, trash-2 -->
+    <button class="tool" type="button" data-tool="move" aria-pressed="true" aria-label="Select" title="Select (Esc)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5.05 3.04Q5.19 10.7 5.16 18.37Q6.93 16.35 8.99 14.62Q10.06 17.61 11.54 20.42Q12.8 19.99 14.09 19.64Q12.89 16.77 11.63 13.93Q14.04 13.89 16.44 14.1Q11.05 8.26 5.05 3.04Q5.07 3.7 5.06 4.35" stroke-width="1.44"/></svg>
+    </button>
+    <button class="tool" type="button" data-tool="pen" aria-pressed="false" aria-label="Pen" title="Pen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16.53 3.69Q18.37 5.8 20.5 7.63Q14.17 13.86 7.88 20.13Q5.78 20.33 3.7 20.63Q3.99 18.38 3.89 16.12Q10.46 10.15 16.53 3.69Q17.23 4.31 17.86 5.01" stroke-width="1.776"/><path d="M13.9 5.61Q16.1 7.76 18.25 9.96" stroke-width="1.696"/></svg>
+    </button>
+    <button class="tool" type="button" data-tool="marker" aria-pressed="false" aria-label="Highlighter" title="Highlighter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.92 3.34Q16.02 7.68 11.56 12.46" stroke-width="1.456"/><path d="M10 10.41Q11.78 12.21 13.46 14.11Q12.14 15.28 10.97 16.62Q9.34 14.64 7.44 12.91Q8.83 11.78 10 10.41Q10.38 10.83 10.77 11.23" stroke-width="1.696"/><path d="M7.63 12.77Q4.43 15.04 3.38 20.79" stroke-width="1.6"/><path d="M3.36 20.71Q9.03 19.7 11.2 16.4" stroke-width="1.728"/></svg>
+    </button>
+    <span class="sep" aria-hidden="true"></span>
+    <span role="radiogroup" aria-label="Colour" style="display:contents">
+      <button class="swatch" type="button" role="radio" aria-checked="true" aria-label="Black" style="--c:#141414"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Blue" style="--c:#0d99ff"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Red" style="--c:#f24822"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Green" style="--c:#14ae5c"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Yellow" style="--c:#ffcd29"><span></span></button>
+    </span>
+    <span class="sep" aria-hidden="true"></span>
+    <button type="button" id="clear" aria-label="Clear drawings" title="Clear">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3.96 6.43Q12.22 6.22 20.49 6.46" stroke-width="1.376"/><path d="M9.01 6.63Q9.44 5.36 9.69 4.03Q12.04 3.86 14.4 3.8Q14.66 5.35 15.09 6.87" stroke-width="1.6"/><path d="M6.17 6.23Q6.48 13.13 7.05 20.03Q12.12 20.07 17.18 19.86Q17.84 12.99 18.06 6.09" stroke-width="1.376"/><path d="M9.95 9.81Q10.06 13.28 10.3 16.75" stroke-width="1.488"/><path d="M14.18 9.91Q13.93 13.26 13.59 16.6" stroke-width="1.648"/></svg>
+    </button>
+  </div>
+</header>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("canvas"), slot = $("slot"), hi = $("hi"), word = $("word"), tag = $("tag");
+  const comma = hi.querySelector(".comma"), sel = slot.querySelector(".sel");
+  const gap = document.querySelector(".gap"), lede = document.querySelector(".lede");
+  const peer = $("peer"), me = $("me");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  // positions relative to the canvas
+  const rel = (el) => {
+    const c = canvas.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x: r.left - c.left, y: r.top - c.top, w: r.width, h: r.height };
+  };
+  const tween = (ms, fn) => new Promise((done) => {
+    const t0 = performance.now();
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / ms);
+      fn(ease(p));
+      p < 1 ? requestAnimationFrame(step) : done();
+    };
+    requestAnimationFrame(step);
+  });
+
+  // Aino's cursor
+  let peerAt = { x: 0, y: 0 };
+  const placePeer = (p) => { peerAt = p; peer.style.transform = `translate(${p.x}px, ${p.y}px)`; };
+  const movePeer = (to, ms) => {
+    const from = { ...peerAt };
+    return tween(ms, (p) => placePeer({ x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p }));
+  };
+  const peerHome = () => {
+    const cw = canvas.clientWidth;
+    const l = rel(lede);
+    if (cw > 900) {
+      return { x: Math.min(l.x + l.w + 28, cw - 260), y: l.y + 4 };
+    }
+    const cta = rel(document.querySelector(".cta"));
+    return { x: Math.min(cta.x + cta.w - 8, cw - 240), y: cta.y + cta.h + 14 };
+  };
+
+  // the greeting
+  const greetings = [
+    ["Hi", "tap to switch"],
+    ["Moro", "Tampere for hi"],
+    ["Moi", "Finnish for hi"],
+    ["Hello", "back to English"],
+  ];
+  let g = 0;
+  const gapEm = () => parseFloat(getComputedStyle(slot).fontSize) * .22;
+  const widthFor = (text) => {
+    const old = word.textContent;
+    word.textContent = text;
+    const w = hi.offsetWidth;
+    word.textContent = old;
+    return w;
+  };
+  const type = async (text, speed = 95) => {
+    slot.classList.add("typing");
+    for (const ch of text) {
+      word.textContent += ch;
+      await sleep(speed * (.7 + Math.random() * .6));
+    }
+    slot.classList.remove("typing");
+  };
+  const erase = async () => {
+    slot.classList.add("typing");
+    while (word.textContent) {
+      word.textContent = word.textContent.slice(0, -1);
+      await sleep(45);
+    }
+  };
+
+  const finish = () => {
+    slot.classList.remove("pre");
+    word.textContent = greetings[0][0];
+    comma.style.opacity = 1;
+    slot.style.width = hi.offsetWidth + "px";
+    slot.style.marginRight = gapEm() + "px";
+    sel.style.opacity = 1;
+    slot.classList.add("selected");
+    gap.classList.add("measured");
+    peer.classList.add("talking");
+    placePeer(peerHome());
+    hi.disabled = false;
+    slot.style.transition = "width .3s ease";
+  };
+
+  const intro = async () => {
+    const W = widthFor(greetings[0][0]), H = hi.offsetHeight, M = gapEm();
+    word.textContent = "";
+    slot.classList.remove("pre");
+    const cw = canvas.clientWidth, ch = canvas.clientHeight;
+    placePeer({ x: cw * .72, y: ch * .8 });
+    await sleep(700);
+    let s = rel(slot);
+    await movePeer({ x: s.x, y: s.y }, 900);
+    await sleep(150);
+    sel.style.opacity = 1;
+    await tween(750, (p) => {
+      slot.style.width = W * p + "px";
+      slot.style.marginRight = M * p + "px";
+      sel.style.width = W * p + "px";
+      sel.style.height = H * p + "px";
+      s = rel(slot);
+      placePeer({ x: s.x + W * p, y: s.y + H * p });
+    });
+    slot.classList.add("selected");
+    await sleep(350);
+    await type(greetings[0][0], 140);
+    comma.style.opacity = 1;
+    await sleep(300);
+    gap.classList.add("measured");
+    await movePeer(peerHome(), 1000);
+    peer.classList.add("talking");
+    hi.disabled = false;
+    slot.style.transition = "width .3s ease";
+  };
+
+  hi.addEventListener("click", async () => {
+    if (hi.dataset.busy) return;
+    hi.dataset.busy = "1";
+    g = (g + 1) % greetings.length;
+    const [next, label] = greetings[g];
+    await erase();
+    slot.style.width = widthFor(next) + "px";
+    await type(next, 70);
+    tag.textContent = label;
+    delete hi.dataset.busy;
+  });
+
+  // run once fonts are in, so the measurements are right
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+    reduce ? finish() : intro();
+  });
+
+  addEventListener("resize", () => {
+    if (!hi.disabled) {
+      slot.style.transition = "none";
+      slot.style.width = hi.offsetWidth + "px";
+      slot.style.marginRight = gapEm() + "px";
+      placePeer(peerHome());
+      requestAnimationFrame(() => (slot.style.transition = "width .3s ease"));
+    }
+  });
+
+  // the visitor's own cursor label
+  if (matchMedia("(pointer: fine)").matches) {
+    canvas.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse") return;
+      const c = canvas.getBoundingClientRect();
+      me.style.transform = `translate(${e.clientX - c.left}px, ${e.clientY - c.top}px)`;
+      me.classList.add("on");
+    });
+    canvas.addEventListener("pointerleave", () => me.classList.remove("on"));
+  }
+
+  // the sticky note can be moved around
+  const sticky = $("sticky");
+  sticky.addEventListener("pointerdown", (e) => {
+    const c = canvas.getBoundingClientRect(), r = sticky.getBoundingClientRect();
+    const dx = e.clientX - r.left, dy = e.clientY - r.top;
+    sticky.setPointerCapture(e.pointerId);
+    sticky.classList.add("dragging");
+    const move = (ev) => {
+      const x = Math.max(0, Math.min(ev.clientX - c.left - dx, c.width - r.width));
+      const y = Math.max(0, Math.min(ev.clientY - c.top - dy, c.height - r.height));
+      sticky.style.left = x + "px";
+      sticky.style.top = y + "px";
+    };
+    const up = () => {
+      sticky.classList.remove("dragging");
+      sticky.removeEventListener("pointermove", move);
+      sticky.removeEventListener("pointerup", up);
+    };
+    sticky.addEventListener("pointermove", move);
+    sticky.addEventListener("pointerup", up);
+  });
+
+  // drawing
+  const ink = $("ink"), ctx = ink.getContext("2d");
+  const strokes = [];
+  let tool = "move", color = "#141414", live = null;
+
+  const draw = () => {
+    const dpr = devicePixelRatio || 1;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, ink.width, ink.height);
+    for (const s of strokes) {
+      const pts = s.pts;
+      ctx.save();
+      ctx.lineCap = ctx.lineJoin = "round";
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = s.tool === "marker" ? 22 : 3;
+      if (s.tool === "marker") { ctx.globalAlpha = .38; ctx.globalCompositeOperation = "multiply"; }
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      if (pts.length === 1) ctx.lineTo(pts[0].x + .1, pts[0].y);
+      for (let i = 1; i < pts.length - 1; i++) {
+        const mx = (pts[i].x + pts[i + 1].x) / 2, my = (pts[i].y + pts[i + 1].y) / 2;
+        ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+      }
+      if (pts.length > 1) ctx.lineTo(pts.at(-1).x, pts.at(-1).y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+  const size = () => {
+    const dpr = devicePixelRatio || 1;
+    ink.width = Math.round(canvas.clientWidth * dpr);
+    ink.height = Math.round(canvas.clientHeight * dpr);
+    draw();
+  };
+  new ResizeObserver(size).observe(canvas);
+
+  const point = (e) => {
+    const c = canvas.getBoundingClientRect();
+    return { x: e.clientX - c.left, y: e.clientY - c.top };
+  };
+  ink.addEventListener("pointerdown", (e) => {
+    if (tool === "move") return;
+    ink.setPointerCapture(e.pointerId);
+    live = { tool, color, pts: [point(e)] };
+    strokes.push(live);
+    draw();
+  });
+  ink.addEventListener("pointermove", (e) => {
+    if (!live) return;
+    live.pts.push(point(e));
+    draw();
+  });
+  const end = () => (live = null);
+  ink.addEventListener("pointerup", end);
+  ink.addEventListener("pointercancel", end);
+
+  const tools = document.querySelectorAll(".tool");
+  const setTool = (t) => {
+    tool = t;
+    tools.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tool === t)));
+    canvas.classList.toggle("drawing", t !== "move");
+  };
+  tools.forEach((b) => b.addEventListener("click", () => setTool(b.dataset.tool)));
+  document.querySelectorAll(".swatch").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".swatch").forEach((o) => o.setAttribute("aria-checked", String(o === b)));
+    color = getComputedStyle(b).getPropertyValue("--c").trim();
+    if (tool === "move") setTool("pen");
+  }));
+  $("clear").addEventListener("click", () => { strokes.length = 0; draw(); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape") setTool("move"); });
+})();
+</script>
+</body>
+</html>

@@ -130,20 +130,34 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 /* scattered things */
 .thing { position: absolute; z-index: 1; }
-/* stickers: cut straight from the reference sheet, so they keep their own colours and outlines */
+/* stickers: cut straight from the reference sheet, with a white die-cut edge.
+   Peel: the face loses its bottom-right corner along a 45deg crease, and a mirrored
+   copy of the sticker (its pale back) is folded over that crease. --d is how far the
+   crease sits from the corner; it grows on hover and while dragging. */
+@property --d { syntax: "<length>"; inherits: true; initial-value: 0px; }
 .sticker {
-  --r: 0deg; --s: 1;
-  display: block; height: auto;
+  --r: 0deg; --s: 1; --d: calc(var(--W) * .09);
+  width: var(--W); height: calc(var(--W) * var(--ratio));
   transform: rotate(var(--r)) scale(var(--s)); transform-origin: center;
-  filter: drop-shadow(0 10px 14px rgba(20,20,20,.14));
-  cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none;
-  transition: filter .2s;
+  filter: drop-shadow(0 8px 12px rgba(20,20,20,.14));
+  cursor: grab; touch-action: none; user-select: none;
+  transition: --d .45s cubic-bezier(.3,.7,.3,1), filter .2s;
 }
+.sticker:hover, .sticker.dragging { --d: calc(var(--W) * .34); }
 .sticker.dragging { cursor: grabbing; filter: drop-shadow(0 18px 22px rgba(20,20,20,.22)); }
-.sticker.good { --r: 4deg; width: 230px; left: max(24px, 5vw); top: 48px; }
-.sticker.craft { --r: -5deg; width: 170px; left: max(32px, 8vw); bottom: 15%; }
-.sticker.sleep { --r: -3deg; width: 200px; right: max(24px, 7vw); top: 96px; filter: none; }
-.sticker.sleep.dragging { filter: none; }
+.sticker img { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-user-drag: none; pointer-events: none; }
+.sticker .face { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--d)), calc(100% - var(--d)) 100%, 0 100%); }
+.sticker .flap-shadow { position: absolute; inset: 0; filter: drop-shadow(-3px -3px 4px rgba(20,20,20,.18)); pointer-events: none; }
+.sticker .flap {
+  position: absolute; inset: 0; transform-origin: 0 0;
+  /* reflect across the crease x + y = W + H - d */
+  transform: translate(calc(var(--W) + var(--W) * var(--ratio) - var(--d)), calc(var(--W) + var(--W) * var(--ratio) - var(--d))) rotate(90deg) scaleX(-1);
+  clip-path: polygon(100% calc(100% - var(--d)), calc(100% - var(--d)) 100%, 100% 100%);
+}
+.sticker .flap img { filter: brightness(0) invert(.94); }
+.sticker.good { --W: 250px; --ratio: calc(372 / 451); --r: 4deg; left: max(24px, 5vw); top: 44px; }
+.sticker.craft { --W: 186px; --ratio: calc(446 / 339); --r: -5deg; left: max(32px, 8vw); bottom: 14%; }
+.sticker.sleep { --W: 222px; --ratio: calc(292 / 407); --r: -3deg; right: max(24px, 7vw); top: 90px; }
 
 /* other cursors */
 .cursor { position: absolute; left: 0; top: 0; z-index: 25; pointer-events: none; will-change: transform; }
@@ -220,9 +234,18 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 <header class="canvas" id="canvas">
 
-  <img class="thing sticker good" src="assets/good-design-only.webp" width="419" height="340" alt="" draggable="false">
-  <img class="thing sticker craft" src="assets/crafting-experience.webp" width="307" height="414" alt="" draggable="false">
-  <img class="thing sticker sleep" src="assets/sleep-design-repeat.webp" width="371" height="256" alt="" draggable="false">
+  <div class="thing sticker good" aria-hidden="true">
+    <img class="face" src="assets/good-design-only.webp" alt="" draggable="false">
+    <div class="flap-shadow"><div class="flap"><img src="assets/good-design-only.webp" alt="" draggable="false"></div></div>
+  </div>
+  <div class="thing sticker craft" aria-hidden="true">
+    <img class="face" src="assets/crafting-experience.webp" alt="" draggable="false">
+    <div class="flap-shadow"><div class="flap"><img src="assets/crafting-experience.webp" alt="" draggable="false"></div></div>
+  </div>
+  <div class="thing sticker sleep" aria-hidden="true">
+    <img class="face" src="assets/sleep-design-repeat.webp" alt="" draggable="false">
+    <div class="flap-shadow"><div class="flap"><img src="assets/sleep-design-repeat.webp" alt="" draggable="false"></div></div>
+  </div>
 
   <div class="hero" id="hero">
     <h1 class="title"><span class="slot pre" id="slot"><span class="sel" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="tag" id="tag" aria-hidden="true">tap to switch</span><button class="hi" id="hi" type="button" aria-describedby="hi-hint" disabled><span class="word" id="word">Hi</span><span class="comma">,</span></button></span><span class="rest">designers</span><br> of Tampere</h1>

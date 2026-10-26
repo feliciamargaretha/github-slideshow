@@ -122,8 +122,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   transform: translateY(-10px) rotate(calc(var(--r) * -.4)) scale(1.03);
   box-shadow: 0 2px 3px rgba(20,20,20,.08), 0 28px 40px -18px rgba(20,20,20,.4);
 }
-.photo-px { position: absolute; width: 12px; height: 12px; background: var(--c); opacity: 0; transition: opacity .4s ease .5s; }
-.in .photo-px { opacity: 1; }
 .photo {
   aspect-ratio: 1; display: grid; place-items: center;
   background:
@@ -222,7 +220,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         <div><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p></div></li>
       <li><span class="bullet" aria-hidden="true"><i style="--c:var(--lime);left:6px;top:6px"></i></span>
         <div><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p></div></li>
-      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--tangerine);left:0;top:0"></i><i style="--c:var(--tangerine);left:0;top:12px"></i><i style="--c:var(--tangerine);left:12px;top:12px"></i></span>
+      <li><span class="bullet" aria-hidden="true"><i style="--c:var(--aqua);left:0;top:0"></i><i style="--c:var(--aqua);left:0;top:12px"></i><i style="--c:var(--aqua);left:12px;top:12px"></i></span>
         <div><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p></div></li>
     </ul>
   </div>
@@ -237,7 +235,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   const css = getComputedStyle(document.documentElement);
-  const PALETTE = ["--violet", "--pink", "--lime", "--aqua", "--tangerine", "--butter"].map((v) => css.getPropertyValue(v).trim());
+  const PALETTE = ["--violet", "--pink", "--lime", "--aqua"].map((v) => css.getPropertyValue(v).trim());
   const G = 14, P = 12;  // grid pitch and pixel size
 
   // seeded random, so the scatter stays put between reloads
@@ -302,11 +300,19 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     const leg = (dir, stop) => {
       while (dir > 0 ? c < stop : c > stop) {
         const run = 2 + Math.floor(r() * 3), color = PALETTE[ci++ % PALETTE.length];
+        const from = c;
         for (let k = 0; k < run && (dir > 0 ? c <= stop : c >= stop); k++) { path.push({ c, row, color }); c += dir; }
+        // a stray pixel or two just off the line, so it reads less like stairs
+        for (let n = r() < .35 ? 2 : 1; n > 0; n--) {
+          if (r() < .75) path.push({ c: from + dir * Math.floor(r() * run), row: row + (r() < .5 ? -1 : 1), color: PALETTE[Math.floor(r() * PALETTE.length)] });
+        }
         row++;
       }
     };
-    leg(1, rightC); c -= 2; leg(-1, leftC);
+    leg(1, rightC);
+    // round the turn instead of a sharp corner
+    for (const [dc, dr] of [[0, 0], [1, 1], [1, 2], [0, 3], [-1, 3]]) path.push({ c: c + dc, row: row + dr, color: PALETTE[ci % PALETTE.length] });
+    row += 4; c -= 2; leg(-1, leftC);
     cells = [];
     path.forEach((p, i) => {
       const k = i / path.length;
@@ -419,7 +425,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     const now = performance.now();
     cctx.clearRect(0, 0, ccv.width, ccv.height);
     for (const [key, q] of live) {
-      const age = (now - q.t) / 650;
+      const age = (now - q.t) / 320;
       if (age >= 1) { live.delete(key); continue; }
       const s = P * (1 - age * .5);
       cctx.globalAlpha = 1 - age * age;
@@ -443,26 +449,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       for (let i = 1; i <= n; i++) stamp(last.x + (p.x - last.x) * i / n, last.y + (p.y - last.y) * i / n);
     } else stamp(p.x, p.y);
     last = p;
+    if (!cctx) sizeCursor();
     if (!running) { running = true; requestAnimationFrame(loop); }
   });
   document.addEventListener("pointerleave", () => (last = null));
 
   /* wiring */
-  /* a few loose pixels around the polaroids */
-  {
-    const photos = $("photos"), r = rng(5);
-    const spots = [[-2, 6], [70, -2], [93, 30], [26, 95], [88, 90]];  // % of the photo area
-    for (const [x, y] of spots) {
-      const shape = SHAPES[Math.floor(r() * SHAPES.length)], color = PALETTE[Math.floor(r() * PALETTE.length)];
-      for (const [dx, dy] of shape) {
-        const d = document.createElement("i");
-        d.className = "photo-px";
-        d.style.cssText = `left: calc(${x}% + ${dx * G}px); top: calc(${y}% + ${dy * G}px); --c: ${color}`;
-        photos.prepend(d);
-      }
-    }
-  }
-
   const layout = () => { drawHeader(); buildTrail(); sizeCursor(); };
   addEventListener("scroll", () => requestAnimationFrame(drawTrail), { passive: true });
   let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 120); });

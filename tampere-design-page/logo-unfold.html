@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pixel Logo Unfold</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Newsreader:opsz,wght@6..72,400&display=swap">
+<style>
+:root { --paper: #fff; --ink: #141414; --soft: #55585e; color-scheme: light; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.5 Geist, "Helvetica Neue", Arial, sans-serif; }
+main { min-height: 100svh; display: grid; place-content: center; justify-items: center; gap: 40px; text-align: center;
+  padding-block: 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { margin: 0; font: 400 clamp(1.6rem, 3vw, 2.2rem)/1.1 Newsreader, Georgia, serif; }
+.row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 48px; }
+.big .fold { --h: min(220px, 40vw); }
+.lockup { display: inline-flex; align-items: center; gap: 12px; font: 400 22px/1 Newsreader, Georgia, serif; }
+button { height: 44px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--ink); color: #fff; font: 500 15px/1 Geist, sans-serif; cursor: pointer; }
+p { margin: 0; color: var(--soft); max-width: 44ch; }
+
+/* pixel logo: four pieces that unfold like origami, blue first */
+.fold { --h: 28px; --k: calc(var(--h) / 164px); position: relative; display: inline-block; width: calc(232px * var(--k)); height: var(--h); perspective: 600px; flex: none; }
+.fold-in { position: absolute; left: 0; top: 0; width: 232px; height: 164px; transform: scale(var(--k)); transform-origin: 0 0; transform-style: preserve-3d; }
+.fold .pc { position: absolute; display: block; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.5,0,.25,1.15), opacity .15s linear; }
+.fold .pc > svg { display: block; width: 100%; height: 100%; overflow: visible; backface-visibility: visible; }
+.fold .pc-blue { left: 0; top: 0; width: 71px; height: 63px; }
+.fold .pc-yellow { left: 71px; top: 0; width: 60px; height: 63px; transform-origin: 0 50%; transition-delay: .1s; }
+.fold .pc-green { left: 60px; top: 0; width: 100px; height: 88px; transform-origin: 0 50%; transition-delay: .55s; }
+.fold .pc-pink { left: 4px; top: 88px; width: 96px; height: 77px; transform-origin: 50% 0; transition-delay: 1s; }
+/* folded: each piece lies flipped back over the one before it */
+.fold.folded .pc-yellow, .fold.folded .pc-green { transform: rotateY(-180deg); opacity: 0; transition-delay: 0s; }
+.fold.folded .pc-pink { transform: rotateX(180deg); opacity: 0; transition-delay: 0s; }
+.fold.instant .pc { transition: none; }
+@media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
+</style></head><body><main>
+  <h1>Pixel logo, unfolding</h1>
+  <div class="big"><span class="fold" aria-hidden="true"><span class="fold-in">
+  <span class="pc pc-blue"><svg viewBox="0 0 71 63"><path d="M11 0H71V63H11Q0 63 0 52V11Q0 0 11 0Z" fill="#205bff"/></svg>
+    <span class="pc pc-yellow"><svg viewBox="0 0 60 63"><path d="M0 0H60V63H0Z" fill="#ffee0f"/><path d="M.75 2V61" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
+      <span class="pc pc-green"><svg viewBox="0 0 100 88"><path d="M0 0L99 87H4V71Q4 62 0 62Z" fill="#7affb4"/><path d="M.75 2V60" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
+        <span class="pc pc-pink"><svg viewBox="0 0 96 77"><path d="M0 0H95L25 69Q15 79 6 72Q0 68 0 60Z" fill="#fa22f6"/><path d="M2 .75H93" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg></span>
+      </span>
+    </span>
+  </span>
+</span></span></div>
+  <div class="row"><span class="lockup"><span class="fold" aria-hidden="true"><span class="fold-in">
+  <span class="pc pc-blue"><svg viewBox="0 0 71 63"><path d="M11 0H71V63H11Q0 63 0 52V11Q0 0 11 0Z" fill="#205bff"/></svg>
+    <span class="pc pc-yellow"><svg viewBox="0 0 60 63"><path d="M0 0H60V63H0Z" fill="#ffee0f"/><path d="M.75 2V61" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
+      <span class="pc pc-green"><svg viewBox="0 0 100 88"><path d="M0 0L99 87H4V71Q4 62 0 62Z" fill="#7affb4"/><path d="M.75 2V60" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
+        <span class="pc pc-pink"><svg viewBox="0 0 96 77"><path d="M0 0H95L25 69Q15 79 6 72Q0 68 0 60Z" fill="#fa22f6"/><path d="M2 .75H93" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg></span>
+      </span>
+    </span>
+  </span>
+</span></span>Tampere Design</span></div>
+  <button type="button" id="replay">Play again</button>
+  <p>In the navbar it plays once on load and again when you hover the logo.</p>
+</main>
+<script>
+(() => {
+  /* pixel logo: start folded into the blue square, then unfold; hover the logo to replay */
+  document.querySelectorAll(".fold").forEach((f) => {
+    const play = () => {
+      f.classList.add("instant", "folded"); f.offsetWidth; f.classList.remove("instant");
+      requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove("folded")));
+    };
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      f.classList.add("instant", "folded");
+      setTimeout(play, 400);
+      (f.closest("a") || f).addEventListener("mouseenter", () => { if (!f.classList.contains("folded")) play(); });
+    }
+  });
+
+  document.getElementById("replay").addEventListener("click", () => document.querySelectorAll(".fold").forEach((f) => {
+    f.classList.add("instant", "folded"); f.offsetWidth; f.classList.remove("instant");
+    requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove("folded")));
+  }));
+})();
+</script></body></html>

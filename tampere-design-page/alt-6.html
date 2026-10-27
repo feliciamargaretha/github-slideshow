@@ -187,13 +187,36 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   .qa[open] p, .cal .d.next::after, .adding .mosaic i.gap { animation: none; }
 }
 .logo .logo-img { display: block; height: 28px; width: auto; }
+
+/* pixel logo: four pieces that unfold like origami, blue first */
+.fold { --h: 28px; --k: calc(var(--h) / 164px); position: relative; display: inline-block; width: calc(232px * var(--k)); height: var(--h); perspective: 600px; flex: none; }
+.fold-in { position: absolute; left: 0; top: 0; width: 232px; height: 164px; transform: scale(var(--k)); transform-origin: 0 0; transform-style: preserve-3d; }
+.fold .pc { position: absolute; display: block; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.5,0,.25,1.15), opacity .15s linear; }
+.fold .pc > svg { display: block; width: 100%; height: 100%; overflow: visible; backface-visibility: visible; }
+.fold .pc-blue { left: 0; top: 0; width: 71px; height: 63px; }
+.fold .pc-yellow { left: 71px; top: 0; width: 60px; height: 63px; transform-origin: 0 50%; transition-delay: .1s; }
+.fold .pc-green { left: 60px; top: 0; width: 100px; height: 88px; transform-origin: 0 50%; transition-delay: .55s; }
+.fold .pc-pink { left: 4px; top: 88px; width: 96px; height: 77px; transform-origin: 50% 0; transition-delay: 1s; }
+/* folded: each piece lies flipped back over the one before it */
+.fold.folded .pc-yellow, .fold.folded .pc-green { transform: rotateY(-180deg); opacity: 0; transition-delay: 0s; }
+.fold.folded .pc-pink { transform: rotateX(180deg); opacity: 0; transition-delay: 0s; }
+.fold.instant .pc { transition: none; }
+@media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
 </style>
 </head>
 <body>
 
 <header class="top wrap" id="top">
   <nav class="nav" id="nav" aria-label="Main">
-    <a class="logo" href="#top"><img class="logo-img" src="assets/logos/arrow-colour.png" width="232" height="164" alt="">Tampere Design</a>
+    <a class="logo" href="#top"><span class="fold" aria-hidden="true"><span class="fold-in">
+  <span class="pc pc-blue"><svg viewBox="0 0 71 63"><path d="M11 0H71V63H11Q0 63 0 52V11Q0 0 11 0Z" fill="#205bff"/></svg>
+    <span class="pc pc-yellow"><svg viewBox="0 0 60 63"><path d="M0 0H60V63H0Z" fill="#ffee0f"/><path d="M.75 2V61" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
+      <span class="pc pc-green"><svg viewBox="0 0 100 88"><path d="M0 0L99 87H4V71Q4 62 0 62Z" fill="#7affb4"/><path d="M.75 2V60" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
+        <span class="pc pc-pink"><svg viewBox="0 0 96 77"><path d="M0 0H95L25 69Q15 79 6 72Q0 68 0 60Z" fill="#fa22f6"/><path d="M2 .75H93" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg></span>
+      </span>
+    </span>
+  </span>
+</span></span>Tampere Design</a>
     <ul class="nav-links" id="nav-links">
       <li><a href="#events">Events</a></li>
       <li><a href="#about">About</a></li>
@@ -431,6 +454,18 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   }), { threshold: .2 });
   if (reduce) { settle(); document.querySelectorAll(".reveal").forEach((el) => el.classList.add("in")); }
   else { io.observe(formats); document.querySelectorAll(".reveal").forEach((el) => io.observe(el)); }
+  /* pixel logo: start folded into the blue square, then unfold; hover the logo to replay */
+  document.querySelectorAll(".fold").forEach((f) => {
+    const play = () => {
+      f.classList.add("instant", "folded"); f.offsetWidth; f.classList.remove("instant");
+      requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove("folded")));
+    };
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      f.classList.add("instant", "folded");
+      setTimeout(play, 400);
+      (f.closest("a") || f).addEventListener("mouseenter", () => { if (!f.classList.contains("folded")) play(); });
+    }
+  });
 })();
 </script>
 </body>

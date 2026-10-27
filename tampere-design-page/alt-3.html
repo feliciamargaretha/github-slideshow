@@ -499,6 +499,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 @media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
 
 [hidden] { display: none !important; }
+/* header option "Add your pixel": sparse single pixels drifting in, a still title */
+.pp-crowd { position: absolute; inset: 0; display: none; pointer-events: none; }
+.top.pp-head .pp-crowd { display: block; }
+.top.pp-head #px, .top.pp-head .sel { visibility: hidden; }
+.pp-m { position: absolute; left: var(--x); top: var(--y); width: 12px; height: 12px; background: var(--c);
+  opacity: 0; transform: translate(var(--dx), var(--dy)); transition: transform 1.4s cubic-bezier(.2,.8,.2,1) var(--d), opacity .6s ease var(--d); }
+.pp-crowd.ready .pp-m { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .pp-m { transition: none; } }
 .logo .logo-steps { display: block; width: 36px; height: 36px; border-radius: 8px; }
 /* review switch */
 .mode-switch {
@@ -534,6 +542,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </nav>
   <div class="bricks" aria-hidden="true"></div>
   <canvas class="px" id="px" aria-hidden="true"></canvas>
+  <div class="pp-crowd" id="pp-crowd" aria-hidden="true"></div>
   <canvas class="wall" id="wall" aria-hidden="true"></canvas>
   <div class="frame" id="frame" aria-hidden="true"><i style="--c:var(--blue)"></i><i style="--c:var(--yellow)"></i><i style="--c:var(--pink)"></i><i style="--c:var(--green)"></i></div>
   <div class="hero" id="hero">
@@ -1197,6 +1206,23 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
   /* review switch: original or People Pixels version of each part */
   const ORIG_LEDE = $("lede").textContent;
+  /* single member pixels scattered around the title, kept clear of the text */
+  const buildCrowd = () => {
+    const crowd = $("pp-crowd"); if (crowd.childElementCount) return;
+    const COLS = ["--blue", "--pink", "--yellow", "--green"].map((v) => css.getPropertyValue(v).trim());
+    const T = top.getBoundingClientRect(), Hr = hero.getBoundingClientRect(), Nr = $("nav").getBoundingClientRect(), r = rng(9), spots = [];
+    const clear = { x0: (Hr.left - T.left - 24) / T.width * 100, x1: (Hr.right - T.left + 24) / T.width * 100,
+                    y0: (Hr.top - T.top - 24) / T.height * 100, y1: (Hr.bottom - T.top + 24) / T.height * 100 };
+    const navY = Math.max(6, (Nr.bottom - T.top + 16) / T.height * 100);
+    for (let t = 0; spots.length < 30 && t < 5000; t++) {
+      const x = 4 + r() * 92, y = navY + r() * (92 - navY);
+      if (x > clear.x0 && x < clear.x1 && y > clear.y0 && y < clear.y1) continue;
+      if (spots.some(([a, b]) => Math.abs(a - x) < 4 && Math.abs(b - y) < 5)) continue;
+      spots.push([x, y]);
+    }
+    crowd.innerHTML = spots.map(([x, y], i) => `<i class="pp-m" style="--x:${x}%; --y:${y}%; --c:${COLS[i % 4]}; --dx:${(50 - x) * 6}px; --dy:${(50 - y) * 5}px; --d:${(i % 10) * 60}ms"></i>`).join("");
+    requestAnimationFrame(() => requestAnimationFrame(() => crowd.classList.add("ready")));
+  };
   document.querySelectorAll("[data-group]").forEach((el) => {
     const base = el.id.replace(/^pp-/, "");
     if (["about", "events", "faq"].includes(base)) el.dataset.base = base;
@@ -1206,6 +1232,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       document.querySelector(".logo .fold").hidden = v === "pp";
       document.querySelector(".logo-steps").hidden = v !== "pp";
     } else if (g === "head") {
+      top.classList.toggle("pp-head", v === "pp");
+      if (v === "pp") { finish(); buildCrowd(); }
       $("lede").textContent = v === "pp" ? "Every pixel here is one of us. Glad you found us. We host meetups, critiques and good company for anyone who designs anything." : ORIG_LEDE;
       $("cta-label").textContent = v === "pp" ? "Add your pixel" : "Come say hi";
       $("cta-label").closest("a").setAttribute("href", v === "pp" ? "#pp-join" : "#");

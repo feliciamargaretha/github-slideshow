@@ -8,7 +8,7 @@
 <link rel="icon" href="assets/logos/arrow-tile.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&family=Newsreader:opsz,wght@6..72,400&family=Patrick+Hand&display=swap">
 <style>
 /* Layout: techy meets tactile. A white header with the title in the middle and coloured
    pixels scattered around it, thickening towards the bottom. Scrolling draws a pixel
@@ -393,6 +393,121 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .fold.folded .pc-pink { transform: rotateX(180deg); opacity: 0; transition-delay: 0s; }
 .fold.instant .pc { transition: none; }
 @media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
+/* ---- People Pixels options (prefixed pp-) ---- */
+:root { --P: 12px; --f-mono: "Geist Mono", ui-monospace, Menlo, monospace; }
+.pp-sec { max-width: 1160px; margin: 0 auto; padding-block: clamp(64px, 9vw, 112px); }
+.pp-h2 { margin: 0; font: 400 clamp(2rem, 3.6vw, 3.2rem)/1.05 var(--f-display); letter-spacing: -.02em; text-wrap: balance; }
+.pp-sub { margin: 16px 0 0; max-width: 46ch; color: var(--soft); }
+.pp-note { font: 400 19px/1.2 var(--f-hand); color: var(--soft); }
+.pp-px { display: inline-block; width: var(--P); height: var(--P); background: var(--c); }
+
+/* ways to join in: each program is a different arrangement of people */
+.pp-formats { list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 40px 24px; }
+.pp-format { display: grid; gap: 8px; align-content: start; }
+.pp-shape { display: block; width: 100%; aspect-ratio: 1; background: #fafafa; border-radius: 4px; margin-bottom: 16px; }
+.pp-shape rect { transition: transform 1.1s cubic-bezier(.2,.8,.2,1), opacity .5s; }
+.pp-formats:not(.pp-in) .pp-shape rect.pp-p { opacity: 0; }
+.pp-format h3 { margin: 0; font: 600 18px/1.3 var(--f-body); }
+.pp-format p { margin: 0; color: var(--soft); }
+.pp-format .pp-note { margin-top: 4px; font-size: 17px; }
+
+/* photos: a coarse mosaic that sharpens when you look closer */
+.pp-photos { margin-top: 64px; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 24px; align-items: end; }
+.pp-photo { position: relative; margin: 0; }
+.pp-photo canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; cursor: zoom-in; border-radius: 2px; }
+.pp-photo figcaption { margin-top: 8px; display: flex; justify-content: space-between; gap: 8px; font: 500 12px/1.2 var(--f-mono); color: var(--soft); }
+
+/* next event: the month as one square per day, lighting up as events happen */
+.pp-event { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 40px 64px; align-items: start; margin-top: 40px; }
+.pp-cal { display: grid; grid-template-columns: repeat(7, 44px); gap: 6px; }
+.pp-cal .pp-dn { font: 500 11px/1 var(--f-mono); color: var(--soft); text-align: center; padding-bottom: 4px; }
+.pp-cal .pp-d { position: relative; height: 44px; background: #f2f3f5; font: 500 11px/1 var(--f-mono); color: #9a9da3; padding: 4px; }
+.pp-cal .pp-d.pp-past { background: color-mix(in srgb, var(--c) 35%, #fff); color: #555; }
+.pp-cal .pp-d.pp-next { background: var(--blue); color: #fff; }
+.pp-cal .pp-d.pp-next::after { content: ""; position: absolute; inset: -5px; border: 2px solid var(--blue); animation: pp-blink 1.6s steps(2) infinite; }
+@keyframes pp-blink { 50% { opacity: 0; } }
+.cal-cap { grid-column: 1 / -1; margin-top: 12px; }
+.pp-ev { display: grid; gap: 16px; justify-items: start; min-width: 0; }
+.pp-ev .pp-when { font: 500 13px/1 var(--f-mono); letter-spacing: .06em; color: var(--blue); }
+.pp-ev h3 { margin: 0; font: 400 clamp(1.7rem, 2.8vw, 2.4rem)/1.1 var(--f-display); letter-spacing: -.015em; }
+.pp-ev p { margin: 0; max-width: 48ch; color: var(--soft); }
+.history { display: flex; flex-wrap: wrap; gap: 4px; max-width: 360px; }
+.history .pp-px { --P: 10px; }
+
+/* FAQ: answers build in pixel row by pixel row */
+.pp-faq { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 32px 64px; align-items: start; }
+.pp-qa { border-top: 1px solid var(--line); }
+.pp-qa:last-child { border-bottom: 1px solid var(--line); }
+.pp-qa summary { display: flex; align-items: center; gap: 16px; padding: 20px 0; cursor: pointer; list-style: none; font: 600 17px/1.35 var(--f-body); }
+.pp-qa summary::-webkit-details-marker { display: none; }
+.pp-qa summary .pp-px { flex: none; --P: 10px; transition: transform .2s; }
+.pp-qa[open] summary .pp-px { transform: rotate(45deg); }
+.pp-qa p { margin: 0 0 20px 26px; color: var(--soft); max-width: 56ch; }
+.pp-qa[open] p { animation: pp-build .5s steps(6) both; }
+@keyframes pp-build { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* footer: Näsinneula made of members, with gaps for new ones */
+.pp-foot { background: #fbfbfc; }
+.pp-foot .pp-sec { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 48px 64px; align-items: center; }
+.pp-mosaic { display: grid; grid-template-columns: repeat(56, 10px); gap: 2px; justify-content: center; }
+.pp-mosaic i { width: 10px; height: 10px; }
+.pp-mosaic i.pp-f { background: var(--c); }
+.pp-mosaic i.pp-gap { outline: 1px dashed #b9bcc2; outline-offset: -1px; cursor: default; }
+.pp-adding .pp-mosaic i.pp-gap { cursor: pointer; outline-color: var(--ink); animation: pp-blink 1s steps(2) infinite; }
+.pp-mosaic i.pp-you { background: var(--c); animation: pp-pop .4s cubic-bezier(.3,1.6,.5,1); position: relative; }
+.pp-mosaic i.pp-you::after { content: "you!"; position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font: 400 16px/1 var(--f-hand); color: var(--ink); }
+@keyframes pp-pop { from { transform: scale(0); } }
+.pp-join-box { display: grid; gap: 16px; justify-items: start; }
+.pp-pick { display: flex; gap: 8px; align-items: center; }
+.pp-pick button { width: 28px; height: 28px; border: 0; padding: 0; background: var(--c); cursor: pointer; }
+.pp-pick button[aria-pressed="true"] { box-shadow: 0 0 0 2px #fbfbfc, 0 0 0 4px var(--ink); }
+.pp-foot-bar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding-block: 24px 40px; border-top: 1px solid var(--line); max-width: 1160px; margin: 0 auto; font-size: 15px; color: var(--soft); }
+.pp-foot-bar nav { display: flex; gap: 24px; }
+.pp-foot-bar a { color: var(--ink); text-decoration: none; }
+.pp-brand { font: 400 20px/1 var(--f-display); color: var(--ink); }
+.pp-reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s, transform .8s cubic-bezier(.2,.8,.2,1); }
+.pp-reveal.pp-in { opacity: 1; transform: none; }
+
+@media (max-width: 1100px) { .pp-foot .pp-sec { grid-template-columns: 1fr; } .pp-mosaic { justify-content: start; } }
+@media (max-width: 960px) {
+  .pp-formats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pp-event, .pp-faq { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) { .pp-mosaic { grid-template-columns: repeat(56, 5px); gap: 1px; } .pp-mosaic i { width: 5px; height: 5px; } .pp-mosaic i.pp-you::after { bottom: 8px; } .pp-photos { grid-template-columns: 1fr 1fr; } .pp-photo:first-child { grid-column: 1 / -1; } .hint { display: none; } }
+@media (max-width: 480px) { .pp-formats { grid-template-columns: 1fr; } .pp-cal { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) {
+  .m, .pp-shape rect, .pp-reveal { transition: none !important; }
+  .top .m { opacity: 1; transform: none; }
+  .pp-reveal { opacity: 1; transform: none; }
+  .pp-qa[open] p, .pp-cal .pp-d.pp-next::after, .pp-adding .pp-mosaic i.pp-gap { animation: none; }
+}
+.logo .logo-img { display: block; height: 28px; width: auto; }
+
+/* pixel logo: four pieces that unfold like origami, blue first */
+.fold { --h: 28px; --k: calc(var(--h) / 164px); position: relative; display: inline-block; width: calc(232px * var(--k)); height: var(--h); perspective: 600px; flex: none; }
+.fold-in { position: absolute; left: 0; top: 0; width: 232px; height: 164px; transform: scale(var(--k)); transform-origin: 0 0; transform-style: preserve-3d; }
+.fold .pc { position: absolute; display: block; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.5,0,.25,1.15), opacity .15s linear; }
+.fold .pc > svg { display: block; width: 100%; height: 100%; overflow: visible; backface-visibility: visible; }
+.fold .pc-blue { left: 0; top: 0; width: 71px; height: 63px; }
+.fold .pc-yellow { left: 71px; top: 0; width: 60px; height: 63px; transform-origin: 0 50%; transition-delay: .1s; }
+.fold .pc-green { left: 60px; top: 0; width: 100px; height: 88px; transform-origin: 0 50%; transition-delay: .55s; }
+.fold .pc-pink { left: 4px; top: 88px; width: 96px; height: 77px; transform-origin: 50% 0; transition-delay: 1s; }
+/* folded: each piece lies flipped back over the one before it */
+.fold.folded .pc-yellow, .fold.folded .pc-green { transform: rotateY(-180deg); opacity: 0; transition-delay: 0s; }
+.fold.folded .pc-pink { transform: rotateX(180deg); opacity: 0; transition-delay: 0s; }
+.fold.instant .pc { transition: none; }
+@media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
+
+[hidden] { display: none !important; }
+/* review switch */
+.mode-switch {
+  position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: calc(100vw - 32px); padding: 4px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(20,20,20,.12); font: 500 13px/1 var(--f-body);
+}
+.mode-switch span { padding: 0 8px; color: var(--soft); }
+.mode-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--ink); cursor: pointer; }
+.mode-switch button[aria-pressed="true"] { background: #e3effd; color: #1b5fb8; }
 </style>
 </head>
 <body>
@@ -425,7 +540,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       <span class="kicker">Hi, we are</span>
       <span class="line" id="line"><span class="w w-design" id="design"><span class="sel" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Design<span id="ers"></span></span><span class="w w-of" id="of"></span><span class="w w-tampere" id="tampere">Tampere</span></span>
     </h1>
-    <p class="lede">Glad you found us. We host meetups, critiques and good company for anyone who designs anything.</p>
+    <p class="lede" id="lede">Glad you found us. We host meetups, critiques and good company for anyone who designs anything.</p>
     <a class="cta" href="#">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <g class="hand">
@@ -437,7 +552,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         <path d="M19.5 3.4Q21 4.75 21.45 6.8" stroke-width="1.38"/>
         <path d="M2.7 7.6Q3 5.6 4.55 4.3" stroke-width="1.44"/>
       </svg>
-      Come say hi
+      <span id="cta-label">Come say hi</span>
     </a>
   </div>
   <div class="cursor" id="cursor" aria-hidden="true">
@@ -445,9 +560,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </header>
 
-<div class="trail" id="trail" aria-hidden="true"><canvas id="trail-px"></canvas></div>
+<div class="trail" id="trail" aria-hidden="true" data-group="join" data-opt="orig"><canvas id="trail-px"></canvas></div>
 
-<section class="meet wrap" id="about" aria-labelledby="programs-title">
+<section class="meet wrap" id="about" data-group="join" data-opt="orig" aria-labelledby="programs-title">
   <div class="photos" id="photos">
     <figure class="polaroid one" style="margin:0">
       <div class="photo"><span>Event photo</span></div>
@@ -476,7 +591,24 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </section>
 
-<section class="sec wrap" id="events" aria-labelledby="event-title">
+<section data-group="join" data-opt="pp" hidden class="pp-sec wrap" id="pp-about" aria-labelledby="pp-about-title">
+  <h2 class="pp-h2" id="pp-about-title">Ways to join in</h2>
+  <p class="pp-sub">Same people, different shapes. Each format arranges us a little differently.</p>
+  <ul class="pp-formats" id="pp-formats">
+    <li class="pp-format"><svg class="pp-shape" id="pp-s-meet" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Monthly meetups</h3><p>Short talks, show-and-tell and snacks, once a month.</p><span class="pp-note">everyone in one room</span></li>
+    <li class="pp-format"><svg class="pp-shape" id="pp-s-crit" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p><span class="pp-note">a small circle</span></li>
+    <li class="pp-format"><svg class="pp-shape" id="pp-s-work" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p><span class="pp-note">rows, facing the front</span></li>
+    <li class="pp-format"><svg class="pp-shape" id="pp-s-studio" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p><span class="pp-note">a group, heading in</span></li>
+  </ul>
+  <div class="pp-photos pp-reveal">
+    <figure class="pp-photo"><canvas width="600" height="440" data-seed="1" aria-label="Event photo placeholder"></canvas><figcaption><span>meetup_oct.jpg</span><span class="pp-res">12 px</span></figcaption></figure>
+    <figure class="pp-photo"><canvas width="440" height="330" data-seed="2" aria-label="Event photo placeholder"></canvas><figcaption><span>crit_club.jpg</span><span class="pp-res">12 px</span></figcaption></figure>
+    <figure class="pp-photo"><canvas width="440" height="330" data-seed="3" aria-label="Event photo placeholder"></canvas><figcaption><span>workshop.jpg</span><span class="pp-res">12 px</span></figcaption></figure>
+  </div>
+  <p class="pp-note" style="margin-top:16px">↑ hover a photo to zoom in</p>
+</section>
+
+<section class="sec wrap" id="events" data-group="event" data-opt="orig" aria-labelledby="event-title">
   <div class="sec-head">
     <h2 class="h2">Our next event</h2>
   </div>
@@ -497,7 +629,20 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </article>
 </section>
 
-<section class="sec wrap faq" id="faq" aria-labelledby="faq-title">
+<section data-group="event" data-opt="pp" hidden class="pp-sec wrap pp-reveal" id="pp-events" aria-labelledby="pp-event-title">
+  <h2 class="pp-h2">Our next event</h2>
+  <div class="pp-event">
+    <div class="pp-cal" id="pp-cal" aria-label="November 2026 calendar"></div>
+    <div class="pp-ev">
+      <span class="pp-when">THU 19 NOV · 17:30–20:00</span>
+      <h3 id="pp-event-title">Autumn meetup: show and tell</h3>
+      <p>Three short talks, an open show-and-tell and plenty of time to chat. Bring something you're working on, finished or not. Venue to be announced. Free.</p>
+      <a class="cta" href="#">Save my spot</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec wrap faq" id="faq" data-group="faq" data-opt="orig" aria-labelledby="faq-title">
   <div class="faq-side">
     <h2 class="h2" id="faq-title">Questions, answered</h2>
     <p>Something else on your mind? Ask us at the next meetup or send us a message.</p>
@@ -512,7 +657,15 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </section>
 
-<footer class="foot-a" aria-label="Footer, option A">
+<section data-group="faq" data-opt="pp" hidden class="pp-sec wrap pp-faq pp-reveal" id="pp-faq" aria-labelledby="pp-faq-title">
+  <div>
+    <h2 class="pp-h2" id="pp-faq-title">Questions, answered</h2>
+    <p class="pp-sub">Something else on your mind? Ask us at the next meetup or send us a message.</p>
+  </div>
+  <div id="pp-qas"></div>
+</section>
+
+<footer class="foot-a" data-group="foot" data-opt="orig" aria-label="Footer, option A">
   <div class="bricks" aria-hidden="true"></div>
   <div class="in wrap">
     <span class="opt">Footer option A · boxes drop in, drag them around</span>
@@ -525,7 +678,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </footer>
 
-<footer class="foot-b" aria-label="Footer, option B">
+<footer class="foot-b" data-group="foot" data-opt="orig" aria-label="Footer, option B">
   <div class="bricks" aria-hidden="true"></div>
   <div class="in wrap">
     <span class="opt">Footer option B · pixel bands spread left to right</span>
@@ -539,6 +692,36 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <canvas class="bands" id="bands" aria-hidden="true"></canvas>
 </footer>
 
+<footer data-group="foot" data-opt="pp" hidden class="pp-foot wrap" id="pp-join">
+  <div class="pp-sec">
+    <div class="pp-mosaic" id="pp-mosaic" role="img" aria-label="Näsinneula made of coloured pixels, one per member, with a few empty spots"></div>
+    <div class="pp-join-box">
+      <h2 class="pp-h2">There's a spot<br>with your name on it</h2>
+      <p class="pp-sub" style="margin:0">Näsinneula, made of everyone who has joined. Pick a colour and place your pixel in one of the gaps.</p>
+      <div class="pp-pick" id="pp-pick" role="radiogroup" aria-label="Your colour">
+        <button type="button" role="radio" aria-label="Blue" aria-pressed="true" style="--c: var(--blue)"></button>
+        <button type="button" role="radio" aria-label="Pink" aria-pressed="false" style="--c: var(--pink)"></button>
+        <button type="button" role="radio" aria-label="Yellow" aria-pressed="false" style="--c: var(--yellow)"></button>
+        <button type="button" role="radio" aria-label="Green" aria-pressed="false" style="--c: var(--green)"></button>
+      </div>
+      <button class="cta" type="button" id="pp-add">Add your pixel</button>
+      <span class="pp-note" id="pp-add-note" aria-live="polite"></span>
+    </div>
+  </div>
+  <div class="pp-foot-bar">
+    <span class="pp-brand">Tampere Design</span>
+    <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
+    <span>© 2026</span>
+  </div>
+</footer>
+
+<div class="mode-switch" role="group" aria-label="Page options (review only)">
+  <span>Header</span><button type="button" data-g="head" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="head" data-v="pp" aria-pressed="false">Add your pixel</button>
+  <span>Join in</span><button type="button" data-g="join" data-v="orig" aria-pressed="true">Polaroids</button><button type="button" data-g="join" data-v="pp" aria-pressed="false">Shapes</button>
+  <span>Event</span><button type="button" data-g="event" data-v="orig" aria-pressed="true">Ticket</button><button type="button" data-g="event" data-v="pp" aria-pressed="false">Calendar</button>
+  <span>FAQ</span><button type="button" data-g="faq" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="faq" data-v="pp" aria-pressed="false">Pixel</button>
+  <span>Footer</span><button type="button" data-g="foot" data-v="orig" aria-pressed="true">Boxes</button><button type="button" data-g="foot" data-v="pp" aria-pressed="false">Mosaic</button>
+</div>
 <canvas id="cursor-px" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50"></canvas>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
@@ -906,6 +1089,134 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     cursor.classList.remove("on");
     await sleep(300);
   };
+
+  /* formats: the same 16 people, arranged four ways */
+  const COL = ["--blue", "--pink", "--yellow", "--green"].map((v) => css.getPropertyValue(v).trim());
+  const N = 16, S = 9;
+  const layouts = {
+    "pp-s-meet": Array.from({ length: N }, (_, i) => { const q = rng(30 + i); return [30 + q() * 72, 34 + q() * 64]; }),
+    "pp-s-crit": Array.from({ length: 8 }, (_, i) => [66 + Math.cos(i / 8 * 6.283) * 34, 66 + Math.sin(i / 8 * 6.283) * 34]),
+    "pp-s-work": Array.from({ length: 15 }, (_, i) => [28 + (i % 5) * 18, 58 + Math.floor(i / 5) * 20]),
+    "pp-s-studio": Array.from({ length: 6 }, (_, i) => [16 + (i % 3) * 13, 84 + Math.floor(i / 3) * 13]),
+  };
+  const extra = {
+    "pp-s-work": '<rect x="56" y="22" width="24" height="9" fill="#141414"/>',
+    "pp-s-crit": '<rect x="61" y="61" width="11" height="11" fill="none" stroke="#141414" stroke-width="1.5" stroke-dasharray="2 2"/>',
+    "pp-s-studio": '<path d="M78 112V54l20-14 20 14v58" fill="none" stroke="#141414" stroke-width="2"/><rect x="92" y="94" width="12" height="18" fill="#141414"/><rect x="86" y="64" width="9" height="9" fill="#141414"/><rect x="101" y="64" width="9" height="9" fill="#141414"/>',
+  };
+  for (const [id, pts] of Object.entries(layouts)) {
+    const svg = $(id), q = rng(id.length * 7);
+    svg.innerHTML = (extra[id] || "") + pts.map(([x, y], i) => {
+      const fx = (q() - .5) * 160, fy = (q() - .5) * 160;
+      return `<rect class="pp-p" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${S}" height="${S}" fill="${COL[i % 4]}" style="transform: translate(${fx.toFixed(0)}px, ${fy.toFixed(0)}px); transition-delay: ${i * 40}ms"/>`;
+    }).join("");
+  }
+  const formats = $("pp-formats");
+  const settle = () => { formats.classList.add("pp-in"); formats.querySelectorAll("rect.pp-p").forEach((p) => (p.style.transform = "none")); };
+
+  /* photos: a soft placeholder scene drawn at a coarse pixel size, sharpening on hover */
+  document.querySelectorAll(".pp-photo canvas").forEach((cv) => {
+    const ctx = cv.getContext("2d"), W = cv.width, H = cv.height, q = rng(+cv.dataset.seed * 11);
+    const src = document.createElement("canvas"); src.width = W; src.height = H;
+    const s = src.getContext("2d");
+    const g = s.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#e7ecf8"); g.addColorStop(1, "#f6e9f2"); s.fillStyle = g; s.fillRect(0, 0, W, H);
+    for (let i = 0; i < 7; i++) {           // people-ish blobs: heads and shoulders
+      const x = (i + .5) / 7 * W + (q() - .5) * 40, y = H * (.52 + q() * .12), c = COL[i % 4];
+      s.fillStyle = c; s.beginPath(); s.ellipse(x, y + H * .3, W * .07, H * .26, 0, 0, 7); s.fill();
+      s.fillStyle = "#3a3340"; s.beginPath(); s.arc(x, y, W * .035, 0, 7); s.fill();
+    }
+    const res = cv.parentElement.querySelector(".pp-res");
+    let block = 24, target = 24, raf = 0;
+    const draw = () => {
+      const b = Math.max(1, Math.round(block)), w = Math.ceil(W / b), h = Math.ceil(H / b);
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(src, 0, 0, W, H, 0, 0, w, h);
+      ctx.drawImage(cv, 0, 0, w, h, 0, 0, W, H);
+      res.textContent = b === 1 ? "full size" : b + " px";
+    };
+    const tick = () => { block += (target - block) * .18; draw(); raf = Math.abs(target - block) > .3 ? requestAnimationFrame(tick) : (block = target, draw(), 0); };
+    const go = (t) => { target = t; if (reduce) { block = t; draw(); } else if (!raf) raf = requestAnimationFrame(tick); };
+    cv.addEventListener("pointerenter", () => go(1));
+    cv.addEventListener("pointerleave", () => go(24));
+    cv.addEventListener("click", () => go(block > 4 ? 1 : 24));
+    draw();
+  });
+
+  /* calendar: November 2026 starts on a Sunday; Mondays first */
+  const cal = $("pp-cal");
+  cal.innerHTML = ["M", "T", "W", "T", "F", "S", "S"].map((d) => `<span class="pp-dn">${d}</span>`).join("")
+    + '<span></span>'.repeat(6)
+    + Array.from({ length: 30 }, (_, i) => {
+      const d = i + 1, past = { 5: 2, 12: 1 }[d];
+      return `<span class="pp-d${d === 19 ? " pp-next" : past !== undefined ? " pp-past" : ""}"${past !== undefined ? ` style="--c:${COL[past]}"` : ""}>${d}</span>`;
+    }).join("");
+
+  /* FAQ */
+  const FAQ = [["Who can join?", "Anyone who designs anything: UX and UI, graphic, service, industrial, students, career switchers and the design-curious."],
+    ["Do I need a portfolio or a design job?", "No. Come as you are. Half-finished ideas are welcome, and so is just listening."],
+    ["Does it cost anything?", "Meetups are free. If a workshop ever needs a small fee for materials, we say so up front."],
+    ["Are events in English or Finnish?", "Mostly English, so everyone can follow along. Finnish is always welcome over coffee afterwards."],
+    ["How do I hear about the next event?", "Follow us on Instagram or join the mailing list. We post each event at least two weeks ahead."],
+    ["Can I give a talk or run a workshop?", "Yes, please. Tell us your idea at a meetup or send us a message, and we'll help you shape it."]];
+  $("pp-qas").innerHTML = FAQ.map(([q, a], i) => `<details class="pp-qa"><summary><span class="pp-px" style="--c:${COL[i % 4]}"></span>${q}</summary><p>${a}</p></details>`).join("");
+
+  /* footer mosaic */
+  const M = ["........................................................", "........................................................", "............................2...........................", "............................1...........................", "............................3...........................", "...........................30...........................", "...........................00...........................", "...........................03...........................", "............................00..........................", ".............................02.........................", "........................................................", "...................103120210303300003...................", "....................20303001300322200...................", "..........................02010.........................", ".............................03.........................", ".............................30.........................", ".............................12.........................", ".............................10.........................", ".............................31.........................", ".............................22.........................", ".............................30.........................", ".............................03.........................", ".............................11.........................", ".............................30.........................", ".............................12.........................", ".............................30.........................", ".............................01.........................", ".............................30.........................", ".............................10.........................", ".............................00.........................", ".............................202........................", ".............................032........................", ".............................201........................", ".............................202........................", ".............................302........................", ".............................002........................", ".............................032........................", ".............................300........................", "..................3203.......100..........0......1.0....", ".................32013.......200..........13.0..31033...", "...........0112..10o30200...2230.........323003130001..2", "..0003.....13031000300300...2123.1302..3030o220202330303", "1210200.200333223200130001211001000320.03203213112030220", "00303002300011201013201313330002220023002202013223233122", "312003221002o3311202000301011002303321003002220o20120021", "0230022032000303oo331100020311113012133132031o0203032302"];
+  const mosaic = $("pp-mosaic");
+  mosaic.innerHTML = M.map((row) => [...row].map((ch) => ch === "." ? "<i></i>" : ch === "o" ? '<i class="pp-gap"></i>' : `<i class="pp-f" style="--c:${COL[+ch]}"></i>`).join("")).join("");
+  let colour = COL[0], adding = false;
+  const note = $("pp-add-note"), foot = $("pp-join");
+  document.querySelectorAll("#pp-pick button").forEach((b, i) => b.addEventListener("click", () => {
+    colour = COL[i];
+    document.querySelectorAll("#pp-pick button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+  }));
+  $("pp-add").addEventListener("click", () => {
+    adding = !adding; foot.classList.toggle("pp-adding", adding);
+    note.textContent = adding ? "Now click one of the blinking gaps in the tower." : "";
+  });
+  mosaic.addEventListener("click", (e) => {
+    const t = e.target;
+    if (!adding || !t.classList.contains("pp-gap")) return;
+    mosaic.querySelectorAll(".pp-you").forEach((y) => y.classList.remove("pp-you"));
+    t.className = "pp-you"; t.style.setProperty("--c", colour);
+    adding = false; foot.classList.remove("pp-adding");
+    note.textContent = "That's you. In the real site this would open the sign-up form.";
+  });
+
+  /* reveal the People Pixels sections when they scroll into view */
+  const ppIO = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    ppIO.unobserve(e.target);
+    if (e.target === formats) settle(); else e.target.classList.add("pp-in");
+  }), { threshold: .2 });
+  if (reduce) { settle(); document.querySelectorAll(".pp-reveal").forEach((el) => el.classList.add("pp-in")); }
+  else { ppIO.observe(formats); document.querySelectorAll(".pp-reveal").forEach((el) => ppIO.observe(el)); }
+
+  /* review switch: original or People Pixels version of each part */
+  const ORIG_LEDE = $("lede").textContent;
+  document.querySelectorAll("[data-group]").forEach((el) => {
+    const base = el.id.replace(/^pp-/, "");
+    if (["about", "events", "faq"].includes(base)) el.dataset.base = base;
+  });
+  const swap = (g, v) => {
+    if (g === "head") {
+      $("lede").textContent = v === "pp" ? "Every pixel here is one of us. Glad you found us. We host meetups, critiques and good company for anyone who designs anything." : ORIG_LEDE;
+      $("cta-label").textContent = v === "pp" ? "Add your pixel" : "Come say hi";
+      $("cta-label").closest("a").setAttribute("href", v === "pp" ? "#pp-join" : "#");
+    } else {
+      document.querySelectorAll(`[data-group="${g}"]`).forEach((el) => {
+        const on = el.dataset.opt === v;
+        el.hidden = !on;
+        // keep the navbar anchors pointing at whichever version is showing
+        const base = el.dataset.base;
+        if (base) el.id = on ? base : (el.dataset.opt === "pp" ? "pp-" + base : base + "-hidden");
+      });
+      if (g === "join") { layout(); requestAnimationFrame(drawTrail); }
+    }
+    document.querySelectorAll(`.mode-switch [data-g="${g}"]`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+  };
+  document.querySelectorAll(".mode-switch button").forEach((b) => b.addEventListener("click", () => swap(b.dataset.g, b.dataset.v)));
 
   /* wiring */
   /* placed polaroids hand their transform back to the hover styles */

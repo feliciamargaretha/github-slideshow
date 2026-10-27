@@ -499,10 +499,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 @media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
 
 [hidden] { display: none !important; }
-/* header option "Add your pixel": sparse single pixels drifting in, a still title */
+/* header option "Add your pixel": sparse single pixels drifting in */
 .pp-crowd { position: absolute; inset: 0; display: none; pointer-events: none; }
 .top.pp-head .pp-crowd { display: block; }
-.top.pp-head #px, .top.pp-head .sel { visibility: hidden; }
+.top.pp-head #px { visibility: hidden; }
 .pp-m { position: absolute; left: var(--x); top: var(--y); width: 12px; height: 12px; background: var(--c);
   opacity: 0; transform: translate(var(--dx), var(--dy)); transition: transform 1.4s cubic-bezier(.2,.8,.2,1) var(--d), opacity .6s ease var(--d); }
 .pp-crowd.ready .pp-m { opacity: 1; transform: none; }
@@ -1210,7 +1210,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   const buildCrowd = () => {
     const crowd = $("pp-crowd"); if (crowd.childElementCount) return;
     const COLS = ["--blue", "--pink", "--yellow", "--green"].map((v) => css.getPropertyValue(v).trim());
+    // measure the title as it ends up ("Designers of Tampere"), not mid-animation
+    const saved = [line.className, ers.textContent, of.textContent];
+    line.classList.add("swapped", "of-on"); ers.textContent = "ers"; of.textContent = "of";
     const T = top.getBoundingClientRect(), Hr = hero.getBoundingClientRect(), Nr = $("nav").getBoundingClientRect(), r = rng(9), spots = [];
+    [line.className, ers.textContent, of.textContent] = saved;
     const clear = { x0: (Hr.left - T.left - 24) / T.width * 100, x1: (Hr.right - T.left + 24) / T.width * 100,
                     y0: (Hr.top - T.top - 24) / T.height * 100, y1: (Hr.bottom - T.top + 24) / T.height * 100 };
     const navY = Math.max(6, (Nr.bottom - T.top + 16) / T.height * 100);
@@ -1233,7 +1237,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       document.querySelector(".logo-steps").hidden = v !== "pp";
     } else if (g === "head") {
       top.classList.toggle("pp-head", v === "pp");
-      if (v === "pp") { finish(); buildCrowd(); }
+      if (v === "pp") buildCrowd();
       $("lede").textContent = v === "pp" ? "Every pixel here is one of us. Glad you found us. We host meetups, critiques and good company for anyone who designs anything." : ORIG_LEDE;
       $("cta-label").textContent = v === "pp" ? "Add your pixel" : "Come say hi";
       $("cta-label").closest("a").setAttribute("href", v === "pp" ? "#pp-join" : "#");

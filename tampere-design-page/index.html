@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Designers of Tampere</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%229%22%20y%3D%2214%22%20width%3D%2246%22%20height%3D%2236%22%20fill%3D%22none%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%226%22%20y%3D%2211%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%226%22%20y%3D%2247%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%2252%22%20y%3D%2211%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%2252%22%20y%3D%2247%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2244%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2C%20serif%22%20font-weight%3D%22700%22%20font-size%3D%2230%22%20fill%3D%22%23141414%22%3ETD%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
 <style>
 /* Layout: the header is a design file's canvas. Dotted paper, the headline in the middle,
    a few things a designer leaves lying around scattered at the edges, and a toolbar
@@ -377,13 +378,15 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   .board { gap: 96px; }
 }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+.logo .logo-img { display: block; height: 28px; width: auto; }
+.logo .logo-td { width: auto; height: 30px; color: var(--ink); overflow: visible; }
 </style>
 </head>
 <body>
 
 <header class="canvas" id="canvas">
   <nav class="nav" id="nav" aria-label="Main">
-    <a class="logo" href="#canvas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true"><path d="M7 3v18M17 3v18M3 7h18M3 17h18" stroke-width="1.6"/></svg><span>Tampere Design</span></a>
+    <a class="logo" href="#canvas"><svg class="logo-td" viewBox="-4 -1 122 58" role="img" aria-label="TD"><circle cx="26" cy="28" r="22" fill="none" stroke="#0d99ff" stroke-opacity=".35" stroke-width=".8"/><rect x="1" y="3" width="50" height="50" fill="none" stroke="#0d99ff" stroke-width="1.2"/><rect x="-1.5" y="0.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><rect x="-1.5" y="50.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><rect x="48.5" y="0.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><rect x="48.5" y="50.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><circle cx="88" cy="28" r="22" fill="none" stroke="#0d99ff" stroke-opacity=".35" stroke-width=".8"/><rect x="63" y="3" width="50" height="50" fill="none" stroke="#0d99ff" stroke-width="1.2"/><rect x="60.5" y="0.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><rect x="60.5" y="50.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><rect x="110.5" y="0.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><rect x="110.5" y="50.5" width="5" height="5" fill="#fff" stroke="#0d99ff" stroke-width="1.2"/><text x="26" y="44" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-weight="700" font-size="44" fill="currentColor">T</text><text x="88" y="44" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-weight="700" font-size="44" fill="currentColor">D</text></svg><span>Tampere Design</span></a>
     <ul class="nav-links" id="nav-links">
       <li><a href="#events">Events</a></li>
       <li><a href="#about">About</a></li>

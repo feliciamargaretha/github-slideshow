@@ -499,6 +499,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 @media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
 
 [hidden] { display: none !important; }
+.logo .logo-steps { display: block; width: 36px; height: 36px; border-radius: 8px; }
 /* review switch */
 .mode-switch {
   position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
@@ -514,7 +515,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <header class="top wrap" id="top">
   <nav class="nav" id="nav" aria-label="Main">
-    <a class="logo" href="#top"><span class="fold" aria-hidden="true"><span class="fold-in">
+    <a class="logo" href="#top"><img class="logo-steps" src="assets/logos/td-steps.png" width="402" height="402" alt="" hidden><span class="fold" aria-hidden="true"><span class="fold-in">
   <span class="pc pc-blue"><svg viewBox="0 0 71 63"><path d="M11 0H71V63H11Q0 63 0 52V11Q0 0 11 0Z" fill="#205bff"/></svg>
     <span class="pc pc-yellow"><svg viewBox="0 0 60 63"><path d="M0 0H60V63H0Z" fill="#ffee0f"/><path d="M.75 2V61" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
       <span class="pc pc-green"><svg viewBox="0 0 100 88"><path d="M0 0L99 87H4V71Q4 62 0 62Z" fill="#7affb4"/><path d="M.75 2V60" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/></svg>
@@ -716,6 +717,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 </footer>
 
 <div class="mode-switch" role="group" aria-label="Page options (review only)">
+  <span>Logo</span><button type="button" data-g="logo" data-v="orig" aria-pressed="true">Arrow</button><button type="button" data-g="logo" data-v="pp" aria-pressed="false">td</button>
   <span>Header</span><button type="button" data-g="head" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="head" data-v="pp" aria-pressed="false">Add your pixel</button>
   <span>Join in</span><button type="button" data-g="join" data-v="orig" aria-pressed="true">Polaroids</button><button type="button" data-g="join" data-v="pp" aria-pressed="false">Shapes</button>
   <span>Event</span><button type="button" data-g="event" data-v="orig" aria-pressed="true">Ticket</button><button type="button" data-g="event" data-v="pp" aria-pressed="false">Calendar</button>
@@ -1200,7 +1202,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     if (["about", "events", "faq"].includes(base)) el.dataset.base = base;
   });
   const swap = (g, v) => {
-    if (g === "head") {
+    if (g === "logo") {
+      document.querySelector(".logo .fold").hidden = v === "pp";
+      document.querySelector(".logo-steps").hidden = v !== "pp";
+    } else if (g === "head") {
       $("lede").textContent = v === "pp" ? "Every pixel here is one of us. Glad you found us. We host meetups, critiques and good company for anyone who designs anything." : ORIG_LEDE;
       $("cta-label").textContent = v === "pp" ? "Add your pixel" : "Come say hi";
       $("cta-label").closest("a").setAttribute("href", v === "pp" ? "#pp-join" : "#");

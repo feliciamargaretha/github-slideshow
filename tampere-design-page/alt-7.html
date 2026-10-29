@@ -583,7 +583,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 :root { --accent: #FB8B14; }
 :root.acc-yellow { --accent: #FFD60A; --marker: #FFD60A; }
 :root.acc-yellow .hl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 60' preserveAspectRatio='none'%3E%3Cpath d='M10 34C70 20 130 44 200 30S330 42 400 27S468 38 490 31' fill='none' stroke='%23FFD60A' stroke-width='34' stroke-linecap='round'/%3E%3Cpath d='M16 38C80 28 140 46 210 36S340 44 410 33S470 40 486 37' fill='none' stroke='%23F5C400' stroke-opacity='.55' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E"); }
-.foot-scrib { background: var(--accent); color: #141414; overflow: hidden; }
+.foot-scrib { background: #FFD60A; color: #141414; overflow: hidden; }
 .scrib-band, .foot-scrib .in { max-width: 1240px; margin: 0 auto; box-sizing: border-box; }
 .scrib-band { padding-block: clamp(40px, 6vw, 72px) clamp(20px, 3vw, 32px); }
 .scrib-kicker { margin: 0 0 16px; font: 400 clamp(1.4rem, 2.4vw, 2rem)/1.1 var(--f-display); letter-spacing: -.02em; }
@@ -592,6 +592,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .scrib-words .solid span { display: inline-block; }
 .scrib-words .ink { position: absolute; inset: 0; color: #141414; filter: url(#boil); pointer-events: none; }
 .scrib-words .ink span { position: absolute; line-height: 1; white-space: nowrap; transform-origin: 50% 50%; }
+.foot-scrib.bg-accent { background: var(--accent); }
 .foot-scrib.bg-blue { background: #6E9BF5; }
 .foot-scrib.bg-neutral { background: #B8B6B0; }
 .foot-scrib .foot-bar { border-top: 2px solid #141414; }
@@ -897,7 +898,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <button type="button" data-footer="park" aria-pressed="false">Park</button>
   <button type="button" data-footer="scrib" aria-pressed="false">Scribble</button>
   <span>Footer bg</span>
-  <button type="button" data-fbg="accent" aria-pressed="true">Accent</button>
+  <button type="button" data-fbg="yellow" aria-pressed="true">Yellow</button>
+  <button type="button" data-fbg="accent" aria-pressed="false">Accent</button>
   <button type="button" data-fbg="blue" aria-pressed="false">Blue</button>
   <button type="button" data-fbg="neutral" aria-pressed="false">Neutral</button>
   <span>Accent</span>
@@ -1154,6 +1156,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       inkLayer.append(b);
       return [a, b];
     }).filter(Boolean);
+    const ctx = document.createElement("canvas").getContext("2d");
     let k = 0, timer = 0;
     const rand = (n) => Math.floor(Math.random() * n);
     const fit = () => {
@@ -1175,11 +1178,16 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         b.style.font = `${w} ${r.height * (.72 + Math.random() * .3)}px/1 "${fam}", cursive`;
         b.style.left = `${r.left - box.left + r.width / 2}px`;
         b.style.top = `${r.top - box.top + r.height / 2}px`;
-        b.style.transform = "translate(-50%, -50%)";
-        const bb = b.getBoundingClientRect();
-        const sy = Math.min(1, r.height * 1.05 / bb.height);
-        const sx = Math.min(1.6, Math.max(.7, r.width * 1.05 / bb.width));
-        b.style.transform = `translate(-50%, -50%) rotate(${(Math.random() - .5) * 16}deg) scale(${sx}, ${sy})`;
+        // size by the inked shape, not the font's line box, so tall glyphs stay on the line
+        ctx.font = b.style.font;
+        const m = ctx.measureText(b.textContent);
+        const inkH = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
+        const inkW = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
+        const sy = Math.min(1, r.height * 1.1 / inkH);
+        const sx = Math.min(1.6, Math.max(.7, r.width * 1.05 / inkW));
+        // nudge so the inked shape, not the line box, sits on the letter's centre
+        const dy = (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2 + (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+        b.style.transform = `translate(-50%, -50%) translateY(${-dy * sy}px) rotate(${(Math.random() - .5) * 16}deg) scale(${sx}, ${sy})`;
       });
       noise.setAttribute("seed", String(++k));
     };
@@ -1207,6 +1215,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   });
   group("fbg", (v) => {
     const f = document.querySelector(".foot-scrib");
+    f.classList.toggle("bg-accent", v === "accent");
     f.classList.toggle("bg-blue", v === "blue");
     f.classList.toggle("bg-neutral", v === "neutral");
   });

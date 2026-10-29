@@ -598,9 +598,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </header>
 
-<div class="trail" id="trail" aria-hidden="true" data-group="join" data-opt="orig"><canvas id="trail-px"></canvas></div>
+<div class="trail" id="trail" aria-hidden="true"><canvas id="trail-px"></canvas></div>
 
-<section class="meet wrap" id="about" data-group="join" data-opt="orig" aria-labelledby="programs-title">
+<section class="meet wrap" id="about" aria-labelledby="programs-title">
   <div class="photos" id="photos">
     <figure class="polaroid one" style="margin:0">
       <div class="photo"><span>Event photo</span></div>
@@ -625,23 +625,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         <div><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p></div></li>
     </ul>
   </div>
-</section>
-
-<section data-group="join" data-opt="pp" hidden class="pp-sec wrap" id="pp-about" aria-labelledby="pp-about-title">
-  <h2 class="pp-h2" id="pp-about-title">Ways to join in</h2>
-  <p class="pp-sub">Same people, different shapes. Each format arranges us a little differently.</p>
-  <ul class="pp-formats" id="pp-formats">
-    <li class="pp-format"><svg class="pp-shape" id="pp-s-meet" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Monthly meetups</h3><p>Short talks, show-and-tell and snacks, once a month.</p><span class="pp-note">everyone in one room</span></li>
-    <li class="pp-format"><svg class="pp-shape" id="pp-s-crit" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p><span class="pp-note">a small circle</span></li>
-    <li class="pp-format"><svg class="pp-shape" id="pp-s-work" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p><span class="pp-note">rows, facing the front</span></li>
-    <li class="pp-format"><svg class="pp-shape" id="pp-s-studio" viewBox="0 0 140 140" aria-hidden="true"></svg><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p><span class="pp-note">a group, heading in</span></li>
-  </ul>
-  <div class="pp-photos pp-reveal">
-    <figure class="pp-photo"><canvas width="600" height="440" data-seed="1" aria-label="Event photo placeholder"></canvas><figcaption><span>meetup_oct.jpg</span><span class="pp-res">12 px</span></figcaption></figure>
-    <figure class="pp-photo"><canvas width="440" height="330" data-seed="2" aria-label="Event photo placeholder"></canvas><figcaption><span>crit_club.jpg</span><span class="pp-res">12 px</span></figcaption></figure>
-    <figure class="pp-photo"><canvas width="440" height="330" data-seed="3" aria-label="Event photo placeholder"></canvas><figcaption><span>workshop.jpg</span><span class="pp-res">12 px</span></figcaption></figure>
-  </div>
-  <p class="pp-note" style="margin-top:16px">↑ hover a photo to zoom in</p>
 </section>
 
 <section class="sec wrap" id="events" data-group="event" data-opt="orig" aria-labelledby="event-title">
@@ -698,7 +681,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </section>
 
-<section class="sec wrap faq" id="faq" data-group="faq" data-opt="orig" aria-labelledby="faq-title">
+<section class="sec wrap faq" id="faq" aria-labelledby="faq-title">
   <div class="faq-side">
     <h2 class="h2" id="faq-title">Questions, answered</h2>
     <p>Something else on your mind? Ask us at the next meetup or send us a message.</p>
@@ -713,18 +696,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </section>
 
-<section data-group="faq" data-opt="pp" hidden class="pp-sec wrap pp-faq pp-reveal" id="pp-faq" aria-labelledby="pp-faq-title">
-  <div>
-    <h2 class="pp-h2" id="pp-faq-title">Questions, answered</h2>
-    <p class="pp-sub">Something else on your mind? Ask us at the next meetup or send us a message.</p>
-  </div>
-  <div id="pp-qas"></div>
-</section>
-
-<footer class="foot-a" data-group="foot" data-opt="orig" aria-label="Footer, option A">
+<footer class="foot-a" data-group="foot" data-opt="boxes" aria-label="Footer">
   <div class="bricks" aria-hidden="true"></div>
   <div class="in wrap">
-    <span class="opt">Footer option A · boxes drop in, drag them around</span>
     <div class="drop armed" id="drop" aria-label="your design people are here"><span class="word-box" style="--c:var(--pink)">your</span><span class="word-box" style="--c:var(--blue)">design</span><span class="word-box" style="--c:var(--green)">people</span><span class="word-box" style="--c:var(--yellow)">are</span><span class="word-box" style="--c:var(--pink)">here</span></div>
       <div class="foot-bar">
         <span class="brand">Tampere Design</span>
@@ -734,10 +708,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </footer>
 
-<footer class="foot-b" data-group="foot" data-opt="orig" aria-label="Footer, option B">
+<footer class="foot-b" data-group="foot" data-opt="bands" aria-label="Footer" hidden>
   <div class="bricks" aria-hidden="true"></div>
   <div class="in wrap">
-    <span class="opt">Footer option B · pixel bands spread left to right</span>
     <p class="big">See you at the next one.</p>
     <div class="foot-bar">
         <span class="brand">Tampere Design</span>
@@ -748,36 +721,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <canvas class="bands" id="bands" aria-hidden="true"></canvas>
 </footer>
 
-<footer data-group="foot" data-opt="pp" hidden class="pp-foot wrap" id="pp-join">
-  <div class="pp-sec">
-    <div class="pp-mosaic" id="pp-mosaic" role="img" aria-label="Näsinneula made of coloured pixels, one per member, with a few empty spots"></div>
-    <div class="pp-join-box">
-      <h2 class="pp-h2">There's a spot<br>with your name on it</h2>
-      <p class="pp-sub" style="margin:0">Näsinneula, made of everyone who has joined. Pick a colour and place your pixel in one of the gaps.</p>
-      <div class="pp-pick" id="pp-pick" role="radiogroup" aria-label="Your colour">
-        <button type="button" role="radio" aria-label="Blue" aria-pressed="true" style="--c: var(--blue)"></button>
-        <button type="button" role="radio" aria-label="Pink" aria-pressed="false" style="--c: var(--pink)"></button>
-        <button type="button" role="radio" aria-label="Yellow" aria-pressed="false" style="--c: var(--yellow)"></button>
-        <button type="button" role="radio" aria-label="Green" aria-pressed="false" style="--c: var(--green)"></button>
-      </div>
-      <button class="cta" type="button" id="pp-add">Add your pixel</button>
-      <span class="pp-note" id="pp-add-note" aria-live="polite"></span>
-    </div>
-  </div>
-  <div class="pp-foot-bar">
-    <span class="pp-brand">Tampere Design</span>
-    <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
-    <span>© 2026</span>
-  </div>
-</footer>
-
 <div class="mode-switch" role="group" aria-label="Page options (review only)">
   <span>Logo</span><button type="button" data-g="logo" data-v="orig" aria-pressed="true">Arrow</button><button type="button" data-g="logo" data-v="pp" aria-pressed="false">td</button>
   <span>Header</span><button type="button" data-g="head" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="head" data-v="pp" aria-pressed="false">Add your pixel</button>
-  <span>Join in</span><button type="button" data-g="join" data-v="orig" aria-pressed="true">Polaroids</button><button type="button" data-g="join" data-v="pp" aria-pressed="false">Shapes</button>
   <span>Event</span><button type="button" data-g="event" data-v="tc" aria-pressed="true">Ticket + calendar</button><button type="button" data-g="event" data-v="orig" aria-pressed="false">Ticket</button><button type="button" data-g="event" data-v="pp" aria-pressed="false">Calendar</button>
-  <span>FAQ</span><button type="button" data-g="faq" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="faq" data-v="pp" aria-pressed="false">Pixel</button>
-  <span>Footer</span><button type="button" data-g="foot" data-v="orig" aria-pressed="true">Boxes</button><button type="button" data-g="foot" data-v="pp" aria-pressed="false">Mosaic</button>
+  <span>Footer</span><button type="button" data-g="foot" data-v="boxes" aria-pressed="true">Boxes</button><button type="button" data-g="foot" data-v="bands" aria-pressed="false">Pixel bands</button>
 </div>
 <canvas id="cursor-px" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50"></canvas>
 
@@ -1147,59 +1095,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     await sleep(300);
   };
 
-  /* formats: the same 16 people, arranged four ways */
   const COL = ["--blue", "--pink", "--yellow", "--green"].map((v) => css.getPropertyValue(v).trim());
-  const N = 16, S = 9;
-  const layouts = {
-    "pp-s-meet": Array.from({ length: N }, (_, i) => { const q = rng(30 + i); return [30 + q() * 72, 34 + q() * 64]; }),
-    "pp-s-crit": Array.from({ length: 8 }, (_, i) => [66 + Math.cos(i / 8 * 6.283) * 34, 66 + Math.sin(i / 8 * 6.283) * 34]),
-    "pp-s-work": Array.from({ length: 15 }, (_, i) => [28 + (i % 5) * 18, 58 + Math.floor(i / 5) * 20]),
-    "pp-s-studio": Array.from({ length: 6 }, (_, i) => [16 + (i % 3) * 13, 84 + Math.floor(i / 3) * 13]),
-  };
-  const extra = {
-    "pp-s-work": '<rect x="56" y="22" width="24" height="9" fill="#141414"/>',
-    "pp-s-crit": '<rect x="61" y="61" width="11" height="11" fill="none" stroke="#141414" stroke-width="1.5" stroke-dasharray="2 2"/>',
-    "pp-s-studio": '<path d="M78 112V54l20-14 20 14v58" fill="none" stroke="#141414" stroke-width="2"/><rect x="92" y="94" width="12" height="18" fill="#141414"/><rect x="86" y="64" width="9" height="9" fill="#141414"/><rect x="101" y="64" width="9" height="9" fill="#141414"/>',
-  };
-  for (const [id, pts] of Object.entries(layouts)) {
-    const svg = $(id), q = rng(id.length * 7);
-    svg.innerHTML = (extra[id] || "") + pts.map(([x, y], i) => {
-      const fx = (q() - .5) * 160, fy = (q() - .5) * 160;
-      return `<rect class="pp-p" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${S}" height="${S}" fill="${COL[i % 4]}" style="transform: translate(${fx.toFixed(0)}px, ${fy.toFixed(0)}px); transition-delay: ${i * 40}ms"/>`;
-    }).join("");
-  }
-  const formats = $("pp-formats");
-  const settle = () => { formats.classList.add("pp-in"); formats.querySelectorAll("rect.pp-p").forEach((p) => (p.style.transform = "none")); };
-
-  /* photos: a soft placeholder scene drawn at a coarse pixel size, sharpening on hover */
-  document.querySelectorAll(".pp-photo canvas").forEach((cv) => {
-    const ctx = cv.getContext("2d"), W = cv.width, H = cv.height, q = rng(+cv.dataset.seed * 11);
-    const src = document.createElement("canvas"); src.width = W; src.height = H;
-    const s = src.getContext("2d");
-    const g = s.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#e7ecf8"); g.addColorStop(1, "#f6e9f2"); s.fillStyle = g; s.fillRect(0, 0, W, H);
-    for (let i = 0; i < 7; i++) {           // people-ish blobs: heads and shoulders
-      const x = (i + .5) / 7 * W + (q() - .5) * 40, y = H * (.52 + q() * .12), c = COL[i % 4];
-      s.fillStyle = c; s.beginPath(); s.ellipse(x, y + H * .3, W * .07, H * .26, 0, 0, 7); s.fill();
-      s.fillStyle = "#3a3340"; s.beginPath(); s.arc(x, y, W * .035, 0, 7); s.fill();
-    }
-    const res = cv.parentElement.querySelector(".pp-res");
-    let block = 24, target = 24, raf = 0;
-    const draw = () => {
-      const b = Math.max(1, Math.round(block)), w = Math.ceil(W / b), h = Math.ceil(H / b);
-      ctx.imageSmoothingEnabled = false;
-      ctx.clearRect(0, 0, W, H);
-      ctx.drawImage(src, 0, 0, W, H, 0, 0, w, h);
-      ctx.drawImage(cv, 0, 0, w, h, 0, 0, W, H);
-      res.textContent = b === 1 ? "full size" : b + " px";
-    };
-    const tick = () => { block += (target - block) * .18; draw(); raf = Math.abs(target - block) > .3 ? requestAnimationFrame(tick) : (block = target, draw(), 0); };
-    const go = (t) => { target = t; if (reduce) { block = t; draw(); } else if (!raf) raf = requestAnimationFrame(tick); };
-    cv.addEventListener("pointerenter", () => go(1));
-    cv.addEventListener("pointerleave", () => go(24));
-    cv.addEventListener("click", () => go(block > 4 ? 1 : 24));
-    draw();
-  });
-
   /* calendar: November 2026 starts on a Sunday; Mondays first */
   const cal = $("pp-cal");
   cal.innerHTML = ["M", "T", "W", "T", "F", "S", "S"].map((d) => `<span class="pp-dn">${d}</span>`).join("")
@@ -1209,46 +1105,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       return `<span class="pp-d${d === 19 ? " pp-next" : past !== undefined ? " pp-past" : ""}"${past !== undefined ? ` style="--c:${COL[past]}"` : ""}>${d}</span>`;
     }).join("");
 
-  /* FAQ */
-  const FAQ = [["Who can join?", "Anyone who designs anything: UX and UI, graphic, service, industrial, students, career switchers and the design-curious."],
-    ["Do I need a portfolio or a design job?", "No. Come as you are. Half-finished ideas are welcome, and so is just listening."],
-    ["Does it cost anything?", "Meetups are free. If a workshop ever needs a small fee for materials, we say so up front."],
-    ["Are events in English or Finnish?", "Mostly English, so everyone can follow along. Finnish is always welcome over coffee afterwards."],
-    ["How do I hear about the next event?", "Follow us on Instagram or join the mailing list. We post each event at least two weeks ahead."],
-    ["Can I give a talk or run a workshop?", "Yes, please. Tell us your idea at a meetup or send us a message, and we'll help you shape it."]];
-  $("pp-qas").innerHTML = FAQ.map(([q, a], i) => `<details class="pp-qa"><summary><span class="pp-px" style="--c:${COL[i % 4]}"></span>${q}</summary><p>${a}</p></details>`).join("");
-
-  /* footer mosaic */
-  const M = ["........................................................", "........................................................", "............................2...........................", "............................1...........................", "............................3...........................", "...........................30...........................", "...........................00...........................", "...........................03...........................", "............................00..........................", ".............................02.........................", "........................................................", "...................103120210303300003...................", "....................20303001300322200...................", "..........................02010.........................", ".............................03.........................", ".............................30.........................", ".............................12.........................", ".............................10.........................", ".............................31.........................", ".............................22.........................", ".............................30.........................", ".............................03.........................", ".............................11.........................", ".............................30.........................", ".............................12.........................", ".............................30.........................", ".............................01.........................", ".............................30.........................", ".............................10.........................", ".............................00.........................", ".............................202........................", ".............................032........................", ".............................201........................", ".............................202........................", ".............................302........................", ".............................002........................", ".............................032........................", ".............................300........................", "..................3203.......100..........0......1.0....", ".................32013.......200..........13.0..31033...", "...........0112..10o30200...2230.........323003130001..2", "..0003.....13031000300300...2123.1302..3030o220202330303", "1210200.200333223200130001211001000320.03203213112030220", "00303002300011201013201313330002220023002202013223233122", "312003221002o3311202000301011002303321003002220o20120021", "0230022032000303oo331100020311113012133132031o0203032302"];
-  const mosaic = $("pp-mosaic");
-  mosaic.innerHTML = M.map((row) => [...row].map((ch) => ch === "." ? "<i></i>" : ch === "o" ? '<i class="pp-gap"></i>' : `<i class="pp-f" style="--c:${COL[+ch]}"></i>`).join("")).join("");
-  let colour = COL[0], adding = false;
-  const note = $("pp-add-note"), foot = $("pp-join");
-  document.querySelectorAll("#pp-pick button").forEach((b, i) => b.addEventListener("click", () => {
-    colour = COL[i];
-    document.querySelectorAll("#pp-pick button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
-  }));
-  $("pp-add").addEventListener("click", () => {
-    adding = !adding; foot.classList.toggle("pp-adding", adding);
-    note.textContent = adding ? "Now click one of the blinking gaps in the tower." : "";
-  });
-  mosaic.addEventListener("click", (e) => {
-    const t = e.target;
-    if (!adding || !t.classList.contains("pp-gap")) return;
-    mosaic.querySelectorAll(".pp-you").forEach((y) => y.classList.remove("pp-you"));
-    t.className = "pp-you"; t.style.setProperty("--c", colour);
-    adding = false; foot.classList.remove("pp-adding");
-    note.textContent = "That's you. In the real site this would open the sign-up form.";
-  });
-
   /* reveal the People Pixels sections when they scroll into view */
   const ppIO = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting) return;
     ppIO.unobserve(e.target);
-    if (e.target === formats) settle(); else e.target.classList.add("pp-in");
+    e.target.classList.add("pp-in");
   }), { threshold: .2 });
-  if (reduce) { settle(); document.querySelectorAll(".pp-reveal").forEach((el) => el.classList.add("pp-in")); }
-  else { ppIO.observe(formats); document.querySelectorAll(".pp-reveal").forEach((el) => ppIO.observe(el)); }
+  if (reduce) document.querySelectorAll(".pp-reveal").forEach((el) => el.classList.add("pp-in"));
+  else document.querySelectorAll(".pp-reveal").forEach((el) => ppIO.observe(el));
 
   /* review switch: original or People Pixels version of each part */
   const ORIG_LEDE = $("lede").textContent;
@@ -1286,7 +1150,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       if (v === "pp") buildCrowd();
       $("lede").textContent = v === "pp" ? "Every pixel here is one of us. Glad you found us. We host meetups, critiques and good company for anyone who designs anything." : ORIG_LEDE;
       $("cta-label").textContent = v === "pp" ? "Add your pixel" : "Come say hi";
-      $("cta-label").closest("a").setAttribute("href", v === "pp" ? "#pp-join" : "#");
+      $("cta-label").closest("a").setAttribute("href", "#");
     } else {
       document.querySelectorAll(`[data-group="${g}"]`).forEach((el) => {
         const on = el.dataset.opt === v;
@@ -1295,7 +1159,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         const base = el.dataset.base;
         if (base) el.id = on ? base : base + "-" + el.dataset.opt;
       });
-      if (g === "join") { layout(); requestAnimationFrame(drawTrail); }
       if (g === "event") drawTickets();
     }
     document.querySelectorAll(`.mode-switch [data-g="${g}"]`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v)));

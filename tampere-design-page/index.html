@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="bold p-bright">
+<html lang="en" class="bold p-trio">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -454,6 +454,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   --date: #252525; --date-k: #fff; --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525;
   --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
   --redline: #D23F14; --component: #D23F14; --select: #184DCB; }
+/* Trio: magenta, yellow and aqua as given, deeper shades wherever white text or thin lines sit on them */
+:root.bold.p-trio { --t-violet: #E848F7; --t-pink: #FBD449; --t-lime: #4ADEDB; --t-aqua: #5A1670; --t-tangerine: #E848F7;
+  --k1: #252525; --k2: #252525; --k3: #252525; --k4: #ffffff; --sw1: #E848F7; --sw2: #FBD449; --sw3: #4ADEDB; --sw4: #5A1670;
+  --date: #5A1670; --date-k: #ffffff; --band: #4ADEDB; --bk: #252525; --band2: #FBD449; --b2k: #252525;
+  --peer: #8E1A9E; --peer-bg: #8E1A9E; --peer-ink: #fff; --me: #0B6B69; --me-bg: #0B6B69; --me-ink: #fff;
+  --redline: #B21FC2; --component: #8E1A9E; --select: #8E1A9E; }
+/* keep body text on the coloured notes at full strength so it stays above 4.5:1 */
+:root.bold.p-trio .stickie p, :root.bold.p-trio .stickie .author { opacity: 1; }
 /* in the bold palette the footer band and event frame stay white, the date sits on blue */
 :root.bold.p-bold { --date: #184DCB; --date-k: #fff; }
 .pal-switch {
@@ -680,7 +688,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 <div class="pal-switch" role="group" aria-label="Palette (review only)">
   <span>Palette</span>
-  <button type="button" data-pal="bright" aria-pressed="true">Bright</button>
+  <button type="button" data-pal="trio" aria-pressed="true">Trio</button>
+  <button type="button" data-pal="bright" aria-pressed="false">Bright</button>
   <button type="button" data-pal="riso" aria-pressed="false">Riso</button>
   <button type="button" data-pal="pop" aria-pressed="false">Pop</button>
   <button type="button" data-pal="sunny" aria-pressed="false">Bold + yellow</button>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="bold p-sticker">
+<html lang="en" class="bold p-scribble">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -365,13 +365,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 .statusbar a { color: var(--ink); text-decoration: none; }
 /* a skyline of flat shapes sitting on the bottom edge */
-.shapes { display: block; justify-self: stretch; margin: 48px calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
-  width: auto; height: clamp(120px, 14vw, 210px); overflow: hidden; }
+.shapes { display: block; justify-self: center; width: min(1100px, 100% - 2 * clamp(16px, 6vw, 96px)); height: auto; margin-top: 48px; overflow: hidden; }
 .shapes .shp { transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(105%); transition: transform .7s cubic-bezier(.2,1.3,.4,1); transition-delay: calc(var(--i) * 70ms); }
 .shapes.in .shp { transform: none; }
 .shapes.in .shp:hover { transform: translateY(-6%); transition-delay: 0s; transition-duration: .3s; }
 .shapes .shp > * { stroke: transparent; stroke-width: 2; vector-effect: non-scaling-stroke; transition: stroke .15s; }
 .shapes .shp:hover > * { stroke: var(--select); }
+@media (max-width: 600px) { .shapes .shp:nth-of-type(3), .shapes .shp:nth-of-type(8) { display: none; } }
 @media (prefers-reduced-motion: reduce) { .shapes .shp, .shapes.in .shp:hover { transform: none; transition: none; } }
 .statusbar a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .statusbar .zoom { font-variant-numeric: tabular-nums; }
@@ -453,12 +453,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .foot .bye { color: var(--b2k); }
 :root.bold { --ink: #252525; --soft: #4f4f4f; --pressed-bg: #252525; --pressed-ink: #fff; --sw0: #252525; }
 :root.bold .toolbar .swatch span { box-shadow: inset 0 0 0 1px rgba(20,20,20,.12); }
-/* Sticker: soft "printed" colours from the Museum of Us stickers; all carry dark text, the mid blue is only for drawing */
-:root.bold.p-sticker { --t-violet: #B8DDF2; --t-pink: #FEF955; --t-lime: #EC7137; --t-aqua: #84CF5F; --t-tangerine: #EC7137;
-  --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525;
-  --sw1: #6286D3; --sw2: #EC7137; --sw3: #84CF5F; --sw4: #FEF955;
-  --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525; --me: #84CF5F; --me-bg: #84CF5F; --me-ink: #252525; }
-:root.bold.p-sticker .stickie p, :root.bold.p-sticker .stickie .author { opacity: 1; }
+/* Scribble: bright grounds; each sticky note's text is a deep shade of its own colour (all 6:1 or more) */
+:root.bold.p-scribble { --t-violet: #FEE400; --t-pink: #FEBAFF; --t-lime: #00DCEF; --t-aqua: #AAE578; --t-tangerine: #FEBAFF;
+  --k1: #4E4604; --k2: #611862; --k3: #04484E; --k4: #264E04;
+  --sw1: #FF7BEA; --sw2: #FEE400; --sw3: #00DCEF; --sw4: #AAE578;
+  --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525; --me: #085E56; --me-bg: #085E56; --me-ink: #fff; }
+:root.bold.p-scribble .stickie p { opacity: 1; }
+:root.bold.p-scribble .av[style*="t-lime"] { color: #5500C0; }
+:root.bold.p-scribble .av[style*="t-aqua"] { color: #085E56; }
 </style>
 </head>
 <body>
@@ -598,10 +600,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
       <h2 class="h2" id="about-title">Ways to join in</h2>
       <p class="sub">Four regular things, all run by volunteers from the Tampere design scene.</p>
       <ul class="stickies">
-        <li class="stickie" style="--t: var(--t-violet)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.87 5.07C9.09 5.07 9.74 5.05 10.17 5.11C10.61 5.16 11.12 5.18 11.5 5.39C11.88 5.61 12.18 6.02 12.43 6.39C12.69 6.76 12.9 7.17 13.04 7.6C13.19 8.04 13.33 8.53 13.3 8.98C13.27 9.44 13.06 9.91 12.85 10.34C12.64 10.77 12.39 11.24 12.04 11.55C11.68 11.86 11.17 12.03 10.71 12.19C10.25 12.34 9.75 12.48 9.26 12.48C8.78 12.49 8.24 12.4 7.77 12.21C7.31 12.03 6.85 11.72 6.48 11.37C6.12 11.01 5.78 10.56 5.58 10.08C5.38 9.61 5.29 9.06 5.27 8.54C5.26 8.02 5.3 7.45 5.48 6.96C5.65 6.47 5.99 6.01 6.35 5.62C6.7 5.22 7.13 4.87 7.6 4.61C8.07 4.35 8.89 4.15 9.15 4.05" stroke-width="1.52"/><path d="M2.75 19.29C2.96 18.82 3.36 17.23 3.99 16.46C4.61 15.68 5.58 15.02 6.5 14.63C7.41 14.24 8.51 14.08 9.5 14.1C10.49 14.13 11.55 14.36 12.44 14.77C13.33 15.19 14.2 15.85 14.84 16.6C15.49 17.35 16.06 18.83 16.3 19.27" stroke-width="1.792"/><path d="M15.9 4.96C16.14 5.06 16.87 5.28 17.29 5.54C17.71 5.8 18.13 6.12 18.42 6.51C18.71 6.91 18.94 7.41 19.04 7.9C19.13 8.39 19.14 8.98 18.98 9.43C18.82 9.89 18.42 10.28 18.09 10.64C17.76 11.01 17.43 11.42 17.01 11.62C16.59 11.83 16.06 11.85 15.57 11.88C15.08 11.9 14.33 11.79 14.08 11.77" stroke-width="1.536"/><path d="M13.88 15.45C14.29 15.39 15.52 15.06 16.34 15.08C17.16 15.1 18.1 15.22 18.82 15.59C19.53 15.96 20.16 16.67 20.65 17.33C21.14 17.99 21.57 19.19 21.76 19.56" stroke-width="1.824"/></svg><h3>Monthly meetups</h3><p>Short talks, show-and-tell and snacks, once a month.</p><span class="author">Organisers</span></li>
-        <li class="stickie" style="--t: var(--t-pink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.15 4.31Q12.05 4.67 19.96 4.31Q20.4 9.95 20.13 15.6Q15 15.88 9.88 15.62Q7.78 17.59 5.61 19.47Q5.42 17.47 5.32 15.46Q4.57 15.57 3.8 15.59Q3.8 9.94 4.15 4.31Q5.08 4.38 6.02 4.31" stroke-width="1.808"/></svg><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p><span class="author">Organisers</span></li>
-        <li class="stickie" style="--t: var(--t-lime)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.53 3.69Q18.37 5.8 20.5 7.63Q14.17 13.86 7.88 20.13Q5.78 20.33 3.7 20.63Q3.99 18.38 3.89 16.12Q10.46 10.15 16.53 3.69Q17.23 4.31 17.86 5.01" stroke-width="1.776"/><path d="M13.9 5.61Q16.1 7.76 18.25 9.96" stroke-width="1.696"/></svg><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p><span class="author">Organisers</span></li>
-        <li class="stickie" style="--t: var(--t-aqua)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.52 20.93Q5.93 12.21 5.35 3.49Q11.98 3.54 18.62 3.44Q18.15 12.27 18.47 21.11" stroke-width="1.424"/><path d="M2.82 20.48Q12.01 20.88 21.2 20.33" stroke-width="1.792"/><path d="M10.01 20.58Q9.83 18.58 9.91 16.57Q11.94 16.63 13.96 16.69Q13.92 18.72 14.05 20.75" stroke-width="1.696"/><path d="M9.34 8.17l.01 0M14.63 8.14l.01 0M9.51 12.17l.01 0M14.58 12.01l.01 0" stroke-width="2.48"/></svg><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p><span class="author">Organisers</span></li>
+        <li class="stickie" style="--t: var(--t-violet)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.87 5.07C9.09 5.07 9.74 5.05 10.17 5.11C10.61 5.16 11.12 5.18 11.5 5.39C11.88 5.61 12.18 6.02 12.43 6.39C12.69 6.76 12.9 7.17 13.04 7.6C13.19 8.04 13.33 8.53 13.3 8.98C13.27 9.44 13.06 9.91 12.85 10.34C12.64 10.77 12.39 11.24 12.04 11.55C11.68 11.86 11.17 12.03 10.71 12.19C10.25 12.34 9.75 12.48 9.26 12.48C8.78 12.49 8.24 12.4 7.77 12.21C7.31 12.03 6.85 11.72 6.48 11.37C6.12 11.01 5.78 10.56 5.58 10.08C5.38 9.61 5.29 9.06 5.27 8.54C5.26 8.02 5.3 7.45 5.48 6.96C5.65 6.47 5.99 6.01 6.35 5.62C6.7 5.22 7.13 4.87 7.6 4.61C8.07 4.35 8.89 4.15 9.15 4.05" stroke-width="1.52"/><path d="M2.75 19.29C2.96 18.82 3.36 17.23 3.99 16.46C4.61 15.68 5.58 15.02 6.5 14.63C7.41 14.24 8.51 14.08 9.5 14.1C10.49 14.13 11.55 14.36 12.44 14.77C13.33 15.19 14.2 15.85 14.84 16.6C15.49 17.35 16.06 18.83 16.3 19.27" stroke-width="1.792"/><path d="M15.9 4.96C16.14 5.06 16.87 5.28 17.29 5.54C17.71 5.8 18.13 6.12 18.42 6.51C18.71 6.91 18.94 7.41 19.04 7.9C19.13 8.39 19.14 8.98 18.98 9.43C18.82 9.89 18.42 10.28 18.09 10.64C17.76 11.01 17.43 11.42 17.01 11.62C16.59 11.83 16.06 11.85 15.57 11.88C15.08 11.9 14.33 11.79 14.08 11.77" stroke-width="1.536"/><path d="M13.88 15.45C14.29 15.39 15.52 15.06 16.34 15.08C17.16 15.1 18.1 15.22 18.82 15.59C19.53 15.96 20.16 16.67 20.65 17.33C21.14 17.99 21.57 19.19 21.76 19.56" stroke-width="1.824"/></svg><h3>Monthly meetups</h3><p>Short talks, show-and-tell and snacks, once a month.</p></li>
+        <li class="stickie" style="--t: var(--t-pink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.15 4.31Q12.05 4.67 19.96 4.31Q20.4 9.95 20.13 15.6Q15 15.88 9.88 15.62Q7.78 17.59 5.61 19.47Q5.42 17.47 5.32 15.46Q4.57 15.57 3.8 15.59Q3.8 9.94 4.15 4.31Q5.08 4.38 6.02 4.31" stroke-width="1.808"/></svg><h3>Crit club</h3><p>Bring work in progress and get kind, useful feedback.</p></li>
+        <li class="stickie" style="--t: var(--t-lime)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.53 3.69Q18.37 5.8 20.5 7.63Q14.17 13.86 7.88 20.13Q5.78 20.33 3.7 20.63Q3.99 18.38 3.89 16.12Q10.46 10.15 16.53 3.69Q17.23 4.31 17.86 5.01" stroke-width="1.776"/><path d="M13.9 5.61Q16.1 7.76 18.25 9.96" stroke-width="1.696"/></svg><h3>Workshops</h3><p>Hands-on sessions on tools, methods and craft.</p></li>
+        <li class="stickie" style="--t: var(--t-aqua)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.52 20.93Q5.93 12.21 5.35 3.49Q11.98 3.54 18.62 3.44Q18.15 12.27 18.47 21.11" stroke-width="1.424"/><path d="M2.82 20.48Q12.01 20.88 21.2 20.33" stroke-width="1.792"/><path d="M10.01 20.58Q9.83 18.58 9.91 16.57Q11.94 16.63 13.96 16.69Q13.92 18.72 14.05 20.75" stroke-width="1.696"/><path d="M9.34 8.17l.01 0M14.63 8.14l.01 0M9.51 12.17l.01 0M14.58 12.01l.01 0" stroke-width="2.48"/></svg><h3>Studio visits</h3><p>A look inside design studios and teams around Tampere.</p></li>
       </ul>
       <div class="shots">
         <figure class="shot pick" style="margin:0"><span class="sel" aria-hidden="true"><i></i><i></i><i></i><i></i></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.18 5.08Q12.01 5.43 21.84 4.81M20.37 3.96Q20.29 12.1 20.38 20.25M21.15 19.05Q11.76 18.64 2.37 18.9M3.32 20.38Q3.16 11.83 3.42 3.29" stroke-width="1.392"/><path d="M7.61 9.21C7.68 9.12 7.85 8.82 8.02 8.69C8.2 8.56 8.44 8.48 8.67 8.43C8.9 8.37 9.16 8.34 9.4 8.36C9.65 8.39 9.93 8.44 10.15 8.57C10.36 8.69 10.55 8.89 10.69 9.1C10.82 9.3 10.9 9.55 10.95 9.8C11 10.04 11.03 10.32 10.97 10.56C10.91 10.81 10.77 11.07 10.6 11.28C10.43 11.49 10.19 11.68 9.93 11.81C9.68 11.95 9.38 12.06 9.08 12.09C8.78 12.13 8.44 12.11 8.15 12.02C7.86 11.93 7.59 11.73 7.36 11.53C7.13 11.33 6.92 11.09 6.78 10.81C6.64 10.54 6.52 10.21 6.52 9.91C6.52 9.6 6.64 9.28 6.78 8.99C6.91 8.7 7.08 8.38 7.32 8.15C7.56 7.93 8.07 7.7 8.22 7.61" stroke-width="1.488"/><path d="M3.7 17.05Q6.75 14.85 9.64 12.45Q11.09 14.18 12.82 15.62Q14.31 14.21 15.81 12.81Q18.32 14.77 20.65 16.93" stroke-width="1.76"/></svg><span class="size">1200 × 960</span><figcaption class="sr">Photo from a meetup</figcaption></figure>
@@ -669,16 +671,16 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     <span class="zoom">100%</span>
     <span>© 2026</span>
   </div>
-  <svg class="shapes" viewBox="0 0 1440 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-    <g class="shp" style="--i:0"><path d="M0 200V60A140 140 0 0 1 140 200Z" fill="#EC7137"/></g>
-    <g class="shp" style="--i:1"><rect x="150" y="80" width="140" height="120" fill="#B8DDF2"/></g>
-    <g class="shp" style="--i:2"><path d="M300 200A80 80 0 0 1 460 200Z" fill="#FEF955"/></g>
-    <g class="shp" style="--i:3"><path d="M470 200L530 50L590 200Z" fill="#84CF5F"/></g>
-    <g class="shp" style="--i:4"><circle cx="680" cy="120" r="80" fill="#6286D3"/></g>
-    <g class="shp" style="--i:5"><path d="M770 200V110A60 60 0 0 1 890 110V200Z" fill="#EC7137"/></g>
-    <g class="shp" style="--i:6"><rect x="900" y="140" width="160" height="60" fill="#FEF955"/><circle cx="980" cy="108" r="32" fill="#EC7137"/></g>
-    <g class="shp" style="--i:7"><path d="M1070 60H1140A70 70 0 0 1 1140 200H1070Z" fill="#B8DDF2"/></g>
-    <g class="shp" style="--i:8"><path d="M1440 200H1260A180 180 0 0 1 1440 20Z" fill="#84CF5F"/></g>
+  <svg class="shapes" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <g class="shp" style="--i:0"><path d="M0 220V80A140 140 0 0 1 140 220Z" fill="#AAE578"/></g>
+    <g class="shp" style="--i:1"><rect x="110" y="100" width="140" height="120" fill="#00DCEF"/></g>
+    <g class="shp" style="--i:2"><path d="M210 220A90 90 0 0 1 390 220Z" fill="#FEE400"/></g>
+    <g class="shp" style="--i:3"><path d="M350 220L425 50L500 220Z" fill="#FEBAFF"/></g>
+    <g class="shp" style="--i:4"><circle cx="560" cy="130" r="90" fill="#00DCEF"/></g>
+    <g class="shp" style="--i:5"><path d="M620 220V130A60 60 0 0 1 740 130V220Z" fill="#FEBAFF"/></g>
+    <g class="shp" style="--i:6"><rect x="710" y="160" width="170" height="60" fill="#AAE578"/><circle cx="800" cy="126" r="36" fill="#FEE400"/></g>
+    <g class="shp" style="--i:7"><path d="M850 70H930A75 75 0 0 1 930 220H850Z" fill="#00DCEF"/></g>
+    <g class="shp" style="--i:8"><path d="M1200 220H1000A200 200 0 0 1 1200 20Z" fill="#FEBAFF"/></g>
   </svg>
 </footer>
 
@@ -960,6 +962,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
   /* footer shapes rise into place when the footer comes into view */
   const shapes = document.querySelector(".shapes");
+  // on narrow screens show just the middle cluster, so the shapes stay a good size
+  const narrow = matchMedia("(max-width: 600px)");
+  const frame = () => shapes.setAttribute("viewBox", narrow.matches ? "345 0 540 220" : "0 0 1200 220");
+  narrow.addEventListener("change", frame); frame();
   new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { shapes.classList.add("in"); io.disconnect(); } }, { threshold: .3 }).observe(shapes);
 
   /* redlines: measure, then count the number up */

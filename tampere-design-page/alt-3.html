@@ -8,7 +8,7 @@
 <link rel="icon" href="assets/logos/arrow-tile.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400;500;600;700&family=Jost:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Square+Peg&family=Homemade+Apple&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400;500;600;700&family=Jost:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Square+Peg&family=Reenie+Beanie&family=Homemade+Apple&display=swap">
 <style>
 /* Layout: techy meets tactile. A white header with the title in the middle and coloured
    pixels scattered around it, thickening towards the bottom. Scrolling draws a pixel
@@ -51,6 +51,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 :root.hand-apple { --f-hand: "Homemade Apple", "Segoe Print", cursive; }
 :root .kicker, :root .polaroid figcaption, :root .eyebrow, :root .dow, :root .pp-note, :root .pp-mosaic i.pp-you::after { font-size-adjust: var(--hand-adjust, .5); }
 :root.hand-apple { --hand-adjust: none; }
+:root.hand-reenie { --f-hand: "Reenie Beanie", "Segoe Print", cursive; --hand-adjust: .75; }
 .kicker { font: 400 clamp(1.5rem, 2.4vw, 2.2rem)/1 var(--f-hand); color: var(--ink); transform: rotate(-2deg); }
 .line {
   display: flex; align-items: baseline; justify-content: center; gap: max(8px, .24em);
@@ -549,6 +550,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .mode-switch span { padding: 0 8px; color: var(--soft); }
 .mode-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--ink); cursor: pointer; }
 .mode-switch button[aria-pressed="true"] { background: #e3effd; color: #1b5fb8; }
+/* titles in a dark grey rather than black, so the heavy geometric letters don't shout (10.9:1 on white) */
+:root { --title: #3A3A3A; }
+.line, .programs h2, .h2, .day, .tbody h3, .brand, .foot-b .big, .logo, .pp-h2, .pp-ev h3, .pp-brand, .tk-body h3 { color: var(--title); }
 </style>
 </head>
 <body>
@@ -728,7 +732,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Logo</span><button type="button" data-g="logo" data-v="orig" aria-pressed="true">Arrow</button><button type="button" data-g="logo" data-v="pp" aria-pressed="false">td</button>
   <span>Header</span><button type="button" data-g="head" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="head" data-v="pp" aria-pressed="false">Add your pixel</button>
   <span>Event</span><button type="button" data-g="event" data-v="tc" aria-pressed="true">Ticket + calendar</button><button type="button" data-g="event" data-v="orig" aria-pressed="false">Ticket</button><button type="button" data-g="event" data-v="pp" aria-pressed="false">Calendar</button>
-  <span>Handwriting</span><button type="button" data-g="hand" data-v="peg" aria-pressed="true">Square Peg</button><button type="button" data-g="hand" data-v="apple" aria-pressed="false">Homemade Apple</button>
+  <span>Handwriting</span><button type="button" data-g="hand" data-v="peg" aria-pressed="true">Square Peg</button><button type="button" data-g="hand" data-v="apple" aria-pressed="false">Homemade Apple</button><button type="button" data-g="hand" data-v="reenie" aria-pressed="false">Reenie Beanie</button>
   <span>Footer</span><button type="button" data-g="foot" data-v="boxes" aria-pressed="true">Boxes</button><button type="button" data-g="foot" data-v="bands" aria-pressed="false">Pixel bands</button>
 </div>
 <canvas id="cursor-px" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50"></canvas>
@@ -1157,6 +1161,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       $("cta-label").closest("a").setAttribute("href", "#");
     } else if (g === "hand") {
       document.documentElement.classList.toggle("hand-apple", v === "apple");
+      document.documentElement.classList.toggle("hand-reenie", v === "reenie");
       document.fonts.ready.then(() => dispatchEvent(new Event("resize")));
     } else {
       document.querySelectorAll(`[data-group="${g}"]`).forEach((el) => {

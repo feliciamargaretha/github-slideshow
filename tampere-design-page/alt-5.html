@@ -564,15 +564,18 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 /* footer option: the walkers in Koskipuisto, with a line of copy in the sky */
 .foot-park { position: relative; background: var(--paper); }
 .park-shot { position: relative; margin: 0; }
+.park-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,20,40,.55), rgba(8,20,40,.2) 38%, transparent 55%); pointer-events: none; }
+.park-copy { z-index: 1; }
 .park-shot img { display: block; width: 100%; height: clamp(320px, 38vw, 560px); object-fit: cover; object-position: 60% 100%; }
-.park-copy { position: absolute; left: max(24px, 6vw); top: clamp(24px, 3.5vw, 56px); display: grid; justify-items: start; gap: 16px; max-width: min(36rem, 60%); }
+.park-copy { position: absolute; left: max(24px, 6vw); top: 50%; transform: translateY(-50%); display: grid; justify-items: start; gap: 16px; max-width: min(36rem, 60%); }
 .park-title { position: relative; z-index: 0; margin: 0; font: 400 clamp(1.9rem, 3.6vw, 3.4rem)/1.02 var(--f-display); letter-spacing: -.025em; color: #fff; text-shadow: 0 1px 24px rgba(10,40,90,.25); }
 .park-title .hl::before { opacity: .9; }
 .park-title .hl { color: var(--ink); text-shadow: none; }
 .foot-park .foot-bar { padding-block: 24px 40px; }
 @media (max-width: 640px) {
   .park-shot img { height: 400px; object-position: 72% 100%; }
-  .park-copy { max-width: calc(100% - 48px); }
+  .park-copy { max-width: calc(100% - 48px); top: 28px; transform: none; }
+  .park-shot::after { background: linear-gradient(180deg, rgba(8,20,40,.5), transparent 45%); }
 }
 </style>
 </head>

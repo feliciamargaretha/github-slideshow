@@ -8,7 +8,7 @@
 <link rel="icon" href="assets/logos/td-tile.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Caveat:wght@600&family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Caveat:wght@600&family=Gochi+Hand&family=Rock+Salt&family=Reenie+Beanie&family=Nothing+You+Could+Do&family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&family=Patrick+Hand&display=swap">
 <style>
 /* Layout: techy meets tactile. A white header with the title in the middle and coloured
    pixels scattered around it, thickening towards the bottom. Scrolling draws a pixel
@@ -579,6 +579,20 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   .park-copy { max-width: calc(100% - 48px); top: 28px; transform: none; }
   .park-shot::after { background: linear-gradient(180deg, rgba(8,20,40,.5), transparent 45%); }
 }
+/* footer option: big white letters with black scribbles drawn over them */
+:root { --accent: #FB8B14; }
+:root.acc-yellow { --accent: #FFD60A; --marker: #FFD60A; }
+:root.acc-yellow .hl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 60' preserveAspectRatio='none'%3E%3Cpath d='M10 34C70 20 130 44 200 30S330 42 400 27S468 38 490 31' fill='none' stroke='%23FFD60A' stroke-width='34' stroke-linecap='round'/%3E%3Cpath d='M16 38C80 28 140 46 210 36S340 44 410 33S470 40 486 37' fill='none' stroke='%23F5C400' stroke-opacity='.55' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E"); }
+.foot-scrib { background: var(--accent); color: #141414; overflow: hidden; }
+.scrib-band, .foot-scrib .in { max-width: 1240px; margin: 0 auto; box-sizing: border-box; }
+.scrib-band { padding-block: clamp(56px, 8vw, 104px) clamp(24px, 4vw, 48px); }
+.scrib-kicker { margin: 0 0 24px; font: 400 clamp(1.4rem, 2.4vw, 2rem)/1.1 var(--f-display); letter-spacing: -.02em; }
+.scrib-words { display: grid; justify-items: start; gap: clamp(4px, 1vw, 12px); margin: 0; }
+.sw { position: relative; display: block; line-height: 0; }
+.sw .solid { display: block; font: 800 clamp(4rem, 15.5vw, 15rem)/.86 "Bricolage Grotesque", sans-serif; letter-spacing: -.045em; color: #fff; white-space: nowrap; }
+.sw .ink { position: absolute; left: 0; top: 50%; color: #141414; white-space: nowrap; line-height: 1; transform-origin: 0 50%; filter: url(#boil); pointer-events: none; }
+.foot-scrib .foot-bar { border-top: 2px solid #141414; }
+.foot-scrib .foot-bar a, .foot-scrib .foot-bar { color: #141414; }
 /* ===== Tools concept ===== */
 :root { --sp: 1.32; --th: min(60svh, 660px, 88vw); --f-busted: "Broke Grotesk", "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; }
 .top { display: flex; flex-direction: column; align-items: center; min-height: 100svh; padding-block: 92px 0; overflow: visible; }
@@ -627,7 +641,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .draw-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .draw-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .draw-svg .ink { stroke: #1d4fae; stroke-width: 2.6; filter: url(#pencil); }
-.draw-svg .marker { stroke: #FB8B14; stroke-width: 0.62em; stroke-linecap: butt; opacity: .75; mix-blend-mode: multiply; }
+.draw-svg .marker { stroke: var(--marker); stroke-width: 0.62em; stroke-linecap: butt; opacity: .75; mix-blend-mode: multiply; }
 .draw-end { position: absolute; left: 50%; transform: translateX(-50%); width: min(64rem, calc(100% - 32px)); text-align: center; }
 .draw-title { position: relative; z-index: 1; margin: 0; font: 800 clamp(2.3rem, 5.4vw, 4.8rem)/.98 var(--f-busted); letter-spacing: -.02em; filter: url(#busted); }
 .draw-sub { margin: 24px auto 0; max-width: 38ch; color: var(--soft); font-size: clamp(17px, 1.5vw, 20px); }
@@ -639,6 +653,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <filter id="busted"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter>
     <filter id="graphite" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="8" result="g"/><feDisplacementMap in="SourceGraphic" in2="g" scale="1.3" result="d"/><feComponentTransfer in="g" result="n"><feFuncA type="discrete" tableValues="0 1 1 1 0 1 1 1"/></feComponentTransfer><feComposite in="d" in2="n" operator="in"/></filter>
+    <filter id="boil" x="-5%" y="-20%" width="110%" height="140%"><feTurbulence id="boil-n" type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="1"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter>
     <filter id="pencil"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
   </svg>
   <nav class="nav" id="nav" aria-label="Main">
@@ -853,6 +868,22 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </footer>
 
+<footer class="foot-scrib" data-foot="scrib" aria-label="Footer" hidden>
+  <div class="wrap scrib-band">
+    <p class="scrib-kicker">See you at the next one.</p>
+    <p class="scrib-words" role="img" aria-label="Tampere Design">
+      <span class="sw" aria-hidden="true"><span class="solid">TAMPERE</span><span class="ink">tampere</span></span>
+      <span class="sw" aria-hidden="true"><span class="solid">DESIGN</span><span class="ink">design</span></span>
+    </p>
+  </div>
+  <div class="in wrap">
+    <div class="foot-bar">
+      <span class="brand">Tampere Design</span>
+      <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
+      <span>© 2026</span>
+    </div>
+  </div>
+</footer>
 
 <div class="mode-switch" role="group" aria-label="Page options (review only)">
   <span>Title</span>
@@ -864,6 +895,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Footer</span>
   <button type="button" data-footer="boxes" aria-pressed="true">Boxes</button>
   <button type="button" data-footer="park" aria-pressed="false">Park</button>
+  <button type="button" data-footer="scrib" aria-pressed="false">Scribble</button>
+  <span>Accent</span>
+  <button type="button" data-accent="orange" aria-pressed="true">Orange</button>
+  <button type="button" data-accent="yellow" aria-pressed="false">Yellow</button>
   <span>Join in</span>
   <button type="button" data-photos="yes" aria-pressed="true">Photos</button>
   <button type="button" data-photos="no" aria-pressed="false">No photos</button>
@@ -1095,6 +1130,48 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   };
   tower.addEventListener("click", () => { if (mode !== "auto") stop(); tower.classList.remove("hinting"); show(cur + 1); });
   document.querySelectorAll(".mode-switch [data-mode]").forEach((b) => b.addEventListener("click", () => start(b.dataset.mode)));
+  // scribble footer: the black hand-lettering swaps style every beat
+  const scribble = (() => {
+    const fonts = [["Reenie Beanie", 400], ["Rock Salt", 400], ["Gochi Hand", 400], ["Nothing You Could Do", 400], ["Caveat", 600], ["Patrick Hand", 400]];
+    const rows = [...document.querySelectorAll(".foot-scrib .sw")];
+    const noise = document.getElementById("boil-n");
+    let k = 0, timer = 0;
+    const band = document.querySelector(".scrib-band");
+    const fit = () => {
+      // grow the white letters until the longest word spans the band
+      const s0 = rows[0].querySelector(".solid");
+      s0.style.fontSize = "";
+      rows.forEach((r) => (r.querySelector(".solid").style.fontSize = ""));
+      const cs = getComputedStyle(band);
+      const room = band.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const size = parseFloat(getComputedStyle(s0).fontSize) * room / s0.getBoundingClientRect().width;
+      rows.forEach((r) => (r.querySelector(".solid").style.fontSize = `${size}px`));
+    };
+    const paint = () => {
+      const [fam, w] = fonts[k % fonts.length];
+      rows.forEach((r, j) => {
+        const solid = r.querySelector(".solid"), ink = r.querySelector(".ink");
+        const h = solid.getBoundingClientRect().height;
+        ink.style.font = `${w} ${h * .62}px/1 "${fam}", cursive`;
+        ink.style.transform = "none";
+        const sx = solid.getBoundingClientRect().width / ink.getBoundingClientRect().width;
+        const tilt = ((k + j) % 3 - 1) * 2.5;
+        ink.style.transform = `translateY(-50%) scaleX(${sx}) rotate(${tilt}deg)`;
+      });
+      noise.setAttribute("seed", String(k + 1));
+    };
+    const tick = () => { k++; paint(); };
+    return {
+      start() {
+        const loads = fonts.map(([f, w]) => document.fonts.load(`${w} 40px "${f}"`, "tampere design"));
+        Promise.all([document.fonts.ready, ...loads]).then(() => { fit(); paint(); });
+        if (!timer && !reduce) timer = setInterval(tick, 700);
+      },
+      stop() { clearInterval(timer); timer = 0; },
+      paint, fit,
+    };
+  })();
+  addEventListener("resize", () => { if (!document.querySelector(".foot-scrib").hidden) { scribble.fit(); scribble.paint(); } });
   const group = (attr, apply) => document.querySelectorAll(`.mode-switch [data-${attr}]`).forEach((b) => b.addEventListener("click", () => {
     apply(b.dataset[attr]);
     document.querySelectorAll(`.mode-switch [data-${attr}]`).forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
@@ -1104,7 +1181,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   group("footer", (v) => {
     document.querySelectorAll("[data-foot]").forEach((f) => (f.hidden = f.dataset.foot !== v));
     if (v === "park") document.querySelector(".foot-park .hl").classList.add("on");
+    if (v === "scrib") scribble.start(); else scribble.stop();
   });
+  group("accent", (v) => document.documentElement.classList.toggle("acc-yellow", v === "yellow"));
   document.querySelectorAll(".mode-switch [data-photos]").forEach((b) => b.addEventListener("click", () => {
     document.querySelector(".peeks").classList.toggle("no-photos", b.dataset.photos === "no");
     document.querySelectorAll(".mode-switch [data-photos]").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));

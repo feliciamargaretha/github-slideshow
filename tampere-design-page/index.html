@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="bold p-scribble">
+<html lang="en" class="bold p-sticker">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -469,11 +469,18 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   --date: #252525; --date-k: #fff; --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525;
   --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
   }
+/* Sticker: soft "printed" colours from the Museum of Us stickers; all carry dark text, the mid blue is only for drawing */
+:root.bold.p-sticker { --t-violet: #B8DDF2; --t-pink: #FEF955; --t-lime: #EC7137; --t-aqua: #84CF5F; --t-tangerine: #EC7137;
+  --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525;
+  --sw1: #6286D3; --sw2: #EC7137; --sw3: #84CF5F; --sw4: #FEF955;
+  --date: #B8DDF2; --date-k: #252525; --band: #ffffff; --bk: #252525; --band2: #FEF955; --b2k: #252525;
+  --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #84CF5F; --me-bg: #84CF5F; --me-ink: #252525; }
+:root.bold.p-sticker .stickie p, :root.bold.p-sticker .stickie .author { opacity: 1; }
 /* Scribble: bright grounds with dark text; the strong partner colours appear only where they stay readable */
 :root.bold.p-scribble { --t-violet: #FEE400; --t-pink: #FEBAFF; --t-lime: #00DCEF; --t-aqua: #AAE578; --t-tangerine: #FEBAFF;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525;
   --sw1: #FF7BEA; --sw2: #FEE400; --sw3: #00DCEF; --sw4: #AAE578;
-  --date: #252525; --date-k: #ffffff; --band: #ffffff; --bk: #252525; --band2: #AAE578; --b2k: #085E56;
+  --date: #00DCEF; --date-k: #252525; --band: #ffffff; --bk: #252525; --band2: #AAE578; --b2k: #085E56;
   --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #085E56; --me-bg: #085E56; --me-ink: #fff; }
 :root.bold.p-scribble .stickie p, :root.bold.p-scribble .stickie .author { opacity: 1; }
 :root.bold.p-scribble .av[style*="t-lime"] { color: #5500C0; }
@@ -713,7 +720,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 <div class="pal-switch" role="group" aria-label="Palette (review only)">
   <span>Palette</span>
-  <button type="button" data-pal="scribble" aria-pressed="true">Scribble</button>
+  <button type="button" data-pal="sticker" aria-pressed="true">Sticker</button>
+  <button type="button" data-pal="scribble" aria-pressed="false">Scribble</button>
   <button type="button" data-pal="trio" aria-pressed="false">Trio</button>
   <button type="button" data-pal="bright" aria-pressed="false">Bright</button>
   <button type="button" data-pal="riso" aria-pressed="false">Riso</button>

@@ -603,24 +603,46 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .tools { position: relative; z-index: 2; flex: none; width: 100%; height: var(--th); margin-bottom: calc(var(--th) / -3); }
 .tool {
   position: absolute; display: block; left: calc(50% + var(--cx) * var(--sp) * var(--th) - var(--w) * var(--th) / 2); top: calc(var(--t) * var(--th)); width: calc(var(--w) * var(--th));
-  transform-origin: 50% 90%; cursor: grab;
-  transition: transform .55s cubic-bezier(.3,1.8,.45,1), filter .3s;
+  cursor: grab;
   animation: rise 1s cubic-bezier(.2,.9,.3,1.1) both, nudge .9s ease-in-out both; animation-delay: calc(.35s + var(--i) * .08s), calc(1.7s + var(--i) * .12s);
 }
 .tool img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; pointer-events: none; }
-.tool.lift { z-index: 4; filter: drop-shadow(0 22px 20px rgba(20,20,20,.25)); }
-.tool:nth-child(odd).lift { transform: translateY(-11%) rotate(-12deg); }
-.tool:nth-child(even).lift { transform: translateY(-11%) rotate(11deg); }
-.tool.lean-l { transform: rotate(-4deg); }
-.tool.lean-r { transform: rotate(4deg); }
+.tool-in { display: block; transform-origin: 50% 90%; transition: transform .6s cubic-bezier(.34,1.45,.5,1), filter .35s ease; }
+.tool.lift { z-index: 4; }
+.tool.lift .tool-in { filter: drop-shadow(0 22px 20px rgba(20,20,20,.25)); }
+.tool:nth-child(odd).lift .tool-in { transform: translateY(-10%) rotate(-11deg); }
+.tool:nth-child(even).lift .tool-in { transform: translateY(-10%) rotate(10deg); }
+.tool.lean-l .tool-in { transform: rotate(-3deg); }
+.tool.lean-r .tool-in { transform: rotate(3deg); }
+.tool.away .tool-in { visibility: hidden; }
 .tool:active { cursor: grabbing; }
 @keyframes rise { from { transform: translateY(30%); opacity: 0; } to { transform: none; opacity: 1; } }
 /* a one-off wave across the tools after they arrive, so it is clear they react */
 @keyframes nudge { 0%, 100% { translate: 0 0; rotate: 0deg; } 35% { translate: 0 -5%; rotate: -5deg; } 70% { translate: 0 -2%; rotate: 3deg; } }
-.top + .sec { padding-top: calc(var(--th) / 3 + clamp(64px, 8vw, 112px)); }
+.top + .draw { margin-top: 0; }
 @media (max-width: 900px) { :root { --sp: 1.25; } }
 @media (max-width: 600px) { :root { --sp: 1.15; } .top { padding-top: 96px; } .tt { font-size: clamp(2.6rem, 13vw, 4rem); } }
 @media (prefers-reduced-motion: reduce) { .tool { animation: none !important; transition: none; } .to-wrap, .ers { transition: none; } }
+/* ===== drawing section: the blue pen leaves the header and draws as you scroll; other tools join in ===== */
+.draw { position: relative; z-index: 3; height: clamp(2000px, 260vh, 2600px); }
+.draw-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.draw-svg path, .draw-svg circle { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.draw-svg .ink { stroke: #1d4fae; stroke-width: 2.6; filter: url(#pencil); }
+.draw-svg .graphite { stroke: #3a3a3e; stroke-width: 2; filter: url(#pencil); }
+.draw-svg .green { stroke: #1f5a3c; stroke-width: 2.6; filter: url(#pencil); }
+.draw-svg .marker { stroke: #e6f75a; stroke-width: 34; stroke-linecap: butt; opacity: .7; mix-blend-mode: multiply; }
+.trav { position: absolute; left: 0; top: 0; display: block; height: auto; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  filter: drop-shadow(0 10px 10px rgba(20,20,20,.18)); will-change: transform; }
+.trav.on { opacity: 1; }
+#trav-pen { transition: none; }
+.cap { position: absolute; margin: 0; max-width: 15rem; font: 600 clamp(22px, 2.1vw, 30px)/1.15 "Caveat", "Segoe Print", cursive; color: var(--ink);
+  opacity: 0; transform: translateY(12px); transition: opacity .5s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
+.cap.on { opacity: 1; transform: none; }
+.draw-end { position: absolute; left: 50%; transform: translateX(-50%); width: min(44rem, calc(100% - 32px)); text-align: center; }
+.draw-title { position: relative; z-index: 1; margin: 0; font: 800 clamp(2.6rem, 6vw, 5.2rem)/.98 var(--f-busted); letter-spacing: -.02em; filter: url(#busted); }
+.draw-sub { margin: 24px auto 0; max-width: 38ch; color: var(--soft); font-size: clamp(17px, 1.5vw, 20px); }
+@media (max-width: 640px) { .cap { max-width: 42vw; font-size: 21px; } .draw { height: 2100px; } }
+@media (prefers-reduced-motion: reduce) { .trav { display: none; } .cap { opacity: 1; transform: none; transition: none; } }
 </style>
 </head>
 <body>
@@ -711,18 +733,37 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     </div>
   </div>
   <div class="tools" id="tools">
-    <span class="tool" style="--cx:-0.3274; --w:0.0903; --t:0.1347; --i:0"><img src="assets/tools/green-pen.webp" alt="Green ballpoint pen" draggable="false"></span>
-    <span class="tool" style="--cx:-0.1585; --w:0.2427; --t:0.1048; --i:1"><img src="assets/tools/set-square.webp" alt="Set square" draggable="false"></span>
-    <span class="tool" style="--cx:-0.0677; --w:0.0871; --t:0.1605; --i:2"><img src="assets/tools/blue-pen.webp" alt="Blue ballpoint pen" draggable="false"></span>
-    <span class="tool" style="--cx:0.0282; --w:0.1339; --t:0.1565; --i:3"><img src="assets/tools/compass.webp" alt="Drafting compass" draggable="false"></span>
-    <span class="tool" style="--cx:0.1250; --w:0.0597; --t:0.0492; --i:4"><img src="assets/tools/pencil.webp" alt="Pencil" draggable="false"></span>
-    <span class="tool" style="--cx:0.2218; --w:0.1081; --t:0.0000; --i:5"><img src="assets/tools/ruler.webp" alt="Steel ruler" draggable="false"></span>
-    <span class="tool" style="--cx:0.3242; --w:0.0968; --t:0.2452; --i:6"><img src="assets/tools/highlighter.webp" alt="Highlighter" draggable="false"></span>
+    <span class="tool" style="--cx:-0.3274; --w:0.0903; --t:0.1347; --i:0"><span class="tool-in"><img src="assets/tools/green-pen.webp" alt="Green ballpoint pen" draggable="false"></span></span>
+    <span class="tool" style="--cx:-0.1585; --w:0.2427; --t:0.1048; --i:1"><span class="tool-in"><img src="assets/tools/set-square.webp" alt="Set square" draggable="false"></span></span>
+    <span class="tool" style="--cx:-0.0677; --w:0.0871; --t:0.1605; --i:2"><span class="tool-in"><img src="assets/tools/blue-pen.webp" alt="Blue ballpoint pen" draggable="false"></span></span>
+    <span class="tool" style="--cx:0.0282; --w:0.1339; --t:0.1565; --i:3"><span class="tool-in"><img src="assets/tools/compass.webp" alt="Drafting compass" draggable="false"></span></span>
+    <span class="tool" style="--cx:0.1250; --w:0.0597; --t:0.0492; --i:4"><span class="tool-in"><img src="assets/tools/pencil.webp" alt="Pencil" draggable="false"></span></span>
+    <span class="tool" style="--cx:0.2218; --w:0.1081; --t:0.0000; --i:5"><span class="tool-in"><img src="assets/tools/ruler.webp" alt="Steel ruler" draggable="false"></span></span>
+    <span class="tool" style="--cx:0.3242; --w:0.0968; --t:0.2452; --i:6"><span class="tool-in"><img src="assets/tools/highlighter.webp" alt="Highlighter" draggable="false"></span></span>
   </div>
   <div class="cursor" id="cursor" aria-hidden="true" hidden>
     <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--blue)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
   </div>
 </header>
+
+<section class="draw" id="draw" aria-labelledby="draw-title">
+  <svg class="draw-svg" id="draw-svg" aria-hidden="true"></svg>
+  <img class="trav" id="trav-pen" src="assets/tools/blue-pen.webp" alt="" aria-hidden="true">
+  <img class="trav" id="trav-compass" src="assets/tools/compass.webp" alt="" aria-hidden="true">
+  <img class="trav" id="trav-ruler" src="assets/tools/ruler.webp" alt="" aria-hidden="true">
+  <img class="trav" id="trav-pencil" src="assets/tools/pencil.webp" alt="" aria-hidden="true">
+  <img class="trav" id="trav-square" src="assets/tools/set-square.webp" alt="" aria-hidden="true">
+  <img class="trav" id="trav-green" src="assets/tools/green-pen.webp" alt="" aria-hidden="true">
+  <img class="trav" id="trav-hl" src="assets/tools/highlighter.webp" alt="" aria-hidden="true">
+  <p class="cap" data-cap="0">Some of us sketch screens.</p>
+  <p class="cap" data-cap="1">Some draw letters and logos.</p>
+  <p class="cap" data-cap="2">Some build chairs, rooms and objects.</p>
+  <p class="cap" data-cap="3">Some map services and systems.</p>
+  <div class="draw-end" id="draw-end">
+    <h2 class="draw-title" id="draw-title">Different tools.<br><span id="one-drawing">One drawing.</span></h2>
+    <p class="draw-sub">Screens, posters, chairs, services, games, type: whatever you design, there's a seat for you at Tampere Design.</p>
+  </div>
+</section>
 
 
 <section class="sec wrap about" id="about" aria-labelledby="programs-title">
@@ -1193,6 +1234,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   tgroup("bg", (v) => top.classList.toggle("dotted", v === "dots"));
   // tools: the one you point at lifts and tilts, its neighbours lean out of the way; tap works on touch
   const toolEls = [...document.querySelectorAll(".tool")];
+  let liftT = 0;
   const lift = (i) => toolEls.forEach((t, j) => {
     t.classList.toggle("lift", j === i);
     t.classList.toggle("lean-l", i >= 0 && j === i - 1);
@@ -1200,10 +1242,139 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   });
   toolEls.forEach((t, i) => {
     t.addEventListener("animationend", (e) => { if (e.animationName === "nudge") t.style.animation = "none"; });
-    t.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") lift(i); });
-    t.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") lift(-1); });
+    // hover intent: only react once the pointer settles, so a quick sweep across the row stays calm
+    t.addEventListener("pointerenter", (e) => { if (e.pointerType !== "mouse") return; clearTimeout(liftT); liftT = setTimeout(() => lift(i), 90); });
+    t.addEventListener("pointerleave", (e) => { if (e.pointerType !== "mouse") return; clearTimeout(liftT); liftT = setTimeout(() => lift(-1), 120); });
     t.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") { lift(i); clearTimeout(t._t); t._t = setTimeout(() => lift(-1), 1200); } });
   });
+
+
+  /* ===== drawing section ===== */
+  {
+    const sec = $("draw"), svg = $("draw-svg"), NS = "http://www.w3.org/2000/svg";
+    const T = (id) => $(id);
+    const headPen = toolEls[2];
+    const caps = [...sec.querySelectorAll(".cap")];
+    const mk = (tag, cls, attrs = {}) => { const e = document.createElementNS(NS, tag); if (cls) e.setAttribute("class", cls); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.append(e); return e; };
+    // draw a path progressively: 0..1
+    const prep = (p) => { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p._L = L; return p; };
+    const show = (p, k) => { p.style.strokeDashoffset = p._L * (1 - Math.max(0, Math.min(1, k))); };
+    // place an image so its tip sits at (x, y), rotated around the tip
+    const put = (img, x, y, tipX, tipY, rot) => {
+      img.style.transformOrigin = `${tipX}px ${tipY}px`;
+      img.style.transform = `translate(${x - tipX}px, ${y - tipY}px) rotate(${rot}deg)`;
+    };
+    // smooth line through points (Catmull-Rom)
+    const smooth = (pts) => {
+      let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+        d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+      }
+      return d;
+    };
+    let G = null;
+    const build = () => {
+      svg.innerHTML = "";
+      const R = sec.getBoundingClientRect(), w = R.width, h = R.height, cx = w / 2, s = Math.min(w, 1100), small = w < 700;
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      // the line starts at the tip of the blue pen in the header
+      const pr = headPen.getBoundingClientRect();
+      const penW = pr.width, penH = pr.height;
+      const start = [pr.left - R.left + penW * .278, pr.bottom - R.top - 2];
+      const st = { circle: .2 * h, ruler: .41 * h, square: .61 * h, end: .8 * h };
+      const q = rng(21);
+      const way = [start, [start[0] + .06 * s, start[1] + .05 * h], [cx - .02 * s, st.circle - .06 * h], [cx - .07 * s, st.circle + .03 * h], [cx + .06 * s, .31 * h],
+        [cx - .03 * s, st.ruler - .02 * h], [cx + .05 * s, .5 * h], [cx - .05 * s, st.square], [cx + .03 * s, .7 * h], [cx, st.end - .01 * h]];
+      const pts = [];
+      way.forEach((p, i) => { pts.push(p); const n = way[i + 1]; if (n) pts.push([(p[0] + n[0]) / 2 + (q() - .5) * .05 * s, (p[1] + n[1]) / 2]); });
+      const main = prep(mk("path", "ink", { d: smooth(pts) }));
+      // length lookup by height, so the tip tracks the scroll position
+      const samples = []; for (let l = 0; l <= main._L; l += 4) { const p = main.getPointAtLength(l); samples.push([l, p.y]); }
+      // station 1: the compass draws two overlapping circles
+      const ch = small ? 190 : 260, ck = ch / 1034, sx = 1, cr = small ? 34 : 50;
+      const c1 = [cx + (small ? .2 : .15) * s, st.circle], c2 = [c1[0] + cr, c1[1]];
+      const circ = (c) => prep(mk("path", "graphite", { d: `M${c[0] + cr} ${c[1]} a${cr} ${cr} 0 1 1 ${-2 * cr} 0 a${cr} ${cr} 0 1 1 ${2 * cr} 0` }));
+      const circA = circ(c1), circB = circ(c2);
+      const cmp = T("trav-compass"); cmp.style.height = ch + "px"; cmp.style.width = 166 * ck * sx + "px";
+      // station 2: a pencil draws a straight line along a ruler
+      const rl = small ? .42 * s : .34 * s, rx1 = cx - (small ? .46 : .44) * s, rx2 = rx1 + rl, ry = st.ruler;
+      const rline = prep(mk("path", "graphite", { d: `M${rx1} ${ry} L${rx2} ${ry + .5}` }));
+      const ruler = T("trav-ruler"), rk = rl / 1236; ruler.style.width = 134 * rk + "px"; ruler.style.height = rl + "px";
+      const pencil = T("trav-pencil"), pch = small ? 170 : 240; pencil.style.height = pch + "px"; pencil.style.width = 74 * pch / 1179 + "px";
+      // station 3: the green pen traces a set square
+      const sb = small ? .44 * s : .32 * s, sk = sb / 1109, sqH = 301 * sk;
+      const sqC = [cx + (small ? .24 : .2) * s, st.square];
+      const box = [sqC[0] - sb / 2, sqC[1] - sqH / 2];
+      const tri = [[3, 297], [564, 4], [1105, 280], [1105, 297], [3, 297]].map(([x, y]) => [box[0] + x * sk, box[1] + y * sk - 4]);
+      const tline = prep(mk("path", "green", { d: "M" + tri.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" L") }));
+      const square = T("trav-square"); square.style.width = 301 * sk + "px"; square.style.height = sb + "px";
+      const green = T("trav-green"), gh = small ? 170 : 230; green.style.height = gh + "px"; green.style.width = 112 * gh / 1067 + "px";
+      // finale: the highlighter marks "One drawing."
+      const endEl = $("draw-end"); endEl.style.top = st.end + 20 + "px";
+      const od = $("one-drawing").getBoundingClientRect();
+      const my = od.top - R.top + od.height * .58;
+      const hl = prep(mk("path", "marker", { d: `M${od.left - R.left - 6} ${my + 2} C${od.left - R.left + od.width * .3} ${my - 3} ${od.left - R.left + od.width * .7} ${my + 4} ${od.right - R.left + 6} ${my - 1}` }));
+      svg.insertBefore(hl, svg.firstChild);
+      const hlt = T("trav-hl"), hh = small ? 150 : 210; hlt.style.height = hh + "px"; hlt.style.width = 120 * hh / 932 + "px";
+      // captions sit on the other side of the line from each station
+      const capAt = [[cx + .1 * s, .08 * h, "left"], [cx - (small ? .48 : .4) * s, st.circle - 20, "right"], [cx + .08 * s, st.ruler - 30, "left"], [cx - (small ? .48 : .4) * s, st.square - 24, "right"]];
+      caps.forEach((c, i) => { const [x, y, side] = capAt[i]; c.style.top = y + "px"; c.style.textAlign = side; c.style.left = side === "left" ? x + "px" : "auto"; c.style.right = side === "right" ? (w - x - (small ? .42 : .3) * s) + "px" : "auto"; if (side === "right") c.style.left = x + "px"; c.style.width = (small ? .42 : .3) * s + "px"; });
+      const pen = T("trav-pen"); pen.style.width = penW + "px"; pen.style.height = penH + "px";
+      G = { h, start, main, samples, st, c1, c2, cr, circA, circB, cmp, ck, sx, rx1, rx2, ry, rline, ruler, rl, pencil, pch, tri, tline, square, sqC, sb, sqH, green, gh, hl, hlt, hh, od, my, R, pen, penW, penH };
+      update();
+    };
+    const span = (y, a, b) => Math.max(0, Math.min(1, (y - a) / (b - a)));
+    const update = () => {
+      if (!G) return;
+      const R = sec.getBoundingClientRect(), y = reduce ? 1e9 : innerHeight * .6 - R.top;
+      // main line: draw up to the point level with the reading line
+      let L = 0; for (const [l, py] of G.samples) { if (py <= y) L = l; else break; }
+      if (y < G.start[1] + 2) L = 0;
+      G.main.style.strokeDashoffset = G.main._L - L;
+      const p = G.main.getPointAtLength(L), p2 = G.main.getPointAtLength(Math.min(G.main._L, L + 30));
+      const lean = Math.max(-14, Math.min(14, (p2.x - p.x) * .6));
+      const moving = L > 1;
+      headPen.classList.toggle("away", moving);
+      G.pen.classList.toggle("on", moving);
+      put(G.pen, p.x, p.y, G.penW * .278, G.penH - 2, moving ? lean : 0);
+      caps.forEach((c, i) => c.classList.toggle("on", y > [G.start[1] + 40, G.st.circle - 140, G.st.ruler - 140, G.st.square - 140][i]));
+      // compass: two circles, then lift away
+      const kc = span(y, G.st.circle - 160, G.st.circle + 140), ka = Math.min(1, kc * 2), kb = Math.max(0, kc * 2 - 1);
+      show(G.circA, ka); show(G.circB, kb);
+      const cc = kb > 0 ? G.c2 : G.c1, ang = (kb > 0 ? kb : ka) * 360;
+      G.cmp.classList.toggle("on", kc > 0 && kc < 1 || (kc >= 1 && y < G.st.circle + 240));
+      // the compass stays upright; its pencil leg rides the circle being drawn
+      const arc = kb > 0 ? G.circB : G.circA, ap = arc.getPointAtLength(arc._L * Math.min(1, kb > 0 ? kb : ka));
+      put(G.cmp, ap.x, ap.y, 128 * G.ck, 1028 * G.ck, 8 + Math.sin(ang / 57.3) * 4);
+      // ruler and pencil
+      const kr = span(y, G.st.ruler - 150, G.st.ruler + 110);
+      show(G.rline, kr);
+      const rOn = kr > 0 && y < G.st.ruler + 220;
+      G.ruler.classList.toggle("on", rOn); G.pencil.classList.toggle("on", rOn);
+      G.ruler.style.transformOrigin = "0 0"; G.ruler.style.transform = `translate(${G.rx1}px, ${G.ry + 4 + 134 * G.rl / 1236}px) rotate(-90deg)`;
+      put(G.pencil, G.rx1 + (G.rx2 - G.rx1) * kr, G.ry - 1, 74 * G.pch / 1179 * .49, 0, 158);
+      // set square and green pen
+      const ks = span(y, G.st.square - 150, G.st.square + 150);
+      show(G.tline, ks);
+      const sOn = ks > 0 && y < G.st.square + 260;
+      G.square.classList.toggle("on", sOn); G.green.classList.toggle("on", sOn);
+      G.square.style.transformOrigin = "50% 50%";
+      G.square.style.transform = `translate(${G.sqC[0] - 301 * G.sb / 1109 / 2}px, ${G.sqC[1] - G.sb / 2}px) rotate(-90deg)`;
+      const tp = G.tline.getPointAtLength(G.tline._L * ks);
+      put(G.green, tp.x, tp.y, 112 * G.gh / 1067 * .518, G.gh - 2, 16);
+      // finale
+      const kh = span(y, G.st.end + 40, G.st.end + 260);
+      show(G.hl, kh);
+      G.hlt.classList.toggle("on", kh > 0 && kh < 1);
+      const hp = G.hl.getPointAtLength(G.hl._L * kh);
+      put(G.hlt, hp.x, hp.y + 8, 120 * G.hh / 932 * .45, 0, 200);
+    };
+    let ticking = false;
+    addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; update(); }); } }, { passive: true });
+    let bt; addEventListener("resize", () => { clearTimeout(bt); bt = setTimeout(build, 150); });
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(build, 1400));
+  }
 
   /* navbar: menu toggle on small screens */
   const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");

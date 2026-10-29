@@ -9,17 +9,18 @@
 body { margin:0; background:var(--paper); color:var(--ink); font:400 17px/1.55 var(--f-body); -webkit-font-smoothing:antialiased; }
 .stage { padding:48px; display:grid; gap:48px; justify-items:start; }
 .ticket { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); width:960px; max-width:100%;
-  border:1.5px solid var(--ink); border-radius:20px; background:var(--paper); overflow:hidden; }
-.stub { position:relative; display:grid; align-content:center; justify-items:start; gap:16px; padding:32px 36px; border-right:2px dashed var(--ink); background:var(--paper); }
-.stub::before, .stub::after { content:""; position:absolute; right:-13px; width:24px; height:24px; border-radius:50%; background:var(--paper); border:1.5px solid var(--ink); }
-.stub::before { top:-13px; } .stub::after { bottom:-13px; }
+  border:1.5px solid var(--ink); border-radius:20px; background:var(--paper); }
+.stub { position:relative; display:grid; align-content:center; justify-items:start; gap:16px; padding:32px 36px; border-right:2px dashed var(--ink); background:var(--paper); border-radius:18.5px 0 0 18.5px; }
+/* notches: half circles that cover the ticket edge, so only the curve shows */
+.stub::before, .stub::after { content:""; position:absolute; right:-13px; width:24px; height:13.5px; background:var(--paper); border:1.5px solid var(--ink); }
+.stub::before { top:-1.5px; border-top:0; border-radius:0 0 12px 12px; }
+.stub::after { bottom:-1.5px; border-bottom:0; border-radius:12px 12px 0 0; }
 .month { display:flex; justify-content:space-between; align-items:baseline; width:184px; font:500 12px/1 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--soft); }
 .cal { display:grid; grid-template-columns:repeat(7,22px); gap:5px; }
 .cal .dn { font:500 10px/1 var(--f-mono); color:var(--soft); text-align:center; padding-bottom:4px; }
 .cal i { display:block; width:22px; height:22px; background:var(--empty); }
 .cal i.blank { background:none; }
-.cal i.past { background:var(--green); }
-.cal i.past:nth-of-type(odd) { background:var(--yellow); }
+.cal i.past { background:#EBCDEE; } /* past events: a muted, disabled version of the next-event pink */
 .cal i.next { background:var(--pink); box-shadow:0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
 .date { font:500 15px/1 var(--f-mono); letter-spacing:.06em; }
 .date b { font-weight:500; background:var(--ink); color:#fff; padding:3px 6px; }
@@ -33,9 +34,10 @@ p { margin:0; max-width:52ch; color:var(--soft); }
 .cta { display:inline-flex; align-items:center; height:54px; padding:0 26px; border-radius:999px; background:var(--ink); color:#fff; font:500 17px/1 var(--f-body); text-decoration:none; margin-top:8px; }
 /* phone version: stub across the top */
 .ticket.phone { grid-template-columns:1fr; width:390px; }
-.ticket.phone .stub { border-right:0; border-bottom:2px dashed var(--ink); padding:24px; justify-items:center; }
-.ticket.phone .stub::before, .ticket.phone .stub::after { top:auto; bottom:-13px; right:auto; }
-.ticket.phone .stub::before { left:-13px; } .ticket.phone .stub::after { right:-13px; }
+.ticket.phone .stub { border-right:0; border-bottom:2px dashed var(--ink); padding:24px; justify-items:center; border-radius:18.5px 18.5px 0 0; }
+.ticket.phone .stub::before, .ticket.phone .stub::after { top:auto; bottom:-13px; width:13.5px; height:24px; border:1.5px solid var(--ink); }
+.ticket.phone .stub::before { left:-1.5px; right:auto; border-left:0; border-radius:0 12px 12px 0; }
+.ticket.phone .stub::after { right:-1.5px; border-right:0; border-radius:12px 0 0 12px; }
 .ticket.phone .tbody { padding:24px; }
 .ticket.phone h3 { font-size:30px; }
 </style></head><body><main class="stage">

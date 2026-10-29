@@ -407,13 +407,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 @media (max-width: 520px) { .win { --k: .5; } }
 @media (prefers-reduced-motion: reduce) { .win { opacity: 1; transform: none; transition: none; } }
 /* line style for this version: ink outlines with a pencil wobble, hand-drawn rules, a soft highlighter */
-:root { --marker: #cddcfb; --sill: #efe9dd;
+:root { --marker: #FB8B14; --sill: #efe9dd;
   --rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='6'%3E%3Cpath d='M0 3C50 1.6 100 4.4 150 3S250 1.8 300 3.4S380 2.2 400 3' fill='none' stroke='%23141414' stroke-opacity='.45' stroke-width='1.3'/%3E%3C/svg%3E"); }
 .title .line { position: relative; z-index: 0; }
 .hl { position: relative; white-space: nowrap; }
 .hl::before {
   content: ""; position: absolute; z-index: -1; left: -.14em; right: -.14em; top: .34em; bottom: -.1em;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 60' preserveAspectRatio='none'%3E%3Cpath d='M10 34C70 20 130 44 200 30S330 42 400 27S468 38 490 31' fill='none' stroke='%23cddcfb' stroke-width='34' stroke-linecap='round'/%3E%3Cpath d='M16 38C80 28 140 46 210 36S340 44 410 33S470 40 486 37' fill='none' stroke='%23b7cdf8' stroke-opacity='.55' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; filter: url(#pencil);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 60' preserveAspectRatio='none'%3E%3Cpath d='M10 34C70 20 130 44 200 30S330 42 400 27S468 38 490 31' fill='none' stroke='%23FB8B14' stroke-width='34' stroke-linecap='round'/%3E%3Cpath d='M16 38C80 28 140 46 210 36S340 44 410 33S470 40 486 37' fill='none' stroke='%23E87400' stroke-opacity='.55' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; filter: url(#pencil);
   clip-path: inset(0 100% 0 0); transition: clip-path 1.1s cubic-bezier(.6,.05,.25,1);
 }
 .hl.on::before { clip-path: inset(0 0 0 0); }
@@ -627,7 +627,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .draw-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .draw-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .draw-svg .ink { stroke: #1d4fae; stroke-width: 2.6; filter: url(#pencil); }
-.draw-svg .marker { stroke: #e6f75a; stroke-width: 0.62em; stroke-linecap: butt; opacity: .75; mix-blend-mode: multiply; }
+.draw-svg .marker { stroke: #FB8B14; stroke-width: 0.62em; stroke-linecap: butt; opacity: .75; mix-blend-mode: multiply; }
 .draw-end { position: absolute; left: 50%; transform: translateX(-50%); width: min(64rem, calc(100% - 32px)); text-align: center; }
 .draw-title { position: relative; z-index: 1; margin: 0; font: 800 clamp(2.3rem, 5.4vw, 4.8rem)/.98 var(--f-busted); letter-spacing: -.02em; filter: url(#busted); }
 .draw-sub { margin: 24px auto 0; max-width: 38ch; color: var(--soft); font-size: clamp(17px, 1.5vw, 20px); }

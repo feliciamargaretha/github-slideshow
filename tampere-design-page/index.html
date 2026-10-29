@@ -107,8 +107,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 .guide { position: absolute; left: 50%; width: min(22rem, 70vw); transform: translateX(-50%); border-top: 1px dashed var(--redline); opacity: 0; transition: opacity .4s; }
 .guide.top { top: 0; } .guide.bottom { bottom: 0; }
-.measured .redline { opacity: 1; }
-.measured .guide { opacity: .45; }
+/* measuring: guides draw out, the line runs edge to edge, then the label counts up */
+.redline { opacity: 1; clip-path: inset(-2px -40px 100% -40px); transition: clip-path .55s cubic-bezier(.6,0,.3,1) .45s; }
+.redline b { opacity: 0; transform: translateY(-50%) scale(.6); transition: opacity .2s 1s, transform .35s cubic-bezier(.3,1.6,.5,1) 1s; }
+.guide { transform: translateX(-50%) scaleX(0); transition: transform .45s cubic-bezier(.6,0,.3,1), opacity .3s; }
+.measured .redline { clip-path: inset(-2px -40px -2px -40px); }
+.measured .redline b { opacity: 1; transform: translateY(-50%) scale(1); }
+.measured .guide { opacity: .45; transform: translateX(-50%) scaleX(1); }
+.measured .guide.bottom { transition-delay: .1s; }
 
 .lede { margin: 0 0 32px; max-width: 34ch; font-size: clamp(17px, 1.5vw, 20px); color: var(--soft); text-wrap: pretty; }
 
@@ -231,7 +237,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cta:hover .hand, .cta:focus-visible .hand { animation: none; }
-  .peer .chat, .redline, .guide, .tag, .sel i, .sticker { transition: none; }
+  .peer .chat, .redline, .redline b, .guide, .pad, .pad b, .tag, .sel i, .sticker { transition: none; }
 }
 /* the rest of the page: the same design file, scrolled further down.
    Every section is a frame on the dotted canvas, named in small grey type above it like in Figma. */
@@ -322,6 +328,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .pad { position: absolute; left: 0; top: 50%; width: 32px; height: 1px; background: var(--redline); }
 .pad::before, .pad::after { content: ""; position: absolute; top: -4px; width: 1px; height: 9px; background: var(--redline); }
 .pad::before { left: 0; } .pad::after { right: 0; }
+.pad { clip-path: inset(-30px 100% -10px -6px); transition: clip-path .5s cubic-bezier(.6,0,.3,1) .1s; }
+.pad.measured { clip-path: inset(-30px -6px -10px -6px); }
+.pad b { opacity: 0; transition: opacity .2s .6s, transform .35s cubic-bezier(.3,1.6,.5,1) .6s; }
+.pad.measured b { opacity: 1; }
 .pad b { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); padding: 2px 4px; border-radius: 3px; background: var(--redline-label, var(--redline)); color: #fff; font: 600 11px/1 var(--f-body); }
 .pin { position: absolute; right: -16px; top: -24px; display: flex; align-items: flex-end; gap: 8px; }
 .pin .dot { width: 32px; height: 32px; border-radius: 50% 50% 50% 4px; background: var(--peer-bg); color: var(--peer-ink); display: grid; place-items: center; font: 600 12px/1 var(--f-body); box-shadow: var(--shadow); }
@@ -463,7 +473,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 :root.bold.p-scribble { --t-violet: #FEE400; --t-pink: #FEBAFF; --t-lime: #00DCEF; --t-aqua: #AAE578; --t-tangerine: #FEBAFF;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525;
   --sw1: #FF7BEA; --sw2: #FEE400; --sw3: #00DCEF; --sw4: #AAE578;
-  --date: #F2F2F0; --date-k: #252525; --band: #ffffff; --bk: #252525; --band2: #AAE578; --b2k: #085E56;
+  --date: #252525; --date-k: #ffffff; --band: #ffffff; --bk: #252525; --band2: #AAE578; --b2k: #085E56;
   --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #085E56; --me-bg: #085E56; --me-ink: #fff; }
 :root.bold.p-scribble .stickie p, :root.bold.p-scribble .stickie .author { opacity: 1; }
 :root.bold.p-scribble .av[style*="t-lime"] { color: #5500C0; }
@@ -792,7 +802,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     slot.style.marginRight = gapEm() + "px";
     sel.style.opacity = 1;
     slot.classList.add("selected");
-    gap.classList.add("measured");
+    measure(gap);
     peer.classList.add("talking");
     placePeer(peerHome());
     hi.disabled = false;
@@ -823,7 +833,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     await type(greetings[0][0], 140);
     comma.style.opacity = 1;
     await sleep(300);
-    gap.classList.add("measured");
+    measure(gap);
     await movePeer(peerHome(), 1000);
     peer.classList.add("talking");
     hi.disabled = false;
@@ -997,6 +1007,26 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     const on = document.querySelector(".swatch[aria-checked='true']");
     if (on) color = getComputedStyle(on).getPropertyValue("--c").trim();
   }));
+
+  /* redlines: measure, then count the number up */
+  function measure(el) {
+    el.classList.add("measured");
+    const b = el.querySelector("b"), n = +b.dataset.n || +b.textContent;
+    b.dataset.n = n;
+    if (reduce) { b.textContent = n; return; }
+    const delay = el.classList.contains("pad") ? 600 : 1000, t0 = performance.now() + delay;
+    b.textContent = "0";
+    const step = (now) => {
+      const k = Math.max(0, Math.min(1, (now - t0) / 500));
+      b.textContent = Math.round(n * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  {
+    const pad = document.querySelector(".pad");
+    if (pad) new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { io.disconnect(); setTimeout(() => measure(pad), 400); } }, { threshold: .6 }).observe(pad.closest(".ecard"));
+  }
 
   /* navbar: menu toggle on small screens */
   const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");

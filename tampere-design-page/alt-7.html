@@ -574,9 +574,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .scrib-words .solid span { display: inline-block; }
 .scrib-words .ink { position: absolute; inset: 0; color: #141414; filter: url(#boil); pointer-events: none; }
 .scrib-words .ink span { position: absolute; line-height: 1; white-space: nowrap; transform-origin: 50% 50%; }
-.foot-scrib.bg-accent { background: var(--accent); }
-.foot-scrib.bg-blue { background: #6E9BF5; }
-.foot-scrib.bg-neutral { background: #B8B6B0; }
 .foot-scrib .foot-bar { border-top: 2px solid #141414; }
 .foot-scrib .foot-bar a, .foot-scrib .foot-bar { color: #141414; }
 /* ===== Tools concept ===== */
@@ -812,7 +809,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <section class="sec wrap faq-col" id="faq" aria-labelledby="faq-title">
   <div class="faq-head">
-    <h2 class="h2" id="faq-title">Questions, <span class="hl">answered</span></h2>
+    <h2 class="h2" id="faq-title">Questions, answered</h2>
     <p>Something else on your mind? Ask us at the next meetup or send us a message.</p>
   </div>
   <div class="faq-list">
@@ -847,11 +844,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Background</span>
   <button type="button" data-bg="white" aria-pressed="false">White</button>
   <button type="button" data-bg="dots" aria-pressed="true">Dotted</button>
-  <span>Footer bg</span>
-  <button type="button" data-fbg="yellow" aria-pressed="true">Yellow</button>
-  <button type="button" data-fbg="accent" aria-pressed="false">Accent</button>
-  <button type="button" data-fbg="blue" aria-pressed="false">Blue</button>
-  <button type="button" data-fbg="neutral" aria-pressed="false">Neutral</button>
   <span>Accent</span>
   <button type="button" data-accent="orange" aria-pressed="true">Orange</button>
   <button type="button" data-accent="yellow" aria-pressed="false">Yellow</button>
@@ -1110,12 +1102,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   group("head", (v) => document.querySelector(".hero").classList.toggle("split", v === "split"));
   // only animate the scribbles while the footer is on screen
   new IntersectionObserver((es) => (es[0].isIntersecting ? scribble.start() : scribble.stop())).observe(document.querySelector(".foot-scrib"));
-  group("fbg", (v) => {
-    const f = document.querySelector(".foot-scrib");
-    f.classList.toggle("bg-accent", v === "accent");
-    f.classList.toggle("bg-blue", v === "blue");
-    f.classList.toggle("bg-neutral", v === "neutral");
-  });
   group("accent", (v) => document.documentElement.classList.toggle("acc-yellow", v === "yellow"));
   document.querySelectorAll(".mode-switch [data-photos]").forEach((b) => b.addEventListener("click", () => {
     document.querySelector(".peeks").classList.toggle("no-photos", b.dataset.photos === "no");

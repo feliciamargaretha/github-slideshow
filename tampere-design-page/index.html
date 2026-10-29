@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="bold">
+<html lang="en" class="bold p-bright">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -412,30 +412,52 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .stamp-obj .tower-hint::after { content: "\2192"; margin-left: 4px; }
 @media (max-width: 900px) { .stamp-obj { bottom: 132px; right: max(16px, 4vw); } .stamp-obj .tower { width: 112px; } }
 @media (max-width: 600px) { .stamp-obj { bottom: 96px; right: 8px; } .stamp-obj .tower { width: 92px; } .stamp-obj .tower-hint { display: none; } }
-/* ===== palette test: Bold (white, black, orange, green, blue) vs the original Pastel ===== */
-:root { --sw0: #6b6ff0; --sw1: #f07fc0; --sw2: #a3dd73; --sw3: #5fcfcf; --sw4: #ff9a52; --on-tint: #141414; --on-tint-soft: #3e4046; --pressed-bg: #e3effd; --pressed-ink: #1b5fb8; }
+/* ===== palette review: black stays for buttons and text; the decorative colours change ===== */
+:root { --sw0: #6b6ff0; --sw1: #f07fc0; --sw2: #a3dd73; --sw3: #5fcfcf; --sw4: #ff9a52; --pressed-bg: #e3effd; --pressed-ink: #1b5fb8;
+  --k1: #141414; --k2: #141414; --k3: #141414; --k4: #141414; --band: var(--paper); --bk: var(--ink); --band2: var(--paper); --b2k: var(--ink); --date: var(--t-violet); --date-k: #141414; }
 .toolbar .tool[aria-pressed="true"] { background: var(--pressed-bg); color: var(--pressed-ink); }
-.stickie, .stickie h3, .stickie svg { color: var(--on-tint); }
-.stickie p, .stickie .author { color: var(--on-tint-soft); }
-.av { color: var(--on-tint); }
-.date, .date .dow { color: var(--on-tint); }
-.date .dow { opacity: .75; }
-:root.bold {
-  --ink: #252525; --soft: #4f4f4f;
-  --tb-white: #ffffff; --tb-black: #252525; --tb-orange: #D23F14; --tb-green: #27784F; --tb-blue: #184DCB;
-  --select: #184DCB; --redline: #D23F14; --component: #D23F14;
-  --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #ffffff;
-  --me: #27784F; --me-bg: #27784F; --me-ink: #ffffff;
-  --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #252525; --t-tangerine: #D23F14;
-  --sw0: #252525; --sw1: #D23F14; --sw2: #27784F; --sw3: #184DCB; --sw4: #ffffff;
-  --on-tint: #ffffff; --on-tint-soft: rgba(255,255,255,.86);
-  --pressed-bg: #252525; --pressed-ink: #ffffff;
-}
-:root.bold .toolbar .swatch[data-sw="4"] span { box-shadow: inset 0 0 0 1.5px #c9c9cc; }
-:root.bold .toolbar .swatch[data-sw="4"][aria-checked="true"] span { box-shadow: inset 0 0 0 1.5px #c9c9cc, 0 0 0 2px var(--chrome), 0 0 0 4px #252525; }
-:root.bold .author::before { background: #fff; }
-:root.bold .stickie .author { color: rgba(255,255,255,.8); }
+.stickie:nth-child(1) { color: var(--k1); } .stickie:nth-child(2) { color: var(--k2); } .stickie:nth-child(3) { color: var(--k3); } .stickie:nth-child(4) { color: var(--k4); }
+.stickie h3, .stickie svg { color: inherit; }
+.stickie p, .stickie .author { color: inherit; opacity: .82; }
+.stickie .author::before { background: currentColor; }
+.av[style*="t-violet"] { color: var(--k1); } .av[style*="t-pink"], .av[style*="t-tangerine"] { color: var(--k2); } .av[style*="t-lime"] { color: var(--k3); } .av[style*="t-aqua"] { color: var(--k4); }
+.date, .date .dow { background: var(--date); color: var(--date-k); }
+#events .frame-body { background: var(--band); border-color: color-mix(in srgb, var(--band) 85%, #000 15%); color: var(--bk); }
+#events .h2, #events .comp-name { color: var(--bk); }
+#events .ecard { background: #fff; color: #252525; }
+.foot { background-color: var(--band2); }
+.foot .bye { color: var(--b2k); }
+:root.bold { --ink: #252525; --soft: #4f4f4f; --pressed-bg: #252525; --pressed-ink: #fff; --sw0: #252525; }
+:root.bold .toolbar .swatch span { box-shadow: inset 0 0 0 1px rgba(20,20,20,.12); }
+:root.bold.p-bright { --t-violet: #3D7BFF; --t-pink: #FF6B35; --t-lime: #2FC172; --t-aqua: #FFCE3A; --t-tangerine: #FF6B35;
+  --k1: #fff; --k2: #252525; --k3: #252525; --k4: #252525; --sw1: #3D7BFF; --sw2: #FF6B35; --sw3: #2FC172; --sw4: #FFCE3A;
+  --date: #FFCE3A; --date-k: #252525; --band: #3D7BFF; --bk: #fff; --band2: #FFCE3A; --b2k: #252525;
+  --peer: #3D7BFF; --peer-bg: #3D7BFF; --peer-ink: #fff; --me: #2FC172; --me-bg: #2FC172; --me-ink: #fff;
+  --redline: #FF6B35; --component: #FF6B35; --select: #3D7BFF; }
+:root.bold.p-riso { --t-violet: #FF48B0; --t-pink: #FFE800; --t-lime: #0078BF; --t-aqua: #00A95C; --t-tangerine: #FFE800;
+  --k1: #252525; --k2: #252525; --k3: #fff; --k4: #fff; --sw1: #FF48B0; --sw2: #FFE800; --sw3: #0078BF; --sw4: #00A95C;
+  --date: #00A95C; --date-k: #fff; --band: #0078BF; --bk: #fff; --band2: #FF48B0; --b2k: #252525;
+  --peer: #0078BF; --peer-bg: #0078BF; --peer-ink: #fff; --me: #00A95C; --me-bg: #00A95C; --me-ink: #fff;
+  --redline: #FF6C2F; --component: #FF6C2F; --select: #0078BF; }
+:root.bold.p-pop { --t-violet: #FF5C5C; --t-pink: #B8E62E; --t-lime: #4CC3FF; --t-aqua: #8A5CFF; --t-tangerine: #B8E62E;
+  --k1: #252525; --k2: #252525; --k3: #252525; --k4: #fff; --sw1: #FF5C5C; --sw2: #B8E62E; --sw3: #4CC3FF; --sw4: #8A5CFF;
+  --date: #8A5CFF; --date-k: #fff; --band: #8A5CFF; --bk: #fff; --band2: #B8E62E; --b2k: #252525;
+  --peer: #8A5CFF; --peer-bg: #8A5CFF; --peer-ink: #fff; --me: #2FBF71; --me-bg: #2FBF71; --me-ink: #fff;
+  --redline: #FF5C5C; --component: #FF5C5C; --select: #4C8DFF; }
+:root.bold.p-sunny { --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #FFD23F; --t-tangerine: #D23F14;
+  --k1: #fff; --k2: #fff; --k3: #fff; --k4: #252525; --sw1: #184DCB; --sw2: #D23F14; --sw3: #27784F; --sw4: #FFD23F;
+  --date: #FFD23F; --date-k: #252525; --band: #184DCB; --bk: #fff; --band2: #FFD23F; --b2k: #252525;
+  --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
+  --redline: #D23F14; --component: #D23F14; --select: #184DCB; }
+:root.bold.p-bold { --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #252525; --t-tangerine: #D23F14;
+  --k1: #fff; --k2: #fff; --k3: #fff; --k4: #fff; --sw1: #184DCB; --sw2: #D23F14; --sw3: #27784F; --sw4: #252525;
+  --date: #252525; --date-k: #fff; --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525;
+  --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
+  --redline: #D23F14; --component: #D23F14; --select: #184DCB; }
+/* in the bold palette the footer band and event frame stay white, the date sits on blue */
+:root.bold.p-bold { --date: #184DCB; --date-k: #fff; }
 .pal-switch {
+  flex-wrap: wrap; max-width: calc(100vw - 32px);
   position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   display: flex; align-items: center; gap: 4px; padding: 4px; background: #fff; border: 1px solid #e7e7e9; border-radius: 12px;
   box-shadow: 0 8px 24px rgba(20,20,20,.12); font: 500 13px/1 var(--f-body);
@@ -444,24 +466,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .pal-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: #252525; cursor: pointer; }
 .pal-switch button[aria-pressed="true"] { background: #252525; color: #fff; }
 @media (max-width: 900px) { .pal-switch { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } }
-/* ===== palette option 3: Bold + a bright yellow, with colour in larger areas ===== */
-:root.sunny { --sw4: #FFD23F; --t-aqua: #FFD23F; }
-:root.sunny .stickie:nth-child(4), :root.sunny .stickie:nth-child(4) h3, :root.sunny .stickie:nth-child(4) svg { color: #252525; }
-:root.sunny .stickie:nth-child(4) p, :root.sunny .stickie:nth-child(4) .author { color: rgba(37,37,37,.78); }
-:root.sunny .stickie:nth-child(4) .author::before { background: #252525; }
-:root.sunny .av[style*="t-aqua"] { color: #252525; }
-:root.sunny .date, :root.sunny .date .dow { background: #FFD23F; color: #252525; }
-:root.sunny .toolbar .swatch[data-sw="4"] span { box-shadow: inset 0 0 0 1px rgba(20,20,20,.12); }
-/* the event frame in solid blue, the card on it stays white */
-:root.sunny #events .frame-body { background: #184DCB; border-color: #184DCB; color: #fff; }
-:root.sunny #events .h2 { color: #fff; }
-:root.sunny #events .ecard { background: #fff; color: #252525; border-color: #fff; }
-:root.sunny #events .comp-name { color: #FFD23F; }
-:root.sunny #events .comp-name svg { stroke: #FFD23F; }
-/* the footer as a yellow band */
-:root.sunny .foot { background-color: #FFD23F; background-image: radial-gradient(circle, rgba(37,37,37,.22) 1px, transparent 1.4px); }
-:root.sunny .foot .bye { color: #252525; }
-:root.sunny .foot .pick > .sel, :root.sunny .foot .pick > .sel i { border-color: #252525; }
 </style>
 </head>
 <body>
@@ -676,8 +680,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 <div class="pal-switch" role="group" aria-label="Palette (review only)">
   <span>Palette</span>
-  <button type="button" data-pal="bold" aria-pressed="true">Bold</button>
+  <button type="button" data-pal="bright" aria-pressed="true">Bright</button>
+  <button type="button" data-pal="riso" aria-pressed="false">Riso</button>
+  <button type="button" data-pal="pop" aria-pressed="false">Pop</button>
   <button type="button" data-pal="sunny" aria-pressed="false">Bold + yellow</button>
+  <button type="button" data-pal="bold" aria-pressed="false">Bold</button>
   <button type="button" data-pal="pastel" aria-pressed="false">Pastel</button>
 </div>
 <script>
@@ -957,8 +964,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
   /* palette review switch */
   document.querySelectorAll(".pal-switch button").forEach((b) => b.addEventListener("click", () => {
-    document.documentElement.classList.toggle("bold", b.dataset.pal !== "pastel");
-    document.documentElement.classList.toggle("sunny", b.dataset.pal === "sunny");
+    const R = document.documentElement;
+    R.className = R.className.replace(/\bp-\w+/g, "").trim();
+    R.classList.toggle("bold", b.dataset.pal !== "pastel");
+    if (b.dataset.pal !== "pastel") R.classList.add("p-" + b.dataset.pal);
     document.querySelectorAll(".pal-switch button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
     const on = document.querySelector(".swatch[aria-checked='true']");
     if (on) color = getComputedStyle(on).getPropertyValue("--c").trim();

@@ -585,12 +585,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 :root.acc-yellow .hl::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 60' preserveAspectRatio='none'%3E%3Cpath d='M10 34C70 20 130 44 200 30S330 42 400 27S468 38 490 31' fill='none' stroke='%23FFD60A' stroke-width='34' stroke-linecap='round'/%3E%3Cpath d='M16 38C80 28 140 46 210 36S340 44 410 33S470 40 486 37' fill='none' stroke='%23F5C400' stroke-opacity='.55' stroke-width='14' stroke-linecap='round'/%3E%3C/svg%3E"); }
 .foot-scrib { background: var(--accent); color: #141414; overflow: hidden; }
 .scrib-band, .foot-scrib .in { max-width: 1240px; margin: 0 auto; box-sizing: border-box; }
-.scrib-band { padding-block: clamp(56px, 8vw, 104px) clamp(24px, 4vw, 48px); }
-.scrib-kicker { margin: 0 0 24px; font: 400 clamp(1.4rem, 2.4vw, 2rem)/1.1 var(--f-display); letter-spacing: -.02em; }
-.scrib-words { display: grid; justify-items: start; gap: clamp(4px, 1vw, 12px); margin: 0; }
-.sw { position: relative; display: block; line-height: 0; }
-.sw .solid { display: block; font: 800 clamp(4rem, 15.5vw, 15rem)/.86 "Bricolage Grotesque", sans-serif; letter-spacing: -.045em; color: #fff; white-space: nowrap; }
-.sw .ink { position: absolute; left: 0; top: 50%; color: #141414; white-space: nowrap; line-height: 1; transform-origin: 0 50%; filter: url(#boil); pointer-events: none; }
+.scrib-band { padding-block: clamp(40px, 6vw, 72px) clamp(20px, 3vw, 32px); }
+.scrib-kicker { margin: 0 0 16px; font: 400 clamp(1.4rem, 2.4vw, 2rem)/1.1 var(--f-display); letter-spacing: -.02em; }
+.scrib-words { position: relative; margin: 0; }
+.scrib-words .solid { display: inline-block; font: 800 10vw/.9 "Bricolage Grotesque", sans-serif; letter-spacing: -.04em; color: #fff; white-space: nowrap; }
+.scrib-words .solid span { display: inline-block; }
+.scrib-words .ink { position: absolute; inset: 0; color: #141414; filter: url(#boil); pointer-events: none; }
+.scrib-words .ink span { position: absolute; line-height: 1; white-space: nowrap; transform-origin: 50% 50%; }
 .foot-scrib .foot-bar { border-top: 2px solid #141414; }
 .foot-scrib .foot-bar a, .foot-scrib .foot-bar { color: #141414; }
 /* ===== Tools concept ===== */
@@ -871,10 +872,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 <footer class="foot-scrib" data-foot="scrib" aria-label="Footer" hidden>
   <div class="wrap scrib-band">
     <p class="scrib-kicker">See you at the next one.</p>
-    <p class="scrib-words" role="img" aria-label="Tampere Design">
-      <span class="sw" aria-hidden="true"><span class="solid">TAMPERE</span><span class="ink">tampere</span></span>
-      <span class="sw" aria-hidden="true"><span class="solid">DESIGN</span><span class="ink">design</span></span>
-    </p>
+    <p class="scrib-words" role="img" aria-label="Tampere Design"><span class="solid" aria-hidden="true">TAMPERE DESIGN</span><span class="ink" aria-hidden="true"></span></p>
   </div>
   <div class="in wrap">
     <div class="foot-bar">
@@ -1133,39 +1131,57 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   // scribble footer: the black hand-lettering swaps style every beat
   const scribble = (() => {
     const fonts = [["Reenie Beanie", 400], ["Rock Salt", 400], ["Gochi Hand", 400], ["Nothing You Could Do", 400], ["Caveat", 600], ["Patrick Hand", 400]];
-    const rows = [...document.querySelectorAll(".foot-scrib .sw")];
-    const noise = document.getElementById("boil-n");
-    let k = 0, timer = 0;
+    const words = document.querySelector(".scrib-words");
+    const solid = words.querySelector(".solid"), inkLayer = words.querySelector(".ink");
     const band = document.querySelector(".scrib-band");
+    const noise = document.getElementById("boil-n");
+    // one span per white letter, and one hand-drawn twin for each
+    const text = solid.textContent;
+    solid.textContent = "";
+    const pairs = [...text].map((ch) => {
+      const a = document.createElement("span");
+      a.textContent = ch === " " ? "\u00a0" : ch;
+      solid.append(a);
+      if (ch === " ") return null;
+      const b = document.createElement("span");
+      b.textContent = ch;
+      inkLayer.append(b);
+      return [a, b];
+    }).filter(Boolean);
+    let k = 0, timer = 0;
+    const rand = (n) => Math.floor(Math.random() * n);
     const fit = () => {
-      // grow the white letters until the longest word spans the band
-      const s0 = rows[0].querySelector(".solid");
-      s0.style.fontSize = "";
-      rows.forEach((r) => (r.querySelector(".solid").style.fontSize = ""));
+      // grow the white line until it spans the band
+      solid.style.fontSize = "";
       const cs = getComputedStyle(band);
       const room = band.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const size = parseFloat(getComputedStyle(s0).fontSize) * room / s0.getBoundingClientRect().width;
-      rows.forEach((r) => (r.querySelector(".solid").style.fontSize = `${size}px`));
+      solid.style.fontSize = `${parseFloat(getComputedStyle(solid).fontSize) * room / solid.getBoundingClientRect().width}px`;
     };
     const paint = () => {
-      const [fam, w] = fonts[k % fonts.length];
-      rows.forEach((r, j) => {
-        const solid = r.querySelector(".solid"), ink = r.querySelector(".ink");
-        const h = solid.getBoundingClientRect().height;
-        ink.style.font = `${w} ${h * .62}px/1 "${fam}", cursive`;
-        ink.style.transform = "none";
-        const sx = solid.getBoundingClientRect().width / ink.getBoundingClientRect().width;
-        const tilt = ((k + j) % 3 - 1) * 2.5;
-        ink.style.transform = `translateY(-50%) scaleX(${sx}) rotate(${tilt}deg)`;
+      const box = words.getBoundingClientRect();
+      // drop a few letters each beat, never the same set twice in a row
+      const shown = pairs.map(() => Math.random() > .32);
+      pairs.forEach(([a, b], n) => {
+        const r = a.getBoundingClientRect();
+        b.hidden = !shown[n];
+        if (b.hidden) return;
+        const [fam, w] = fonts[rand(fonts.length)];
+        b.style.font = `${w} ${r.height * (.72 + Math.random() * .3)}px/1 "${fam}", cursive`;
+        b.style.left = `${r.left - box.left + r.width / 2}px`;
+        b.style.top = `${r.top - box.top + r.height / 2}px`;
+        b.style.transform = "translate(-50%, -50%)";
+        const bb = b.getBoundingClientRect();
+        const sy = Math.min(1, r.height * 1.05 / bb.height);
+        const sx = Math.min(1.6, Math.max(.7, r.width * 1.05 / bb.width));
+        b.style.transform = `translate(-50%, -50%) rotate(${(Math.random() - .5) * 16}deg) scale(${sx}, ${sy})`;
       });
-      noise.setAttribute("seed", String(k + 1));
+      noise.setAttribute("seed", String(++k));
     };
-    const tick = () => { k++; paint(); };
     return {
       start() {
-        const loads = fonts.map(([f, w]) => document.fonts.load(`${w} 40px "${f}"`, "tampere design"));
+        const loads = fonts.map(([f, w]) => document.fonts.load(`${w} 40px "${f}"`, "TAMPERDSIGN"));
         Promise.all([document.fonts.ready, ...loads]).then(() => { fit(); paint(); });
-        if (!timer && !reduce) timer = setInterval(tick, 700);
+        if (!timer && !reduce) timer = setInterval(paint, 700);
       },
       stop() { clearInterval(timer); timer = 0; },
       paint, fit,

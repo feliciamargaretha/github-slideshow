@@ -434,7 +434,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .date, .date .dow { background: var(--date); color: var(--date-k); }
 #events .frame-body { background: var(--band); color: var(--bk); }
 /* Figma conventions: red spacing, blue frame selection, purple rounded component */
-:root.bold { --redline: #F24822; --redline-label: #D2340F; --select: #0D99FF; --select-text: #0A6FC2; --component: #9747FF; }
+:root.bold { --date: #64676E; --date-k: #ffffff; --peer: #64676E; --peer-bg: #64676E; --peer-ink: #ffffff; --redline: #F24822; --redline-label: #D2340F; --select: #0D99FF; --select-text: #0A6FC2; --component: #9747FF; }
 :root.bold #events .ecard { border: 1.5px solid var(--component); border-radius: 16px; }
 :root.bold #events .comp-name { color: var(--component); }
 #events .h2 { color: var(--bk); }
@@ -446,42 +446,35 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 :root.bold .toolbar .swatch span { box-shadow: inset 0 0 0 1px rgba(20,20,20,.12); }
 :root.bold.p-bright { --t-violet: #3D7BFF; --t-pink: #F04FB8; --t-lime: #2FC172; --t-aqua: #FFCE3A; --t-tangerine: #F04FB8;
   --k1: #fff; --k2: #252525; --k3: #252525; --k4: #252525; --sw1: #3D7BFF; --sw2: #F04FB8; --sw3: #2FC172; --sw4: #FFCE3A;
-  --date: #FFCE3A; --date-k: #252525; --band: #3D7BFF; --bk: #fff; --band2: #FFCE3A; --b2k: #252525;
-  --peer: #3D7BFF; --peer-bg: #3D7BFF; --peer-ink: #fff; --me: #2FC172; --me-bg: #2FC172; --me-ink: #fff;
+  --band: #3D7BFF; --bk: #fff; --band2: #FFCE3A; --b2k: #252525; --me: #2FC172; --me-bg: #2FC172; --me-ink: #fff;
   }
 :root.bold.p-riso { --t-violet: #FF48B0; --t-pink: #FFE800; --t-lime: #0078BF; --t-aqua: #00A95C; --t-tangerine: #FFE800;
   --k1: #252525; --k2: #252525; --k3: #fff; --k4: #fff; --sw1: #FF48B0; --sw2: #FFE800; --sw3: #0078BF; --sw4: #00A95C;
-  --date: #00A95C; --date-k: #fff; --band: #0078BF; --bk: #fff; --band2: #FF48B0; --b2k: #252525;
-  --peer: #0078BF; --peer-bg: #0078BF; --peer-ink: #fff; --me: #00A95C; --me-bg: #00A95C; --me-ink: #fff;
+  --band: #0078BF; --bk: #fff; --band2: #FF48B0; --b2k: #252525; --me: #00A95C; --me-bg: #00A95C; --me-ink: #fff;
   }
 :root.bold.p-pop { --t-violet: #FF5C5C; --t-pink: #B8E62E; --t-lime: #4CC3FF; --t-aqua: #8A5CFF; --t-tangerine: #B8E62E;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #fff; --sw1: #FF5C5C; --sw2: #B8E62E; --sw3: #4CC3FF; --sw4: #8A5CFF;
-  --date: #8A5CFF; --date-k: #fff; --band: #8A5CFF; --bk: #fff; --band2: #B8E62E; --b2k: #252525;
-  --peer: #8A5CFF; --peer-bg: #8A5CFF; --peer-ink: #fff; --me: #2FBF71; --me-bg: #2FBF71; --me-ink: #fff;
+  --band: #8A5CFF; --bk: #fff; --band2: #B8E62E; --b2k: #252525; --me: #2FBF71; --me-bg: #2FBF71; --me-ink: #fff;
   }
 :root.bold.p-sunny { --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #FFD23F; --t-tangerine: #D23F14;
   --k1: #fff; --k2: #fff; --k3: #fff; --k4: #252525; --sw1: #184DCB; --sw2: #D23F14; --sw3: #27784F; --sw4: #FFD23F;
-  --date: #FFD23F; --date-k: #252525; --band: #184DCB; --bk: #fff; --band2: #FFD23F; --b2k: #252525;
-  --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
+  --band: #184DCB; --bk: #fff; --band2: #FFD23F; --b2k: #252525; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
   }
 :root.bold.p-bold { --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #252525; --t-tangerine: #D23F14;
   --k1: #fff; --k2: #fff; --k3: #fff; --k4: #fff; --sw1: #184DCB; --sw2: #D23F14; --sw3: #27784F; --sw4: #252525;
-  --date: #252525; --date-k: #fff; --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525;
-  --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
+  --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
   }
 /* Sticker: soft "printed" colours from the Museum of Us stickers; all carry dark text, the mid blue is only for drawing */
 :root.bold.p-sticker { --t-violet: #B8DDF2; --t-pink: #FEF955; --t-lime: #EC7137; --t-aqua: #84CF5F; --t-tangerine: #EC7137;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525;
   --sw1: #6286D3; --sw2: #EC7137; --sw3: #84CF5F; --sw4: #FEF955;
-  --date: #B8DDF2; --date-k: #252525; --band: #ffffff; --bk: #252525; --band2: #FEF955; --b2k: #252525;
-  --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #84CF5F; --me-bg: #84CF5F; --me-ink: #252525; }
+  --band: #ffffff; --bk: #252525; --band2: #FEF955; --b2k: #252525; --me: #84CF5F; --me-bg: #84CF5F; --me-ink: #252525; }
 :root.bold.p-sticker .stickie p, :root.bold.p-sticker .stickie .author { opacity: 1; }
 /* Scribble: bright grounds with dark text; the strong partner colours appear only where they stay readable */
 :root.bold.p-scribble { --t-violet: #FEE400; --t-pink: #FEBAFF; --t-lime: #00DCEF; --t-aqua: #AAE578; --t-tangerine: #FEBAFF;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525;
   --sw1: #FF7BEA; --sw2: #FEE400; --sw3: #00DCEF; --sw4: #AAE578;
-  --date: #00DCEF; --date-k: #252525; --band: #ffffff; --bk: #252525; --band2: #AAE578; --b2k: #085E56;
-  --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #085E56; --me-bg: #085E56; --me-ink: #fff; }
+  --band: #ffffff; --bk: #252525; --band2: #AAE578; --b2k: #085E56; --me: #085E56; --me-bg: #085E56; --me-ink: #fff; }
 :root.bold.p-scribble .stickie p, :root.bold.p-scribble .stickie .author { opacity: 1; }
 :root.bold.p-scribble .av[style*="t-lime"] { color: #5500C0; }
 :root.bold.p-scribble .av[style*="t-aqua"] { color: #085E56; }
@@ -489,13 +482,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 /* Trio: softened magenta, yellow, aqua and a softened purple; deeper shades carry white text; selection stays design-tool blue */
 :root.bold.p-trio { --t-violet: #DF7DE8; --t-pink: #FBD449; --t-lime: #4ADEDB; --t-aqua: #9A83D8; --t-tangerine: #DF7DE8;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525; --sw1: #DF7DE8; --sw2: #FBD449; --sw3: #4ADEDB; --sw4: #9A83D8;
-  --date: #9A83D8; --date-k: #252525; --band: #ffffff; --bk: #252525; --band2: #FBD449; --b2k: #252525;
-  --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #0B6B69; --me-bg: #0B6B69; --me-ink: #fff;
+  --band: #ffffff; --bk: #252525; --band2: #FBD449; --b2k: #252525; --me: #0B6B69; --me-bg: #0B6B69; --me-ink: #fff;
   }
 /* keep body text on the coloured notes at full strength so it stays above 4.5:1 */
 :root.bold.p-trio .stickie p, :root.bold.p-trio .stickie .author { opacity: 1; }
 /* in the bold palette the footer band and event frame stay white, the date sits on blue */
-:root.bold.p-bold { --date: #184DCB; --date-k: #fff; }
+
 .pal-switch {
   flex-wrap: wrap; max-width: calc(100vw - 32px);
   position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));

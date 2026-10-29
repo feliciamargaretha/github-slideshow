@@ -499,6 +499,34 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 @media (prefers-reduced-motion: reduce) { .fold .pc { transition: none; } }
 
 [hidden] { display: none !important; }
+/* ===== event option: ticket with a pixel calendar stub ===== */
+.tk { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); }
+.tk > .shape { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.tk > .shape path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+.tk-stub, .tk-body { position: relative; z-index: 1; }
+.tk-stub { display: grid; align-content: center; justify-items: start; gap: 16px; padding: 32px 36px; }
+.tk-stub::after { content: ""; position: absolute; right: 0; top: 13px; bottom: 13px; border-right: 2px dashed var(--ink); }
+.tk-month { display: flex; justify-content: space-between; width: 184px; font: 500 12px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+.tk-cal { display: grid; grid-template-columns: repeat(7, 22px); gap: 5px; }
+.tk-cal .dn { font: 500 10px/1 var(--f-mono); color: var(--soft); text-align: center; padding-bottom: 4px; }
+.tk-cal i { display: block; width: 22px; height: 22px; background: #f0f1f3; }
+.tk-cal i.blank { background: none; }
+.tk-cal i.past { background: #EBCDEE; }
+.tk-cal i.next { background: var(--pink); box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+.tk-date { font: 500 15px/1 var(--f-mono); letter-spacing: .06em; }
+.tk-date b { font-weight: 500; background: var(--ink); color: #fff; padding: 3px 6px; }
+.tk-body { display: grid; gap: 16px; align-content: center; justify-items: start; padding: clamp(24px, 4vw, 48px); min-width: 0; }
+.tk-when { font: 500 13px/1 var(--f-mono); letter-spacing: .06em; color: #2f6fd6; }
+.tk-body h3 { margin: 0; font: 400 clamp(1.6rem, 2.6vw, 2.4rem)/1.1 var(--f-display); letter-spacing: -.015em; text-wrap: balance; }
+.tk-body p { margin: 0; max-width: 52ch; color: var(--soft); }
+.tk-body .cta { margin-top: 8px; }
+@media (max-width: 700px) {
+  .tk { grid-template-columns: 1fr; }
+  .tk-stub { padding: 24px; justify-items: center; }
+  .tk-stub::after { top: auto; bottom: 0; left: 13px; right: 13px; border-right: 0; border-bottom: 2px dashed var(--ink); }
+  .tk-body { padding: 24px; }
+}
+
 /* header option "Add your pixel": sparse single pixels drifting in */
 .pp-crowd { position: absolute; inset: 0; display: none; pointer-events: none; }
 .top.pp-head .pp-crowd { display: block; }
@@ -637,6 +665,26 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </article>
 </section>
 
+<section class="sec wrap" id="tc-events" data-group="event" data-opt="tc" aria-labelledby="tc-event-title">
+  <div class="sec-head">
+    <h2 class="h2">Our next event</h2>
+  </div>
+  <article class="tk">
+    <div class="tk-stub">
+      <div class="tk-month"><span>November</span><span>2026</span></div>
+      <div class="tk-cal" role="img" aria-label="November 2026 calendar; Thursday the 19th is the next event"><span class="dn">M</span><span class="dn">T</span><span class="dn">W</span><span class="dn">T</span><span class="dn">F</span><span class="dn">S</span><span class="dn">S</span><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d past"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d past"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d next"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i></div>
+      <div class="tk-date"><b>THU 19</b> · 17:30</div>
+    </div>
+    <div class="tk-body">
+      <span class="tk-when">NEXT UP</span>
+      <h3 id="tc-event-title">Autumn meetup: show and tell</h3>
+      <ul class="meta"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.86C8.09 4.730 9.82 4.23 11.02 4.08C12.21 3.93 13.55 3.69 14.69 3.96C15.82 4.24 16.94 5 17.84 5.73C18.74 6.47 19.53 7.4 20.07 8.38C20.6 9.36 20.94 10.51 21.04 11.62C21.15 12.72 21.13 14 20.7 15.03C20.28 16.06 19.36 17 18.49 17.790C17.62 18.59 16.6 19.36 15.49 19.81C14.38 20.26 13.03 20.51 11.81 20.48C10.6 20.46 9.32 20.09 8.19 19.63C7.07 19.17 5.89 18.56 5.04 17.74C4.2 16.92 3.54 15.81 3.12 14.73C2.7 13.65 2.43 12.38 2.53 11.25C2.63 10.11 3.18 8.95 3.74 7.89C4.31 6.83 4.97 5.68 5.930 4.89C6.89 4.1 8.23 3.45 9.49 3.18C10.74 2.91 12.8 3.25 13.46 3.26" stroke-width="1.776"/><path d="M11.93 6.73Q12.08 9.46 11.87 12.2Q13.79 13.06 15.72 13.89" stroke-width="1.568"/></svg>17:30–20:00</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.24 12.8C6.11 12.34 5.46 10.94 5.47 10.02C5.47 9.1 5.88 8.12 6.28 7.26C6.68 6.4 7.16 5.45 7.87 4.83C8.58 4.22 9.6 3.76 10.53 3.56C11.46 3.36 12.52 3.44 13.45 3.65C14.39 3.86 15.4 4.23 16.15 4.81C16.9 5.39 17.55 6.27 17.97 7.14C18.38 8.01 18.64 9.06 18.64 10.02C18.64 10.98 18.08 12.42 17.97 12.9" stroke-width="1.68"/><path d="M5.89 11.7Q7.38 16.37 12.17 21.07" stroke-width="1.728"/><path d="M18.47 11.9Q16.4 16.35 11.66 21.29" stroke-width="1.488"/><circle cx="11.85" cy="10.2" r="2.6" stroke-width="1.392"/></svg>Venue to be announced</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.35 3.33Q7.51 3.48 11.67 3.67Q16.14 7.93 20.31 12.48Q16.23 16.43 12.45 20.66Q7.84 16.22 3.62 11.41Q3.47 7.37 3.35 3.33Q4.02 3.4 4.69 3.38" stroke-width="1.664"/><path d="M7.93 7.95l.01 0" stroke-width="2.48"/></svg>Free</li></ul>
+      <p>Three short talks, an open show-and-tell and plenty of time to chat. Bring something you're working on, finished or not.</p>
+      <a class="cta" href="#">Save my spot</a>
+    </div>
+  </article>
+</section>
+
 <section data-group="event" data-opt="pp" hidden class="pp-sec wrap pp-reveal" id="pp-events" aria-labelledby="pp-event-title">
   <h2 class="pp-h2">Our next event</h2>
   <div class="pp-event">
@@ -727,7 +775,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Logo</span><button type="button" data-g="logo" data-v="orig" aria-pressed="true">Arrow</button><button type="button" data-g="logo" data-v="pp" aria-pressed="false">td</button>
   <span>Header</span><button type="button" data-g="head" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="head" data-v="pp" aria-pressed="false">Add your pixel</button>
   <span>Join in</span><button type="button" data-g="join" data-v="orig" aria-pressed="true">Polaroids</button><button type="button" data-g="join" data-v="pp" aria-pressed="false">Shapes</button>
-  <span>Event</span><button type="button" data-g="event" data-v="orig" aria-pressed="true">Ticket</button><button type="button" data-g="event" data-v="pp" aria-pressed="false">Calendar</button>
+  <span>Event</span><button type="button" data-g="event" data-v="tc" aria-pressed="true">Ticket + calendar</button><button type="button" data-g="event" data-v="orig" aria-pressed="false">Ticket</button><button type="button" data-g="event" data-v="pp" aria-pressed="false">Calendar</button>
   <span>FAQ</span><button type="button" data-g="faq" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="faq" data-v="pp" aria-pressed="false">Pixel</button>
   <span>Footer</span><button type="button" data-g="foot" data-v="orig" aria-pressed="true">Boxes</button><button type="button" data-g="foot" data-v="pp" aria-pressed="false">Mosaic</button>
 </div>
@@ -1226,7 +1274,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     requestAnimationFrame(() => requestAnimationFrame(() => crowd.classList.add("ready")));
   };
   document.querySelectorAll("[data-group]").forEach((el) => {
-    const base = el.id.replace(/^pp-/, "");
+    const base = el.id.replace(/^(pp|tc)-/, "");
     if (["about", "events", "faq"].includes(base)) el.dataset.base = base;
   });
   const swap = (g, v) => {
@@ -1245,13 +1293,37 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         el.hidden = !on;
         // keep the navbar anchors pointing at whichever version is showing
         const base = el.dataset.base;
-        if (base) el.id = on ? base : (el.dataset.opt === "pp" ? "pp-" + base : base + "-hidden");
+        if (base) el.id = on ? base : base + "-" + el.dataset.opt;
       });
       if (g === "join") { layout(); requestAnimationFrame(drawTrail); }
+      if (g === "event") drawTickets();
     }
     document.querySelectorAll(`.mode-switch [data-g="${g}"]`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
   };
   document.querySelectorAll(".mode-switch button").forEach((b) => b.addEventListener("click", () => swap(b.dataset.g, b.dataset.v)));
+
+  /* event ticket outline: one shape with the two notches cut out, so they are truly see-through */
+  function drawTickets() {
+    document.querySelectorAll(".tk").forEach((t) => {
+      t.querySelector(".shape")?.remove();
+      if (!t.offsetWidth) return;
+      const w = t.offsetWidth, h = t.offsetHeight, stub = t.querySelector(".tk-stub"), R = 20, r = 12, i = .75;
+      let d;
+      if (stub.offsetWidth > w - 4) {
+        const Y = stub.offsetTop + stub.offsetHeight - 1;
+        d = `M${R} ${i} H${w - R} A${R - i} ${R - i} 0 0 1 ${w - i} ${R} V${Y - r} A${r} ${r} 0 0 0 ${w - i} ${Y + r} V${h - R} A${R - i} ${R - i} 0 0 1 ${w - R} ${h - i} H${R} A${R - i} ${R - i} 0 0 1 ${i} ${h - R} V${Y + r} A${r} ${r} 0 0 0 ${i} ${Y - r} V${R} A${R - i} ${R - i} 0 0 1 ${R} ${i} Z`;
+      } else {
+        const X = stub.offsetLeft + stub.offsetWidth - 1;
+        d = `M${R} ${i} H${X - r} A${r} ${r} 0 0 0 ${X + r} ${i} H${w - R} A${R - i} ${R - i} 0 0 1 ${w - i} ${R} V${h - R} A${R - i} ${R - i} 0 0 1 ${w - R} ${h - i} H${X + r} A${r} ${r} 0 0 0 ${X - r} ${h - i} H${R} A${R - i} ${R - i} 0 0 1 ${i} ${h - R} V${R} A${R - i} ${R - i} 0 0 1 ${R} ${i} Z`;
+      }
+      const NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg"), path = document.createElementNS(NS, "path");
+      svg.setAttribute("class", "shape"); svg.setAttribute("viewBox", `0 0 ${w} ${h}`); svg.setAttribute("aria-hidden", "true");
+      path.setAttribute("d", d); svg.append(path); t.prepend(svg);
+    });
+  }
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(drawTickets);
+  let tkT; addEventListener("resize", () => { clearTimeout(tkT); tkT = setTimeout(drawTickets, 120); });
+  swap("event", "tc");
 
   /* wiring */
   /* placed polaroids hand their transform back to the hover styles */

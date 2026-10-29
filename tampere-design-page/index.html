@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="bold">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -412,6 +412,38 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .stamp-obj .tower-hint::after { content: "\2192"; margin-left: 4px; }
 @media (max-width: 900px) { .stamp-obj { bottom: 132px; right: max(16px, 4vw); } .stamp-obj .tower { width: 112px; } }
 @media (max-width: 600px) { .stamp-obj { bottom: 96px; right: 8px; } .stamp-obj .tower { width: 92px; } .stamp-obj .tower-hint { display: none; } }
+/* ===== palette test: Bold (white, black, orange, green, blue) vs the original Pastel ===== */
+:root { --sw0: #6b6ff0; --sw1: #f07fc0; --sw2: #a3dd73; --sw3: #5fcfcf; --sw4: #ff9a52; --on-tint: #141414; --on-tint-soft: #3e4046; --pressed-bg: #e3effd; --pressed-ink: #1b5fb8; }
+.toolbar .tool[aria-pressed="true"] { background: var(--pressed-bg); color: var(--pressed-ink); }
+.stickie, .stickie h3, .stickie svg { color: var(--on-tint); }
+.stickie p, .stickie .author { color: var(--on-tint-soft); }
+.av { color: var(--on-tint); }
+.date, .date .dow { color: var(--on-tint); }
+.date .dow { opacity: .75; }
+:root.bold {
+  --ink: #252525; --soft: #4f4f4f;
+  --tb-white: #ffffff; --tb-black: #252525; --tb-orange: #D23F14; --tb-green: #27784F; --tb-blue: #184DCB;
+  --select: #184DCB; --redline: #D23F14; --component: #D23F14;
+  --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #ffffff;
+  --me: #27784F; --me-bg: #27784F; --me-ink: #ffffff;
+  --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #252525; --t-tangerine: #D23F14;
+  --sw0: #252525; --sw1: #D23F14; --sw2: #27784F; --sw3: #184DCB; --sw4: #ffffff;
+  --on-tint: #ffffff; --on-tint-soft: rgba(255,255,255,.86);
+  --pressed-bg: #252525; --pressed-ink: #ffffff;
+}
+:root.bold .toolbar .swatch[data-sw="4"] span { box-shadow: inset 0 0 0 1.5px #c9c9cc; }
+:root.bold .toolbar .swatch[data-sw="4"][aria-checked="true"] span { box-shadow: inset 0 0 0 1.5px #c9c9cc, 0 0 0 2px var(--chrome), 0 0 0 4px #252525; }
+:root.bold .author::before { background: #fff; }
+:root.bold .stickie .author { color: rgba(255,255,255,.8); }
+.pal-switch {
+  position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 4px; padding: 4px; background: #fff; border: 1px solid #e7e7e9; border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(20,20,20,.12); font: 500 13px/1 var(--f-body);
+}
+.pal-switch span { padding: 0 8px; color: #6a6d73; }
+.pal-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: #252525; cursor: pointer; }
+.pal-switch button[aria-pressed="true"] { background: #252525; color: #fff; }
+@media (max-width: 900px) { .pal-switch { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } }
 </style>
 </head>
 <body>
@@ -531,11 +563,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     </button>
     <span class="sep" aria-hidden="true"></span>
     <span role="radiogroup" aria-label="Colour" style="display:contents">
-      <button class="swatch" type="button" role="radio" aria-checked="true" aria-label="Violet" style="--c:#6b6ff0"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Pink" style="--c:#f07fc0"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Lime" style="--c:#a3dd73"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Aqua" style="--c:#5fcfcf"><span></span></button>
-      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Tangerine" style="--c:#ff9a52"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="true" aria-label="Violet" data-sw="0" style="--c:var(--sw0)"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Pink" data-sw="1" style="--c:var(--sw1)"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Lime" data-sw="2" style="--c:var(--sw2)"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Aqua" data-sw="3" style="--c:var(--sw3)"><span></span></button>
+      <button class="swatch" type="button" role="radio" aria-checked="false" aria-label="Tangerine" data-sw="4" style="--c:var(--sw4)"><span></span></button>
     </span>
     <span class="sep" aria-hidden="true"></span>
     <button type="button" id="clear" aria-label="Clear drawings" title="Clear">
@@ -624,6 +656,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   </div>
 </footer>
 
+<div class="pal-switch" role="group" aria-label="Palette (review only)">
+  <span>Palette</span>
+  <button type="button" data-pal="bold" aria-pressed="true">Bold</button>
+  <button type="button" data-pal="pastel" aria-pressed="false">Pastel</button>
+</div>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -805,7 +842,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   // drawing
   const ink = $("ink"), ctx = ink.getContext("2d");
   const strokes = [];
-  let tool = "move", color = "#6b6ff0", live = null;
+  let tool = "move", color = getComputedStyle(document.documentElement).getPropertyValue("--sw0").trim(), live = null;
 
   const draw = () => {
     const dpr = devicePixelRatio || 1;
@@ -898,6 +935,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   addEventListener("resize", fitTower);
   start("once");
   }
+
+  /* palette review switch */
+  document.querySelectorAll(".pal-switch button").forEach((b) => b.addEventListener("click", () => {
+    document.documentElement.classList.toggle("bold", b.dataset.pal === "bold");
+    document.querySelectorAll(".pal-switch button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+    const on = document.querySelector(".swatch[aria-checked='true']");
+    if (on) color = getComputedStyle(on).getPropertyValue("--c").trim();
+  }));
 
   /* navbar: menu toggle on small screens */
   const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");

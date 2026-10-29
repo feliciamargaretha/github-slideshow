@@ -561,24 +561,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .logo .logo-img { display: block; height: 28px; width: auto; }
 .logo .logo-img { height: 30px; }
 [hidden] { display: none !important; }
-/* footer option: the walkers in Koskipuisto, with a line of copy in the sky */
-.foot-park { position: relative; background: var(--paper); }
-.park-shot { position: relative; margin: 0; }
-.park-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,20,40,.55), rgba(8,20,40,.2) 38%, transparent 55%); pointer-events: none; }
-.park-copy { z-index: 1; }
-.park-shot img { display: block; width: 100%; height: clamp(320px, 38vw, 560px); object-fit: cover; object-position: 60% 100%; }
-.park-copy { position: absolute; left: max(24px, 6vw); top: 50%; transform: translateY(-50%); display: grid; justify-items: start; gap: 16px; max-width: min(36rem, 60%); }
-.park-title { position: relative; z-index: 0; margin: 0; font: 400 clamp(1.9rem, 3.6vw, 3.4rem)/1.02 var(--f-display); letter-spacing: -.025em; color: #fff; text-shadow: 0 1px 24px rgba(10,40,90,.25); }
-.park-title .hl::before { opacity: .9; }
-.park-title .hl { color: #fff; }
-.park-title .hl::before { opacity: .55; }
-.foot-park .park-copy .cta { background: #fff; color: var(--ink); }
-.foot-park .foot-bar { padding-block: 24px 40px; }
-@media (max-width: 640px) {
-  .park-shot img { height: 400px; object-position: 72% 100%; }
-  .park-copy { max-width: calc(100% - 48px); top: 28px; transform: none; }
-  .park-shot::after { background: linear-gradient(180deg, rgba(8,20,40,.5), transparent 45%); }
-}
 /* footer option: big white letters with black scribbles drawn over them */
 :root { --accent: #FB8B14; }
 :root.acc-yellow { --accent: #FFD60A; --marker: #FFD60A; }
@@ -764,7 +746,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 
 <section class="sec wrap about" id="about" aria-labelledby="programs-title">
   <div class="about-head">
-    <h2 class="h2" id="programs-title">Ways to <span class="hl">join in</span></h2>
+    <h2 class="h2" id="programs-title">Ways to join in</h2>
     <p>Four ways to meet other designers in Tampere.</p>
   </div>
   <ul class="peeks">
@@ -808,7 +790,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 </section>
 
 <section class="sec wrap event" id="events" aria-labelledby="event-title">
-  <h2 class="h2">Our next event</h2>
+  <h2 class="h2" id="event-title">Our <span class="hl">next event</span></h2>
   <article class="event-row">
     <div class="when">
       <span class="dow">Thursday</span>
@@ -843,36 +825,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </section>
 
-<footer class="foot-a" data-foot="boxes" aria-label="Footer">
-  <div class="bricks" aria-hidden="true"></div>
-  <div class="in wrap">
-        <div class="drop armed" id="drop" aria-label="your design people are here"><span class="word-box">your</span><span class="word-box" style="--c:var(--marker)">design</span><span class="word-box">people</span><span class="word-box">are</span><span class="word-box">here</span></div>
-      <div class="foot-bar">
-        <span class="brand">Tampere Design</span>
-        <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
-        <span>© 2026</span>
-      </div>
-  </div>
-</footer>
 
-<footer class="foot-park" data-foot="park" aria-label="Footer" hidden>
-  <figure class="park-shot">
-    <picture><source srcset="assets/footer/koskipuisto-walkers.webp" type="image/webp"><img src="assets/footer/koskipuisto-walkers.jpg" width="2000" height="1333" alt="Two illustrated designers walking along the riverside path in Koskipuisto, Tampere" loading="lazy"></picture>
-    <figcaption class="park-copy">
-      <h2 class="park-title">See you at <span class="hl">the next one</span></h2>
-      <a class="cta" href="#">Come say hi</a>
-    </figcaption>
-  </figure>
-  <div class="in wrap">
-    <div class="foot-bar">
-      <span class="brand">Tampere Design</span>
-      <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
-      <span>© 2026</span>
-    </div>
-  </div>
-</footer>
-
-<footer class="foot-scrib" data-foot="scrib" aria-label="Footer" hidden>
+<footer class="foot-scrib" aria-label="Footer">
   <div class="wrap scrib-band">
     <p class="scrib-kicker">See you at the next one.</p>
     <p class="scrib-words" role="img" aria-label="Tampere Design"><span class="solid" aria-hidden="true">TAMPERE DESIGN</span><span class="ink" aria-hidden="true"></span></p>
@@ -893,10 +847,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Background</span>
   <button type="button" data-bg="white" aria-pressed="false">White</button>
   <button type="button" data-bg="dots" aria-pressed="true">Dotted</button>
-  <span>Footer</span>
-  <button type="button" data-footer="boxes" aria-pressed="true">Boxes</button>
-  <button type="button" data-footer="park" aria-pressed="false">Park</button>
-  <button type="button" data-footer="scrib" aria-pressed="false">Scribble</button>
   <span>Footer bg</span>
   <button type="button" data-fbg="yellow" aria-pressed="true">Yellow</button>
   <button type="button" data-fbg="accent" aria-pressed="false">Accent</button>
@@ -911,7 +861,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 </div>
 <canvas id="cursor-px" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50"></canvas>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -1047,55 +996,6 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   }), { threshold: .4, rootMargin: "0px 0px -10% 0px" });
   wins.forEach((w) => winIO.observe(w));
 
-  /* footer A: the word boxes drop in when the footer comes into view */
-  const drop = $("drop"), wordEls = [...drop.querySelectorAll(".word-box")];
-  const restAt = () => {  // where the boxes rest without physics
-    const W = drop.clientWidth, H = drop.clientHeight;
-    let x = 16;
-    wordEls.forEach((el, i) => {
-      const y = H - el.offsetHeight - (i % 2 ? 20 : 8);
-      el.style.transform = `translate(${Math.min(x, W - el.offsetWidth - 8)}px, ${y}px) rotate(${(i % 2 ? 4 : -5) * (i % 3 ? 1 : -1)}deg)`;
-      x += el.offsetWidth + 16;
-    });
-  };
-  const dropIn = () => {
-    drop.classList.remove("armed");
-    if (reduce || !window.Matter) { restAt(); return; }
-    const { Engine, Bodies, Composite, Runner, Mouse, MouseConstraint, Body } = Matter;
-    const W = drop.clientWidth, H = drop.clientHeight, T = 100, r = rng(3);
-    const engine = Engine.create();
-    const floor = Bodies.rectangle(W / 2, H + T / 2, W * 3, T, { isStatic: true });
-    const wallL = Bodies.rectangle(-T / 2, H / 2, T, H * 6, { isStatic: true });
-    const wallR = Bodies.rectangle(W + T / 2, H / 2, T, H * 6, { isStatic: true });
-    const bodies = wordEls.map((el, i) => {
-      const w = el.offsetWidth, h = el.offsetHeight;
-      const b = Bodies.rectangle(w / 2 + r() * Math.max(1, W - w), -h - i * 90, w, h,
-        { restitution: .3, friction: .5, angle: (r() - .5) * .6, chamfer: { radius: 2 } });
-      b.el = el; b.w = w; b.h = h;
-      return b;
-    });
-    Composite.add(engine.world, [floor, wallL, wallR, ...bodies]);
-    if (matchMedia("(pointer: fine)").matches) {
-      const mouse = Mouse.create(drop);
-      ["mousewheel", "DOMMouseScroll", "wheel"].forEach((ev) => mouse.element.removeEventListener(ev, mouse.mousewheel));
-      Composite.add(engine.world, MouseConstraint.create(engine, { mouse, constraint: { stiffness: .2, render: { visible: false } } }));
-    }
-    Runner.run(Runner.create(), engine);
-    const frame = () => {
-      for (const b of bodies) b.el.style.transform = `translate(${b.position.x - b.w / 2}px, ${b.position.y - b.h / 2}px) rotate(${b.angle}rad)`;
-      requestAnimationFrame(frame);
-    };
-    frame();
-    addEventListener("resize", () => {
-      const w = drop.clientWidth;
-      Body.setPosition(wallR, { x: w + T / 2, y: H / 2 });
-      Body.setPosition(floor, { x: w / 2, y: H + T / 2 });
-      for (const b of bodies) if (b.position.x > w) Body.setPosition(b, { x: w - b.w / 2, y: b.position.y - 40 });
-    });
-  };
-  new IntersectionObserver((es, io) => {
-    if (es[0].isIntersecting) { io.disconnect(); dropIn(); }
-  }, { threshold: .4 }).observe(drop);
 
 
   /* brick placement switch */
@@ -1201,18 +1101,15 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       paint, fit,
     };
   })();
-  addEventListener("resize", () => { if (!document.querySelector(".foot-scrib").hidden) { scribble.fit(); scribble.paint(); } });
+  addEventListener("resize", () => { scribble.fit(); scribble.paint(); });
   const group = (attr, apply) => document.querySelectorAll(`.mode-switch [data-${attr}]`).forEach((b) => b.addEventListener("click", () => {
     apply(b.dataset[attr]);
     document.querySelectorAll(`.mode-switch [data-${attr}]`).forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
   }));
   group("win", (v) => document.querySelector(".windows").classList.toggle("sketchy", v === "sketch"));
   group("head", (v) => document.querySelector(".hero").classList.toggle("split", v === "split"));
-  group("footer", (v) => {
-    document.querySelectorAll("[data-foot]").forEach((f) => (f.hidden = f.dataset.foot !== v));
-    if (v === "park") document.querySelector(".foot-park .hl").classList.add("on");
-    if (v === "scrib") scribble.start(); else scribble.stop();
-  });
+  // only animate the scribbles while the footer is on screen
+  new IntersectionObserver((es) => (es[0].isIntersecting ? scribble.start() : scribble.stop())).observe(document.querySelector(".foot-scrib"));
   group("fbg", (v) => {
     const f = document.querySelector(".foot-scrib");
     f.classList.toggle("bg-accent", v === "accent");

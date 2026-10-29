@@ -592,6 +592,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .scrib-words .solid span { display: inline-block; }
 .scrib-words .ink { position: absolute; inset: 0; color: #141414; filter: url(#boil); pointer-events: none; }
 .scrib-words .ink span { position: absolute; line-height: 1; white-space: nowrap; transform-origin: 50% 50%; }
+.foot-scrib.bg-blue { background: #6E9BF5; }
+.foot-scrib.bg-neutral { background: #B8B6B0; }
 .foot-scrib .foot-bar { border-top: 2px solid #141414; }
 .foot-scrib .foot-bar a, .foot-scrib .foot-bar { color: #141414; }
 /* ===== Tools concept ===== */
@@ -894,6 +896,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <button type="button" data-footer="boxes" aria-pressed="true">Boxes</button>
   <button type="button" data-footer="park" aria-pressed="false">Park</button>
   <button type="button" data-footer="scrib" aria-pressed="false">Scribble</button>
+  <span>Footer bg</span>
+  <button type="button" data-fbg="accent" aria-pressed="true">Accent</button>
+  <button type="button" data-fbg="blue" aria-pressed="false">Blue</button>
+  <button type="button" data-fbg="neutral" aria-pressed="false">Neutral</button>
   <span>Accent</span>
   <button type="button" data-accent="orange" aria-pressed="true">Orange</button>
   <button type="button" data-accent="yellow" aria-pressed="false">Yellow</button>
@@ -1198,6 +1204,11 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     document.querySelectorAll("[data-foot]").forEach((f) => (f.hidden = f.dataset.foot !== v));
     if (v === "park") document.querySelector(".foot-park .hl").classList.add("on");
     if (v === "scrib") scribble.start(); else scribble.stop();
+  });
+  group("fbg", (v) => {
+    const f = document.querySelector(".foot-scrib");
+    f.classList.toggle("bg-blue", v === "blue");
+    f.classList.toggle("bg-neutral", v === "neutral");
   });
   group("accent", (v) => document.documentElement.classList.toggle("acc-yellow", v === "yellow"));
   document.querySelectorAll(".mode-switch [data-photos]").forEach((b) => b.addEventListener("click", () => {

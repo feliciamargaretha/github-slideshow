@@ -8,7 +8,7 @@
 <link rel="icon" href="assets/logos/arrow-tile.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400;500;600;700&family=Jost:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400;500;600;700&family=Jost:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Square+Peg&family=Homemade+Apple&display=swap">
 <style>
 /* Layout: techy meets tactile. A white header with the title in the middle and coloured
    pixels scattered around it, thickening towards the bottom. Scrolling draws a pixel
@@ -29,7 +29,7 @@
 
   --f-display: "Futura", "Futura PT", "Jost", "Century Gothic", sans-serif;
   --f-body: "Rethink Sans", "Helvetica Neue", Arial, sans-serif;
-  --f-hand: "Patrick Hand", "Comic Neue", "Segoe Print", sans-serif;
+  --f-hand: "Square Peg", "Segoe Print", cursive;
   --gutter: max(16px, env(safe-area-inset-left, 0px));
   color-scheme: light;
 }
@@ -47,6 +47,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .px { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .hero { position: relative; z-index: 2; display: grid; justify-items: center; text-align: center; }
 .title { margin: 0 0 28px; display: grid; justify-items: center; gap: 22px; font-weight: 400; }
+/* handwriting review: both fonts are normalised to the same x-height so sizes stay comparable */
+:root.hand-apple { --f-hand: "Homemade Apple", "Segoe Print", cursive; }
+:root .kicker, :root .polaroid figcaption, :root .eyebrow, :root .dow, :root .pp-note, :root .pp-mosaic i.pp-you::after { font-size-adjust: var(--hand-adjust, .5); }
+:root.hand-apple { --hand-adjust: none; }
 .kicker { font: 400 clamp(1.5rem, 2.4vw, 2.2rem)/1 var(--f-hand); color: var(--ink); transform: rotate(-2deg); }
 .line {
   display: flex; align-items: baseline; justify-content: center; gap: max(8px, .24em);
@@ -724,6 +728,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Logo</span><button type="button" data-g="logo" data-v="orig" aria-pressed="true">Arrow</button><button type="button" data-g="logo" data-v="pp" aria-pressed="false">td</button>
   <span>Header</span><button type="button" data-g="head" data-v="orig" aria-pressed="true">Original</button><button type="button" data-g="head" data-v="pp" aria-pressed="false">Add your pixel</button>
   <span>Event</span><button type="button" data-g="event" data-v="tc" aria-pressed="true">Ticket + calendar</button><button type="button" data-g="event" data-v="orig" aria-pressed="false">Ticket</button><button type="button" data-g="event" data-v="pp" aria-pressed="false">Calendar</button>
+  <span>Handwriting</span><button type="button" data-g="hand" data-v="peg" aria-pressed="true">Square Peg</button><button type="button" data-g="hand" data-v="apple" aria-pressed="false">Homemade Apple</button>
   <span>Footer</span><button type="button" data-g="foot" data-v="boxes" aria-pressed="true">Boxes</button><button type="button" data-g="foot" data-v="bands" aria-pressed="false">Pixel bands</button>
 </div>
 <canvas id="cursor-px" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50"></canvas>
@@ -1150,6 +1155,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
       $("lede").textContent = v === "pp" ? "Every pixel here is one of us. Glad you found us. We host meetups, critiques and good company for anyone who designs anything." : ORIG_LEDE;
       $("cta-label").textContent = v === "pp" ? "Add your pixel" : "Come say hi";
       $("cta-label").closest("a").setAttribute("href", "#");
+    } else if (g === "hand") {
+      document.documentElement.classList.toggle("hand-apple", v === "apple");
+      document.fonts.ready.then(() => dispatchEvent(new Event("resize")));
     } else {
       document.querySelectorAll(`[data-group="${g}"]`).forEach((el) => {
         const on = el.dataset.opt === v;

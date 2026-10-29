@@ -8,7 +8,7 @@
 <link rel="icon" href="assets/logos/td-tile.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Caveat:wght@600&family=Gochi+Hand&family=Rock+Salt&family=Reenie+Beanie&family=Nothing+You+Could+Do&family=Geist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Caveat:wght@600&family=Gochi+Hand&family=Rock+Salt&family=Reenie+Beanie&family=Nothing+You+Could+Do&family=Geist:wght@400;500;600&family=Urbanist:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&family=Patrick+Hand&display=swap">
 <style>
 /* Layout: techy meets tactile. A white header with the title in the middle and coloured
    pixels scattered around it, thickening towards the bottom. Scrolling draws a pixel
@@ -28,13 +28,14 @@
   --butter: #ffd21a;
 
   --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
-  --f-body: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Urbanist", "Helvetica Neue", Arial, sans-serif;
   --f-hand: "Patrick Hand", "Comic Neue", "Segoe Print", sans-serif;
   --gutter: max(16px, env(safe-area-inset-left, 0px));
   color-scheme: light;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); }
+:root.body-geist { --f-body: "Geist", "Helvetica Neue", Arial, sans-serif; }
 body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 :focus-visible { outline: 2px solid var(--select); outline-offset: 3px; }
 .wrap {
@@ -844,6 +845,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Background</span>
   <button type="button" data-bg="white" aria-pressed="false">White</button>
   <button type="button" data-bg="dots" aria-pressed="true">Dotted</button>
+  <span>Body</span>
+  <button type="button" data-body="urbanist" aria-pressed="true">Urbanist</button>
+  <button type="button" data-body="geist" aria-pressed="false">Geist</button>
   <span>Accent</span>
   <button type="button" data-accent="orange" aria-pressed="true">Orange</button>
   <button type="button" data-accent="yellow" aria-pressed="false">Yellow</button>
@@ -1102,6 +1106,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   group("head", (v) => document.querySelector(".hero").classList.toggle("split", v === "split"));
   // only animate the scribbles while the footer is on screen
   new IntersectionObserver((es) => (es[0].isIntersecting ? scribble.start() : scribble.stop())).observe(document.querySelector(".foot-scrib"));
+  group("body", (v) => { document.documentElement.classList.toggle("body-geist", v === "geist"); scribble.fit(); scribble.paint(); });
   group("accent", (v) => document.documentElement.classList.toggle("acc-yellow", v === "yellow"));
   document.querySelectorAll(".mode-switch [data-photos]").forEach((b) => b.addEventListener("click", () => {
     document.querySelector(".peeks").classList.toggle("no-photos", b.dataset.photos === "no");

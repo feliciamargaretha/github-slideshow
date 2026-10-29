@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%229%22%20y%3D%2214%22%20width%3D%2246%22%20height%3D%2236%22%20fill%3D%22none%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%226%22%20y%3D%2211%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%226%22%20y%3D%2247%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%2252%22%20y%3D%2211%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%2252%22%20y%3D%2247%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2244%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2C%20serif%22%20font-weight%3D%22700%22%20font-size%3D%2230%22%20fill%3D%22%23141414%22%3ETD%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Patrick+Hand&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
 <style>
 /* Layout: the header is a design file's canvas. Dotted paper, the headline in the middle,
    a few things a designer leaves lying around scattered at the edges, and a toolbar
@@ -380,6 +380,38 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
 .logo .logo-img { display: block; height: 28px; width: auto; }
 .logo .logo-td { width: auto; height: 30px; color: var(--ink); overflow: visible; }
+/* Näsinneula: a square above the title that changes drawing style */
+.tower {
+  position: relative; display: block; width: clamp(150px, 15vw, 200px); aspect-ratio: 1; margin: 0 auto 24px;
+  padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.tower .art {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  opacity: 0; transform: rotate(-4deg) scale(.92); transition: opacity .45s ease, transform .55s cubic-bezier(.2,.9,.3,1.3);
+}
+.tower .art.on { opacity: 1; transform: rotate(0) scale(1); }
+.tower .art:nth-child(2).on { transform: rotate(3deg); }
+.tower img, .tower .pen { position: absolute; top: 0; left: 50%; height: 100%; width: auto; transform: translateX(-50%); }
+.tower img { filter: drop-shadow(0 6px 10px rgba(20,20,20,.14)); }
+.tower pre { position: absolute; left: 50%; top: 50%; margin: 0; text-align: left; font: 500 10px/1.02 var(--f-mono); transform: translate(-50%, -50%) scale(var(--s, .4)); color: #1d4fae; white-space: pre; }
+.tower:hover .art.on { transform: rotate(-2deg) scale(1.04); }
+.tower-hint {
+  position: absolute; right: -64px; top: 12%; font: 400 18px/1 var(--f-hand); color: var(--soft);
+  opacity: 0; transform: rotate(8deg); transition: opacity .4s; pointer-events: none;
+}
+.tower-hint::before { content: "\2190"; margin-right: 4px; }
+.tower.hinting .tower-hint { opacity: 1; }
+/* on the canvas: the stamp sits like a placed object, with a frame name above it */
+:root { --f-mono: "Geist Mono", ui-monospace, Menlo, monospace; --f-hand: "Patrick Hand", "Comic Neue", "Segoe Print", sans-serif; }
+.stamp-obj { right: max(32px, 8vw); bottom: 20%; z-index: 3; transform: rotate(3deg); }
+.stamp-obj .tower { margin: 0; width: clamp(130px, 12vw, 176px); }
+.stamp-name { position: absolute; left: 0; top: -22px; display: flex; align-items: center; gap: 4px; font: 500 12px/1 var(--f-body); color: #8a8d93; }
+.stamp-name svg { width: 13px; height: 13px; }
+.stamp-obj .tower-hint { right: auto; left: -84px; top: 40%; }
+.stamp-obj .tower-hint::before { content: ""; margin: 0; }
+.stamp-obj .tower-hint::after { content: "\2192"; margin-left: 4px; }
+@media (max-width: 900px) { .stamp-obj { bottom: 132px; right: max(16px, 4vw); } .stamp-obj .tower { width: 112px; } }
+@media (max-width: 600px) { .stamp-obj { bottom: 96px; right: 8px; } .stamp-obj .tower { width: 92px; } .stamp-obj .tower-hint { display: none; } }
 </style>
 </head>
 <body>
@@ -440,6 +472,53 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   </div>
 
   <canvas class="ink" id="ink" aria-hidden="true"></canvas>
+
+  <div class="thing stamp-obj">
+    <span class="stamp-name" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true"><path d="M7 3v18M17 3v18M3 7h18M3 17h18" stroke-width="1.6"/></svg>Näsinneula</span>
+    <button class="tower" id="tower" type="button" aria-label="Näsinneula. Change the drawing style">
+      <span class="art on"><img src="assets/nasinneula-stamp.webp" width="900" height="1160" alt=""></span>
+      <span class="art"><svg class="pen" viewBox="18 18 324 404" role="img" aria-label="Pen drawing of Näsinneula tower on a postage stamp, value 50, with clouds, sparkles and the lake"><defs><filter id="crayon2"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter><pattern id="wash2" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)"><path d="M0 2.5H5" stroke="#2457d6" stroke-opacity=".16" stroke-width="1.2"/></pattern></defs><rect x="52" y="54" width="256" height="337" fill="url(#wash2)"/><g fill="none" stroke="#2457d6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" filter="url(#crayon2)"><path d="M28 28 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 20.27 0 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 0 20.21 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 -20.27 0 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 a9 9 0 0 1 0 -20.21 Z"/><path d="M51.6 53.2 Q73.8 52.5 94.7 53.4 Q114.6 53.5 136.3 53.2 Q157.3 51.9 179.8 53.7 Q200.1 51.9 222.9 53.7 Q244.2 52.2 266.4 51.3 Q287.8 51.5 307.2 51.2 M307.6 52.7 Q307.1 73.4 308.6 94.0 Q308.5 114.0 307.5 135.9 Q309.2 157.4 308.3 178.9 Q308.7 199.2 309.6 221.4 Q308.3 242.4 309.3 264.1 Q310.1 283.7 310.6 304.7 Q309.4 327.4 309.0 347.7 Q308.4 369.4 310.6 390.2 M310.8 389.6 Q289.1 390.5 267.2 390.2 Q246.6 391.9 223.9 391.0 Q201.1 391.5 181.3 392.1 Q160.5 390.5 137.7 391.7 Q115.0 391.4 94.3 390.8 Q72.1 392.7 51.2 391.4 M51.8 392.8 Q50.7 370.7 52.1 350.6 Q53.0 329.8 51.5 307.3 Q51.5 287.6 53.0 264.5 Q51.0 243.3 51.4 223.0 Q52.3 201.1 50.9 180.6 Q51.6 159.8 53.0 138.9 Q52.0 117.8 52.4 95.3 Q53.3 76.0 52.8 54.7"/><text x="66" y="86" class="val">50</text><path d="M84 139Q85 149 95 150Q85 151 84 161Q83 151 73 150Q83 149 84 139Z"/><path d="M98 199Q99 205 105 206Q99 207 98 213Q97 207 91 206Q97 205 98 199Z"/><path d="M270 242Q271 249 278 250Q271 251 270 258Q269 251 262 250Q269 249 270 242Z"/><path d="M222 104q-2-14 13-15q6-11 19-5q15-3 16 11q10 3 6 12q-24 3-54-3z"/><path d="M70 118q0-10 10-10q6-8 16-2q11 0 10 10q-18 3-36 2z" stroke-width="1.8"/><path d="M179.8 93.8 Q178.7 106.4 179.0 117.0 Q179.1 128.9 179.6 141.0"/><path d="M175.9 103.2 Q178.7 103.6 182.0 104.8 M176.3 117.2 Q179.2 117.5 183.7 117.2" stroke-width="1.6"/><path d="M168.8 143.1 Q173.9 141.9 179.1 141.1 Q185.5 141.2 192.7 141.3 M191.0 143.0 Q192.1 147.9 192.1 155.0 M168.1 157.1 Q169.2 149.6 167.5 141.7"/><path d="M149.3 156.6 Q160.1 156.9 169.6 155.4 Q181.0 157.6 190.8 156.7 Q201.0 156.8 209.4 156.0 M209.7 155.0 Q216.0 158.8 224.5 163.4 Q234.0 166.3 241.0 171.1 M151.0 155.7 Q141.6 158.6 134.3 162.3 Q127.9 167.8 120.7 170.0"/><path d="M120.3 170.7 Q130.7 170.5 144.9 170.6 Q156.8 169.9 167.3 170.6 Q179.5 171.0 193.0 169.8 Q203.7 171.4 216.5 169.3 Q226.8 168.9 240.9 170.7 M239.2 170.7 Q241.5 177.5 239.7 184.1 M119.2 182.9 Q121.5 177.5 120.1 171.0 M119.9 184.8 Q133.0 183.1 143.5 183.5 Q155.2 184.3 167.5 183.8 Q178.8 185.3 191.7 183.9 Q204.3 185.3 215.8 184.9 Q228.0 184.1 240.1 182.9"/><path d="M127.9 171.3 Q126.4 178.0 127.3 181.9 M137.5 172.1 Q136.4 177.1 137.1 182.6 M145.1 172.1 Q145.2 176.3 146.6 182.0 M155.1 172.6 Q156.3 176.8 155.2 182.0 M164.0 172.4 Q163.8 177.1 164.0 183.0 M173.4 172.8 Q174.4 176.2 173.1 183.0 M182.7 171.2 Q180.8 176.8 181.1 181.4 M190.1 172.4 Q191.9 178.3 190.2 182.5 M200.4 171.2 Q201.2 178.5 199.4 183.0 M208.8 172.0 Q210.6 178.1 208.3 181.8 M218.0 171.6 Q217.0 176.4 218.5 180.9 M227.1 171.9 Q225.5 176.5 227.3 182.0" stroke-width="1.5"/><path d="M119.0 185.1 Q133.7 189.5 144.6 191.5 Q156.8 196.9 170.5 199.2 M239.8 184.9 Q228.3 187.2 213.7 192.9 Q202.0 196.6 188.1 199.0"/><path d="M171.4 199.8 Q169.4 212.4 170.8 222.7 Q168.9 234.1 169.0 244.8 Q169.6 254.5 169.6 266.9 Q168.5 275.8 169.1 287.4 Q167.5 297.9 167.5 309.3 Q167.6 320.4 168.6 331.5 M189.0 199.3 Q188.8 209.5 189.0 220.9 Q190.5 233.2 189.3 243.9 Q191.6 253.7 191.2 265.9 Q190.7 278.1 190.8 288.0 Q191.9 300.5 191.2 310.7 Q192.4 321.4 191.8 331.7"/><path d="M167.0 331.2 Q161.6 339.8 157.5 345.3 M191.1 332.8 Q198.2 339.5 201.5 345.4 M157.5 345.9 Q167.9 345.8 179.5 347.0 Q192.5 346.2 201.4 347.0"/><path d="M181.6 209.7 Q183.9 206.6 189.0 204.0 M181.3 216.0 Q184.0 212.2 188.3 209.8 M181.0 220.9 Q185.0 218.1 189.5 216.1 M182.6 228.3 Q186.4 226.2 189.2 221.6 M183.1 233.2 Q186.5 231.5 188.6 228.7 M182.9 240.3 Q186.6 238.0 189.0 234.1 M182.0 246.7 Q186.9 244.0 190.1 240.9 M182.4 252.4 Q185.1 247.5 189.2 245.7 M181.1 258.7 Q186.3 255.4 190.4 252.4 M182.0 262.9 Q187.1 261.8 190.3 258.1 M182.4 269.0 Q187.0 266.2 189.5 263.5 M182.5 275.4 Q187.0 274.5 190.5 269.7 M182.0 282.4 Q187.2 279.4 191.0 275.1 M181.2 287.5 Q187.2 284.4 191.0 280.9 M181.0 293.5 Q187.0 291.6 191.3 287.5 M182.0 299.9 Q186.4 295.8 191.9 293.3 M183.1 307.0 Q185.1 302.9 191.9 301.0 M181.9 311.5 Q185.7 310.4 190.7 306.2 M181.2 318.1 Q188.2 313.8 192.2 312.0 M182.9 324.4 Q185.9 322.3 191.6 317.0 M180.9 330.0 Q186.7 326.4 190.9 323.7" stroke-width="1.3" opacity=".8"/><path d="M185.6 186.7 Q188.4 191.8 194.7 195.2 M193.9 186.5 Q198.3 190.3 200.7 195.8 M201.1 186.2 Q203.6 190.8 207.5 195.0 M206.1 186.7 Q210.3 192.4 214.4 195.5 M214.0 185.3 Q217.6 192.5 222.8 196.7 M221.3 186.9 Q226.4 191.2 229.5 195.0 M228.5 185.9 Q232.8 191.5 235.5 195.0" stroke-width="1.3" opacity=".8"/><path d="M188.9 157.2 Q190.9 162.5 193.6 168.5 M196.0 157.5 Q198.5 162.4 201.1 167.8 M201.3 157.3 Q204.1 164.3 208.0 167.4 M209.9 159.1 Q211.8 161.8 214.3 167.1 M215.7 157.1 Q218.2 162.2 222.2 168.9 M223.5 157.8 Q225.7 163.1 228.7 167.6" stroke-width="1.2" opacity=".6"/><path d="M60 346q8-22 18-2q6-16 14 0q8-20 18 0q5-12 12 2M244 346q8-18 16 0q7-14 14 0q8-22 18 0q6-10 12 2" /><path d="M60 352q10-5 20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0 M70 360q10-5 20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0t20 0" stroke-width="1.5"/><text x="180" y="386" class="word" text-anchor="middle">TAMPERE</text></g></svg></span>
+      <span class="art"><pre aria-hidden="true">
+
+                       -+
+                       =*
+                       =#
+                       =%
+                       +%
+                     --:=#*
+                         :---:
+                =*+++++++**#%%@*
+                :-==+++++**#*+=:
+                     :==+#=
+                     :--=#+
+                     :--=#+
+                     :--=#+
+                     ---=#*
+                     ---=#*
+                     ---=#*
+                     ---=#*
+                     ---=*#
+                     ---=*#
+                     ---=*#
+                     ---=*#
+                     =--=*%
+                     =--=*%
+                     =--=*%
+                     =--=*@
+                     =--=*@
+                     =--=*%
+                     =--=*%:
+                     =--=*%:
+               :-#-  =--=*%:        :    :+::
+          :    %%%* :=--=*%-        %*:- #%%%
+  : +    +%+%-+%%%%##==-+%%-  ::  :*%%%%##%%%= +
+-*##%-  .%##%%#%%%###==-+#@-#### =#%%%%%##%%%##%
+%%%%##+#%%%%%%%%%##%%######*###%#%%%%%%###%%%%%%
+##%%%####%%%%%%%%%%%%%#%%%%%%%%%%%%%%%%%%%%%#%%%
+%%%%%%%%%%%%%%#%%%#%%%##%%%%%%%%%%%@%@%%@%#%%#%%</pre></span>
+      <span class="tower-hint" aria-hidden="true">tap me</span>
+    </button>
+  </div>
 
   <div class="toolbar" role="toolbar" aria-label="Draw on the canvas">
     <!-- Icons: Matita (matita.dev, MIT): mouse-pointer, pencil, brush, eraser, trash-2 -->
@@ -800,6 +879,31 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   }));
   $("clear").addEventListener("click", () => { strokes.length = 0; draw(); });
   addEventListener("keydown", (e) => { if (e.key === "Escape") setTool("move"); });
+  {
+  /* Näsinneula: three drawing styles; the mode decides when they change */
+  const tower = $("tower"), arts = [...tower.querySelectorAll(".art")];
+  let cur = 0, timer = null, mode = "once";
+  const show = (i) => { arts[cur].classList.remove("on"); cur = (i + arts.length) % arts.length; arts[cur].classList.add("on"); };
+  const stop = () => { clearInterval(timer); timer = null; };
+  const start = (m) => {
+    stop(); mode = m; show(0); tower.classList.remove("hinting");
+    if (reduce || m === "egg") return;
+    let steps = 0;
+    timer = setInterval(() => {
+      show(cur + 1);
+      // "once": play through every style a single time, land back on the stamp, then wait for clicks
+      if (m === "once" && ++steps === arts.length) { stop(); tower.classList.add("hinting"); setTimeout(() => tower.classList.remove("hinting"), 3200); }
+    }, 2200);
+  };
+  tower.addEventListener("click", () => { if (mode !== "auto") stop(); tower.classList.remove("hinting"); show(cur + 1); });
+  // browsers won't draw text below a minimum size, so the ASCII is set at 10px and scaled down to fit
+  const towerPre = tower.querySelector("pre");
+  const fitTower = () => towerPre.style.setProperty("--s", (tower.clientHeight / towerPre.offsetHeight).toFixed(3));
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(fitTower);
+  addEventListener("resize", fitTower);
+  start("once");
+  }
+
   /* navbar: menu toggle on small screens */
   const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");
   menuBtn.addEventListener("click", () => menuBtn.setAttribute("aria-expanded", String(nav.classList.toggle("open"))));

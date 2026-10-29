@@ -580,13 +580,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   .park-shot::after { background: linear-gradient(180deg, rgba(8,20,40,.5), transparent 45%); }
 }
 /* ===== Tools concept ===== */
-:root { --th: min(52svh, 560px, calc(92vw * 1240 / 924)); --f-busted: "Broke Grotesk", "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; }
-.top { display: flex; flex-direction: column; align-items: center; min-height: 100svh; padding-block: 100px 0; overflow: visible; }
+:root { --sp: 1.85; --th: min(60svh, 660px, 88vw); --f-busted: "Broke Grotesk", "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; }
+.top { display: flex; flex-direction: column; align-items: center; min-height: 100svh; padding-block: 92px 0; overflow: visible; }
 .top.dotted { background-image: radial-gradient(circle, rgba(20,20,20,.16) 1px, transparent 1.4px); background-size: 22px 22px; background-position: center top; }
 .top .hero { flex: 1; display: grid; place-content: center; justify-items: center; padding-block: 8px 32px; }
-.top .lede { margin-bottom: 24px; }
+.top .lede { margin: 0 0 20px; }
 .top .tower, .top .about-copy { display: none !important; }
-.tt { margin: 0 0 20px; max-width: 16ch; text-align: center; font: 800 clamp(2.8rem, 7vw, 6.2rem)/.94 var(--f-busted); letter-spacing: -.02em; color: var(--ink); filter: url(#busted); text-wrap: balance; }
+.tt { margin: 0 0 16px; max-width: 16ch; text-align: center; font: 800 clamp(2.6rem, 6.4vw, 5.6rem)/.94 var(--f-busted); letter-spacing: -.02em; color: var(--ink); filter: url(#busted); text-wrap: balance; }
 .tt .ch { display: inline-block; transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); }
 .tt .w, .tt .wd { white-space: nowrap; }
 .to-wrap { display: inline-block; position: relative; overflow: hidden; vertical-align: bottom; white-space: nowrap; max-width: 3em; transition: max-width .55s cubic-bezier(.6,0,.3,1); }
@@ -600,18 +600,33 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .top .lede { text-align: center; }
 
 /* the tools: two thirds above the fold, the bottom third shows when you scroll */
-.tools { position: relative; z-index: 2; flex: none; height: var(--th); aspect-ratio: 924 / 1240; margin-bottom: calc(var(--th) / -3); }
-.tool { position: absolute; display: block; transform-origin: 50% 85%; transition: transform .5s cubic-bezier(.3,1.7,.45,1), filter .3s; animation: rise 1s cubic-bezier(.2,.9,.3,1.1) both; animation-delay: calc(.35s + var(--i) * .08s); }
-.tool img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
-.tool:hover { z-index: 3; filter: drop-shadow(0 18px 18px rgba(20,20,20,.22)); }
-.tool:nth-child(odd):hover { transform: translateY(-4%) rotate(-7deg); }
-.tool:nth-child(odd).tap { transform: translateY(-4%) rotate(-7deg); }
-.tool:nth-child(even).tap { transform: translateY(-4%) rotate(6deg); }
-.tool:nth-child(even):hover { transform: translateY(-4%) rotate(6deg); }
+.tools { position: relative; z-index: 2; flex: none; width: 100%; height: var(--th); margin-bottom: calc(var(--th) / -3); }
+.tool {
+  position: absolute; display: block; left: calc(50% + var(--cx) * var(--sp) * var(--th) - var(--w) * var(--th) / 2); top: calc(var(--t) * var(--th)); width: calc(var(--w) * var(--th));
+  transform-origin: 50% 90%; cursor: grab;
+  transition: transform .55s cubic-bezier(.3,1.8,.45,1), filter .3s;
+  animation: rise 1s cubic-bezier(.2,.9,.3,1.1) both, nudge .9s ease-in-out both; animation-delay: calc(.35s + var(--i) * .08s), calc(1.7s + var(--i) * .12s);
+}
+.tool img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.tool-tag {
+  position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translate(-50%, 6px) rotate(-4deg); white-space: nowrap;
+  padding: 4px 10px; border-radius: 999px; background: var(--ink); color: #fff; font: 600 20px/1 "Caveat", "Segoe Print", cursive;
+  opacity: 0; transition: opacity .2s, transform .3s cubic-bezier(.3,1.6,.5,1); pointer-events: none;
+}
+.tool.lift { z-index: 4; filter: drop-shadow(0 22px 20px rgba(20,20,20,.25)); }
+.tool.lift .tool-tag { opacity: 1; transform: translate(-50%, 0) rotate(-4deg); }
+.tool:nth-child(odd).lift { transform: translateY(-11%) rotate(-12deg); }
+.tool:nth-child(even).lift { transform: translateY(-11%) rotate(11deg); }
+.tool.lean-l { transform: rotate(-4deg); }
+.tool.lean-r { transform: rotate(4deg); }
+.tool:active { cursor: grabbing; }
 @keyframes rise { from { transform: translateY(30%); opacity: 0; } to { transform: none; opacity: 1; } }
+/* a one-off wave across the tools after they arrive, so it is clear they react */
+@keyframes nudge { 0%, 100% { translate: 0 0; rotate: 0deg; } 35% { translate: 0 -5%; rotate: -5deg; } 70% { translate: 0 -2%; rotate: 3deg; } }
 .top + .sec { padding-top: calc(var(--th) / 3 + clamp(64px, 8vw, 112px)); }
-@media (max-width: 600px) { .top { padding-top: 96px; } .tt { font-size: clamp(2.6rem, 13vw, 4rem); } }
-@media (prefers-reduced-motion: reduce) { .tool { animation: none; transition: none; } .to-wrap, .ers { transition: none; } }
+@media (max-width: 900px) { :root { --sp: 1.5; } }
+@media (max-width: 600px) { :root { --sp: 1.3; } .top { padding-top: 96px; } .tt { font-size: clamp(2.6rem, 13vw, 4rem); } }
+@media (prefers-reduced-motion: reduce) { .tool { animation: none !important; transition: none; } .to-wrap, .ers { transition: none; } }
 </style>
 </head>
 <body>
@@ -702,13 +717,13 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     </div>
   </div>
   <div class="tools" id="tools">
-    <span class="tool" style="left:0.000%; top:13.468%; width:12.121%; --i:0"><img src="assets/tools/green-pen.webp" alt="Green ballpoint pen" draggable="false"></span>
-    <span class="tool" style="left:12.121%; top:10.726%; width:22.944%; --i:1"><img src="assets/tools/set-square.webp" alt="Set square" draggable="false"></span>
-    <span class="tool" style="left:35.065%; top:16.048%; width:11.688%; --i:2"><img src="assets/tools/blue-pen.webp" alt="Blue ballpoint pen" draggable="false"></span>
-    <span class="tool" style="left:44.805%; top:15.645%; width:17.965%; --i:3"><img src="assets/tools/compass.webp" alt="Drafting compass" draggable="false"></span>
-    <span class="tool" style="left:62.771%; top:4.919%; width:8.009%; --i:4"><img src="assets/tools/pencil.webp" alt="Pencil" draggable="false"></span>
-    <span class="tool" style="left:72.511%; top:0.000%; width:14.502%; --i:5"><img src="assets/tools/ruler.webp" alt="Steel ruler" draggable="false"></span>
-    <span class="tool" style="left:87.013%; top:24.516%; width:12.987%; --i:6"><img src="assets/tools/highlighter.webp" alt="Highlighter" draggable="false"></span>
+    <span class="tool" style="--cx:-0.3274; --w:0.0903; --t:0.1347; --i:0"><img src="assets/tools/green-pen.webp" alt="Green ballpoint pen" draggable="false"><span class="tool-tag" aria-hidden="true">pen</span></span>
+    <span class="tool" style="--cx:-0.1968; --w:0.1710; --t:0.1073; --i:1"><img src="assets/tools/set-square.webp" alt="Set square" draggable="false"><span class="tool-tag" aria-hidden="true">set square</span></span>
+    <span class="tool" style="--cx:-0.0677; --w:0.0871; --t:0.1605; --i:2"><img src="assets/tools/blue-pen.webp" alt="Blue ballpoint pen" draggable="false"><span class="tool-tag" aria-hidden="true">ballpoint</span></span>
+    <span class="tool" style="--cx:0.0282; --w:0.1339; --t:0.1565; --i:3"><img src="assets/tools/compass.webp" alt="Drafting compass" draggable="false"><span class="tool-tag" aria-hidden="true">compass</span></span>
+    <span class="tool" style="--cx:0.1250; --w:0.0597; --t:0.0492; --i:4"><img src="assets/tools/pencil.webp" alt="Pencil" draggable="false"><span class="tool-tag" aria-hidden="true">pencil</span></span>
+    <span class="tool" style="--cx:0.2218; --w:0.1081; --t:0.0000; --i:5"><img src="assets/tools/ruler.webp" alt="Steel ruler" draggable="false"><span class="tool-tag" aria-hidden="true">ruler</span></span>
+    <span class="tool" style="--cx:0.3242; --w:0.0968; --t:0.2452; --i:6"><img src="assets/tools/highlighter.webp" alt="Highlighter" draggable="false"><span class="tool-tag" aria-hidden="true">highlighter</span></span>
   </div>
   <div class="cursor" id="cursor" aria-hidden="true" hidden>
     <svg viewBox="0 0 22 22"><path d="M2 1.5 L2 17.5 L6.4 13.4 L9.3 20 L12.2 18.7 L9.4 12.3 L15.4 12.1 Z" fill="var(--blue)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
@@ -1182,10 +1197,19 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
     if (v === "b") playB(); else { playing++; document.querySelectorAll(".prop, .crumb").forEach((e) => e.remove()); }
   });
   tgroup("bg", (v) => top.classList.toggle("dotted", v === "dots"));
-  // touch: tap a tool to tilt it
-  document.querySelectorAll(".tool").forEach((t) => t.addEventListener("pointerdown", (e) => {
-    if (e.pointerType !== "mouse") { t.classList.add("tap"); setTimeout(() => t.classList.remove("tap"), 600); }
-  }));
+  // tools: the one you point at lifts and tilts, its neighbours lean out of the way; tap works on touch
+  const toolEls = [...document.querySelectorAll(".tool")];
+  const lift = (i) => toolEls.forEach((t, j) => {
+    t.classList.toggle("lift", j === i);
+    t.classList.toggle("lean-l", i >= 0 && j === i - 1);
+    t.classList.toggle("lean-r", i >= 0 && j === i + 1);
+  });
+  toolEls.forEach((t, i) => {
+    t.addEventListener("animationend", (e) => { if (e.animationName === "nudge") t.style.animation = "none"; });
+    t.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") lift(i); });
+    t.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") lift(-1); });
+    t.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") { lift(i); clearTimeout(t._t); t._t = setTimeout(() => lift(-1), 1200); } });
+  });
 
   /* navbar: menu toggle on small screens */
   const nav = $("nav"), menuBtn = nav.querySelector(".menu-btn");

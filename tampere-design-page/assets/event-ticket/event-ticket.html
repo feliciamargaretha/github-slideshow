@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Ticket, Pixel Calendar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&family=Newsreader:opsz,wght@6..72,400&display=swap">
+<style>
+:root { --paper:#fff; --ink:#141414; --soft:#55585e; --blue:#4386e9; --pink:#e43cf7; --green:#9bfcb5; --yellow:#fcef51; --empty:#f0f1f3;
+  --f-display:"Newsreader",Georgia,serif; --f-body:"Geist","Helvetica Neue",Arial,sans-serif; --f-mono:"Geist Mono",ui-monospace,Menlo,monospace; color-scheme: light; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font:400 17px/1.55 var(--f-body); -webkit-font-smoothing:antialiased; }
+.stage { padding:48px; display:grid; gap:48px; justify-items:start; }
+.ticket { position:relative; display:grid; grid-template-columns:auto minmax(0,1fr); width:960px; max-width:100%;
+  border:1.5px solid var(--ink); border-radius:20px; background:var(--paper); overflow:hidden; }
+.stub { position:relative; display:grid; align-content:center; justify-items:start; gap:16px; padding:32px 36px; border-right:2px dashed var(--ink); background:var(--paper); }
+.stub::before, .stub::after { content:""; position:absolute; right:-13px; width:24px; height:24px; border-radius:50%; background:var(--paper); border:1.5px solid var(--ink); }
+.stub::before { top:-13px; } .stub::after { bottom:-13px; }
+.month { display:flex; justify-content:space-between; align-items:baseline; width:184px; font:500 12px/1 var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--soft); }
+.cal { display:grid; grid-template-columns:repeat(7,22px); gap:5px; }
+.cal .dn { font:500 10px/1 var(--f-mono); color:var(--soft); text-align:center; padding-bottom:4px; }
+.cal i { display:block; width:22px; height:22px; background:var(--empty); }
+.cal i.blank { background:none; }
+.cal i.past { background:var(--green); }
+.cal i.past:nth-of-type(odd) { background:var(--yellow); }
+.cal i.next { background:var(--pink); box-shadow:0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+.date { font:500 15px/1 var(--f-mono); letter-spacing:.06em; }
+.date b { font-weight:500; background:var(--ink); color:#fff; padding:3px 6px; }
+.tbody { display:grid; gap:16px; align-content:center; justify-items:start; padding:40px 48px; min-width:0; }
+.when { font:500 13px/1 var(--f-mono); letter-spacing:.06em; color:var(--blue); }
+h3 { margin:0; font:400 38px/1.1 var(--f-display); letter-spacing:-.015em; }
+.meta { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px 24px; font-weight:500; }
+.meta li { display:inline-flex; align-items:center; gap:8px; }
+.meta svg { width:20px; height:20px; overflow:visible; }
+p { margin:0; max-width:52ch; color:var(--soft); }
+.cta { display:inline-flex; align-items:center; height:54px; padding:0 26px; border-radius:999px; background:var(--ink); color:#fff; font:500 17px/1 var(--f-body); text-decoration:none; margin-top:8px; }
+/* phone version: stub across the top */
+.ticket.phone { grid-template-columns:1fr; width:390px; }
+.ticket.phone .stub { border-right:0; border-bottom:2px dashed var(--ink); padding:24px; justify-items:center; }
+.ticket.phone .stub::before, .ticket.phone .stub::after { top:auto; bottom:-13px; right:auto; }
+.ticket.phone .stub::before { left:-13px; } .ticket.phone .stub::after { right:-13px; }
+.ticket.phone .tbody { padding:24px; }
+.ticket.phone h3 { font-size:30px; }
+</style></head><body><main class="stage">
+<article class="ticket ">
+  <div class="stub">
+    <div class="month"><span>November</span><span>2026</span></div>
+    <div class="cal" role="img" aria-label="November 2026; the 19th is marked"><span class="dn">M</span><span class="dn">T</span><span class="dn">W</span><span class="dn">T</span><span class="dn">F</span><span class="dn">S</span><span class="dn">S</span><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="d" title="1"></i><i class="d" title="2"></i><i class="d" title="3"></i><i class="d" title="4"></i><i class="d past" title="5"></i><i class="d" title="6"></i><i class="d" title="7"></i><i class="d" title="8"></i><i class="d" title="9"></i><i class="d" title="10"></i><i class="d" title="11"></i><i class="d past" title="12"></i><i class="d" title="13"></i><i class="d" title="14"></i><i class="d" title="15"></i><i class="d" title="16"></i><i class="d" title="17"></i><i class="d" title="18"></i><i class="d next" title="19"></i><i class="d" title="20"></i><i class="d" title="21"></i><i class="d" title="22"></i><i class="d" title="23"></i><i class="d" title="24"></i><i class="d" title="25"></i><i class="d" title="26"></i><i class="d" title="27"></i><i class="d" title="28"></i><i class="d" title="29"></i><i class="d" title="30"></i></div>
+    <div class="date"><b>THU 19</b> · 17:30</div>
+  </div>
+  <div class="tbody">
+    <span class="when">NEXT UP</span>
+    <h3>Autumn meetup: show and tell</h3>
+    <ul class="meta"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.86C8.09 4.730 9.82 4.23 11.02 4.08C12.21 3.93 13.55 3.69 14.69 3.96C15.82 4.24 16.94 5 17.84 5.73C18.74 6.47 19.53 7.4 20.07 8.38C20.6 9.36 20.94 10.51 21.04 11.62C21.15 12.72 21.13 14 20.7 15.03C20.28 16.06 19.36 17 18.49 17.790C17.62 18.59 16.6 19.36 15.49 19.81C14.38 20.26 13.03 20.51 11.81 20.48C10.6 20.46 9.32 20.09 8.19 19.63C7.07 19.17 5.89 18.56 5.04 17.74C4.2 16.92 3.54 15.81 3.12 14.73C2.7 13.65 2.43 12.38 2.53 11.25C2.63 10.11 3.18 8.95 3.74 7.89C4.31 6.83 4.97 5.68 5.930 4.89C6.89 4.1 8.23 3.45 9.49 3.18C10.74 2.91 12.8 3.25 13.46 3.26" stroke-width="1.776"/><path d="M11.93 6.73Q12.08 9.46 11.87 12.2Q13.79 13.06 15.72 13.89" stroke-width="1.568"/></svg>17:30–20:00</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.24 12.8C6.11 12.34 5.46 10.94 5.47 10.02C5.47 9.1 5.88 8.12 6.28 7.26C6.68 6.4 7.16 5.45 7.87 4.83C8.58 4.22 9.6 3.76 10.53 3.56C11.46 3.36 12.52 3.44 13.45 3.65C14.39 3.86 15.4 4.23 16.15 4.81C16.9 5.39 17.55 6.27 17.97 7.14C18.38 8.01 18.64 9.06 18.64 10.02C18.64 10.98 18.08 12.42 17.97 12.9" stroke-width="1.68"/><path d="M5.89 11.7Q7.38 16.37 12.17 21.07" stroke-width="1.728"/><path d="M18.47 11.9Q16.4 16.35 11.66 21.29" stroke-width="1.488"/><circle cx="11.85" cy="10.2" r="2.6" stroke-width="1.392"/></svg>Venue to be announced</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.35 3.33Q7.51 3.48 11.67 3.67Q16.14 7.93 20.31 12.48Q16.23 16.43 12.45 20.66Q7.84 16.22 3.62 11.41Q3.47 7.37 3.35 3.33Q4.02 3.4 4.69 3.38" stroke-width="1.664"/><path d="M7.93 7.95l.01 0" stroke-width="2.48"/></svg>Free</li></ul>
+    <p>Three short talks, an open show-and-tell and plenty of time to chat. Bring something you're working on, finished or not.</p>
+    <a class="cta" href="#">Save my spot</a>
+  </div>
+</article>
+<article class="ticket phone">
+  <div class="stub">
+    <div class="month"><span>November</span><span>2026</span></div>
+    <div class="cal" role="img" aria-label="November 2026; the 19th is marked"><span class="dn">M</span><span class="dn">T</span><span class="dn">W</span><span class="dn">T</span><span class="dn">F</span><span class="dn">S</span><span class="dn">S</span><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="blank"></i><i class="d" title="1"></i><i class="d" title="2"></i><i class="d" title="3"></i><i class="d" title="4"></i><i class="d past" title="5"></i><i class="d" title="6"></i><i class="d" title="7"></i><i class="d" title="8"></i><i class="d" title="9"></i><i class="d" title="10"></i><i class="d" title="11"></i><i class="d past" title="12"></i><i class="d" title="13"></i><i class="d" title="14"></i><i class="d" title="15"></i><i class="d" title="16"></i><i class="d" title="17"></i><i class="d" title="18"></i><i class="d next" title="19"></i><i class="d" title="20"></i><i class="d" title="21"></i><i class="d" title="22"></i><i class="d" title="23"></i><i class="d" title="24"></i><i class="d" title="25"></i><i class="d" title="26"></i><i class="d" title="27"></i><i class="d" title="28"></i><i class="d" title="29"></i><i class="d" title="30"></i></div>
+    <div class="date"><b>THU 19</b> · 17:30</div>
+  </div>
+  <div class="tbody">
+    <span class="when">NEXT UP</span>
+    <h3>Autumn meetup: show and tell</h3>
+    <ul class="meta"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.86C8.09 4.730 9.82 4.23 11.02 4.08C12.21 3.93 13.55 3.69 14.69 3.96C15.82 4.24 16.94 5 17.84 5.73C18.74 6.47 19.53 7.4 20.07 8.38C20.6 9.36 20.94 10.51 21.04 11.62C21.15 12.72 21.13 14 20.7 15.03C20.28 16.06 19.36 17 18.49 17.790C17.62 18.59 16.6 19.36 15.49 19.81C14.38 20.26 13.03 20.51 11.81 20.48C10.6 20.46 9.32 20.09 8.19 19.63C7.07 19.17 5.89 18.56 5.04 17.74C4.2 16.92 3.54 15.81 3.12 14.73C2.7 13.65 2.43 12.38 2.53 11.25C2.63 10.11 3.18 8.95 3.74 7.89C4.31 6.83 4.97 5.68 5.930 4.89C6.89 4.1 8.23 3.45 9.49 3.18C10.74 2.91 12.8 3.25 13.46 3.26" stroke-width="1.776"/><path d="M11.93 6.73Q12.08 9.46 11.87 12.2Q13.79 13.06 15.72 13.89" stroke-width="1.568"/></svg>17:30–20:00</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.24 12.8C6.11 12.34 5.46 10.94 5.47 10.02C5.47 9.1 5.88 8.12 6.28 7.26C6.68 6.4 7.16 5.45 7.87 4.83C8.58 4.22 9.6 3.76 10.53 3.56C11.46 3.36 12.52 3.44 13.45 3.65C14.39 3.86 15.4 4.23 16.15 4.81C16.9 5.39 17.55 6.27 17.97 7.14C18.38 8.01 18.64 9.06 18.64 10.02C18.64 10.98 18.08 12.42 17.97 12.9" stroke-width="1.68"/><path d="M5.89 11.7Q7.38 16.37 12.17 21.07" stroke-width="1.728"/><path d="M18.47 11.9Q16.4 16.35 11.66 21.29" stroke-width="1.488"/><circle cx="11.85" cy="10.2" r="2.6" stroke-width="1.392"/></svg>Venue to be announced</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.35 3.33Q7.51 3.48 11.67 3.67Q16.14 7.93 20.31 12.48Q16.23 16.43 12.45 20.66Q7.84 16.22 3.62 11.41Q3.47 7.37 3.35 3.33Q4.02 3.4 4.69 3.38" stroke-width="1.664"/><path d="M7.93 7.95l.01 0" stroke-width="2.48"/></svg>Free</li></ul>
+    <p>Three short talks, an open show-and-tell and plenty of time to chat. Bring something you're working on, finished or not.</p>
+    <a class="cta" href="#">Save my spot</a>
+  </div>
+</article>
+</main></body></html>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="bold p-scribble">
+<html lang="en" class="bold p-scribble sans-urbanist serif-fraunces">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23fff%22/%3E%3Crect%20x%3D%229%22%20y%3D%2214%22%20width%3D%2246%22%20height%3D%2236%22%20fill%3D%22none%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%226%22%20y%3D%2211%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%226%22%20y%3D%2247%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%2252%22%20y%3D%2211%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Crect%20x%3D%2252%22%20y%3D%2247%22%20width%3D%226%22%20height%3D%226%22%20fill%3D%22%23fff%22%20stroke%3D%22%230d99ff%22%20stroke-width%3D%222%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2244%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2C%20serif%22%20font-weight%3D%22700%22%20font-size%3D%2230%22%20fill%3D%22%23141414%22%3ETD%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&family=Patrick+Hand&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Urbanist:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Averia+Serif+Libre:wght@400;700&family=Geist+Mono:wght@500&family=Patrick+Hand&family=Newsreader:opsz,wght@6..72,400;6..72,700&display=swap">
 <style>
 /* Layout: the header is a design file's canvas. Dotted paper, the headline in the middle,
    a few things a designer leaves lying around scattered at the edges, and a toolbar
@@ -365,7 +365,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 }
 .statusbar a { color: var(--ink); text-decoration: none; }
 /* a skyline of flat shapes sitting on the bottom edge */
-.shapes { display: block; justify-self: center; width: min(1100px, 100% - 2 * clamp(16px, 6vw, 96px)); height: auto; margin-top: 48px; overflow: hidden; }
+.shapes { display: block; justify-self: center; width: min(1100px, 100% - 2 * clamp(16px, 6vw, 96px)); height: auto; margin-top: 0; overflow: hidden; }
 .shapes .shp { transform-box: fill-box; transform-origin: 50% 100%; transform: translateY(105%); transition: transform .7s cubic-bezier(.2,1.3,.4,1); transition-delay: calc(var(--i) * 70ms); }
 .shapes.in .shp { transform: none; }
 .shapes.in .shp:hover { transform: translateY(-6%); transition-delay: 0s; transition-duration: .3s; }
@@ -461,6 +461,43 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 :root.bold.p-scribble .stickie p { opacity: 1; }
 :root.bold.p-scribble .av[style*="t-lime"] { color: #5500C0; }
 :root.bold.p-scribble .av[style*="t-aqua"] { color: #085E56; }
+/* font review: Urbanist starts one step heavier (regular text at medium), serif options for headings */
+:root.sans-urbanist { --f-body: "Urbanist", "Helvetica Neue", Arial, sans-serif; }
+:root.sans-urbanist body { font-weight: 500; }
+:root.sans-urbanist .tag { font-weight: 600; }
+:root.sans-urbanist .redline b { font-weight: 700; }
+:root.sans-urbanist .cta { font-weight: 600; }
+:root.sans-urbanist .cursor .name { font-weight: 600; }
+:root.sans-urbanist .peer .who { font-weight: 700; }
+:root.sans-urbanist .nav-links a { font-weight: 600; }
+:root.sans-urbanist .join { font-weight: 600; }
+:root.sans-urbanist .frame-name { font-weight: 600; }
+:root.sans-urbanist .size { font-weight: 600; }
+:root.sans-urbanist .stickie h3 { font-weight: 700; }
+:root.sans-urbanist .author { font-weight: 600; }
+:root.sans-urbanist .comp-name { font-weight: 600; }
+:root.sans-urbanist .date .dow { font-weight: 600; }
+:root.sans-urbanist .date .mon { font-weight: 700; }
+:root.sans-urbanist .meta { font-weight: 600; }
+:root.sans-urbanist .pad b { font-weight: 700; }
+:root.sans-urbanist .pin .dot { font-weight: 700; }
+:root.sans-urbanist .av { font-weight: 700; }
+:root.sans-urbanist .by { font-weight: 600; }
+:root.sans-urbanist .q { font-weight: 700; }
+:root.sans-urbanist .count { font-weight: 600; }
+:root.sans-urbanist .menu-btn { font-weight: 600; }
+:root.sans-urbanist .stamp-name { font-weight: 600; }
+:root.serif-fraunces { --f-display: "Fraunces", "Iowan Old Style", Georgia, serif; }
+:root.serif-averia { --f-display: "Averia Serif Libre", "Iowan Old Style", Georgia, serif; }
+.font-switch {
+  position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: calc(100vw - 32px); padding: 4px; background: #fff; border: 1px solid #e7e7e9; border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(20,20,20,.12); font: 500 13px/1 "Geist", sans-serif;
+}
+.font-switch span { padding: 0 8px; color: #6a6d73; }
+.font-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: #252525; cursor: pointer; }
+.font-switch button[aria-pressed="true"] { background: #252525; color: #fff; }
+@media (max-width: 900px) { .font-switch { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } }
 </style>
 </head>
 <body>
@@ -671,7 +708,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
     <span class="zoom">100%</span>
     <span>© 2026</span>
   </div>
-  <svg class="shapes" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+  <svg class="shapes" viewBox="0 36 1200 184" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
     <g class="shp" style="--i:0"><path d="M223.3 190.0 L184.7 257.0 A30 30 0 0 1 158.7 272.0 L81.3 272.0 A30 30 0 0 1 55.3 257.0 L16.7 190.0 A30 30 0 0 1 16.7 160.0 L55.3 93.0 A30 30 0 0 1 81.3 78.0 L158.7 78.0 A30 30 0 0 1 184.7 93.0 L223.3 160.0 A30 30 0 0 1 223.3 190.0Z" fill="#FEE400"/></g>
     <g class="shp" style="--i:1"><path d="M387.5 172.0 L386.7 176.2 L384.4 180.3 L381.2 184.0 L377.9 187.5 L375.2 190.9 L373.5 194.4 L373.2 198.2 L373.9 202.5 L375.0 207.2 L375.9 212.0 L375.8 216.7 L374.5 220.8 L371.6 224.0 L367.6 226.4 L363.0 228.0 L358.4 229.4 L354.3 230.9 L351.2 233.2 L348.9 236.3 L347.4 240.4 L346.0 245.0 L344.4 249.6 L342.0 253.6 L338.8 256.5 L334.7 257.8 L330.0 257.9 L325.2 257.0 L320.5 255.9 L316.2 255.2 L312.4 255.5 L308.9 257.2 L305.5 259.9 L302.0 263.2 L298.3 266.4 L294.2 268.7 L290.0 269.5 L285.8 268.7 L281.7 266.4 L278.0 263.2 L274.5 259.9 L271.1 257.2 L267.6 255.5 L263.8 255.2 L259.5 255.9 L254.8 257.0 L250.0 257.9 L245.3 257.8 L241.2 256.5 L238.0 253.6 L235.6 249.6 L234.0 245.0 L232.6 240.4 L231.1 236.3 L228.8 233.2 L225.7 230.9 L221.6 229.4 L217.0 228.0 L212.4 226.4 L208.4 224.0 L205.5 220.8 L204.2 216.7 L204.1 212.0 L205.0 207.2 L206.1 202.5 L206.8 198.2 L206.5 194.4 L204.8 190.9 L202.1 187.5 L198.8 184.0 L195.6 180.3 L193.3 176.2 L192.5 172.0 L193.3 167.8 L195.6 163.7 L198.8 160.0 L202.1 156.5 L204.8 153.1 L206.5 149.6 L206.8 145.8 L206.1 141.5 L205.0 136.8 L204.1 132.0 L204.2 127.3 L205.5 123.2 L208.4 120.0 L212.4 117.6 L217.0 116.0 L221.6 114.6 L225.7 113.1 L228.8 110.8 L231.1 107.7 L232.6 103.6 L234.0 99.0 L235.6 94.4 L238.0 90.4 L241.2 87.5 L245.3 86.2 L250.0 86.1 L254.8 87.0 L259.5 88.1 L263.8 88.8 L267.6 88.5 L271.1 86.8 L274.5 84.1 L278.0 80.8 L281.7 77.6 L285.8 75.3 L290.0 74.5 L294.2 75.3 L298.3 77.6 L302.0 80.8 L305.5 84.1 L308.9 86.8 L312.4 88.5 L316.2 88.8 L320.5 88.1 L325.2 87.0 L330.0 86.1 L334.7 86.2 L338.8 87.5 L342.0 90.4 L344.4 94.4 L346.0 99.0 L347.4 103.6 L348.9 107.7 L351.2 110.8 L354.3 113.1 L358.4 114.6 L363.0 116.0 L367.6 117.6 L371.6 120.0 L374.5 123.2 L375.8 127.3 L375.9 132.0 L375.0 136.8 L373.9 141.5 L373.2 145.8 L373.5 149.6 L375.2 153.1 L377.9 156.5 L381.2 160.0 L384.4 163.7 L386.7 167.8Z" fill="#00DCEF"/></g>
     <g class="shp" style="--i:2"><path d="M525.0 125.0 L524.9 128.5 L524.7 132.0 L524.3 135.4 L523.8 138.9 L523.1 142.3 L522.3 145.7 L521.3 149.1 L520.2 152.4 L518.9 155.6 L517.5 158.8 L516.0 161.9 L514.3 165.0 L512.5 168.0 L510.5 170.9 L508.5 173.7 L506.3 176.4 L504.0 179.0 L501.6 181.6 L499.0 184.0 L496.4 186.3 L493.7 188.5 L490.9 190.5 L488.0 192.5 L485.0 194.3 L481.9 196.0 L478.8 197.5 L475.6 198.9 L472.4 200.2 L469.1 201.3 L465.7 202.3 L462.3 203.1 L458.9 203.8 L455.4 204.3 L452.0 204.7 L448.5 204.9 L445.0 205.0 L441.5 204.9 L438.0 204.7 L434.6 204.3 L431.1 203.8 L427.7 203.1 L424.3 202.3 L420.9 201.3 L417.6 200.2 L414.4 198.9 L411.2 197.5 L408.1 196.0 L405.0 194.3 L402.0 192.5 L399.1 190.5 L396.3 188.5 L393.6 186.3 L391.0 184.0 L388.4 181.6 L386.0 179.0 L383.7 176.4 L381.5 173.7 L379.5 170.9 L377.5 168.0 L375.7 165.0 L374.0 161.9 L372.5 158.8 L371.1 155.6 L369.8 152.4 L368.7 149.1 L367.7 145.7 L366.9 142.3 L366.2 138.9 L365.7 135.4 L365.3 132.0 L365.1 128.5 L365.0 125.0 L365.1 121.5 L365.3 118.0 L365.7 114.6 L366.2 111.1 L366.9 107.7 L367.7 104.3 L368.7 100.9 L369.8 97.6 L371.1 94.4 L372.5 91.2 L374.0 88.1 L375.7 85.0 L377.5 82.0 L379.5 79.1 L381.5 76.3 L383.7 73.6 L386.0 71.0 L388.4 68.4 L391.0 66.0 L393.6 63.7 L396.3 61.5 L399.1 59.5 L402.0 57.5 L405.0 55.7 L408.1 54.0 L411.2 52.5 L414.4 51.1 L417.6 49.8 L420.9 48.7 L424.3 47.7 L427.7 46.9 L431.1 46.2 L434.6 45.7 L438.0 45.3 L441.5 45.1 L445.0 45.0 L448.5 45.1 L452.0 45.3 L455.4 45.7 L458.9 46.2 L462.3 46.9 L465.7 47.7 L469.1 48.7 L472.4 49.8 L475.6 51.1 L478.8 52.5 L481.9 54.0 L485.0 55.7 L488.0 57.5 L490.9 59.5 L493.7 61.5 L496.4 63.7 L499.0 66.0 L501.6 68.4 L504.0 71.0 L506.3 73.6 L508.5 76.3 L510.5 79.1 L512.5 82.0 L514.3 85.0 L516.0 88.1 L517.5 91.2 L518.9 94.4 L520.2 97.6 L521.3 100.9 L522.3 104.3 L523.1 107.7 L523.8 111.1 L524.3 114.6 L524.7 118.0 L524.9 121.5Z" fill="#AAE578"/></g>
@@ -682,6 +719,15 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   </svg>
 </footer>
 
+<div class="font-switch" role="group" aria-label="Fonts (review only)">
+  <span>Sans</span>
+  <button type="button" data-sans="geist" aria-pressed="false">Geist</button>
+  <button type="button" data-sans="urbanist" aria-pressed="true">Urbanist</button>
+  <span>Serif</span>
+  <button type="button" data-serif="newsreader" aria-pressed="false">Newsreader</button>
+  <button type="button" data-serif="fraunces" aria-pressed="true">Fraunces</button>
+  <button type="button" data-serif="averia" aria-pressed="false">Averia</button>
+</div>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -820,7 +866,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   addEventListener("resize", () => {
     if (!hi.disabled) {
       slot.style.transition = "none";
-      slot.style.width = hi.offsetWidth + "px";
+      slot.style.width = widthFor(greetings[g][0]) + "px";
       slot.style.marginRight = gapEm() + "px";
       placePeer(peerHome());
       requestAnimationFrame(() => (slot.style.transition = "width .3s ease"));
@@ -958,11 +1004,19 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   }
 
 
+  /* font review switch: swap the class, then let layout-dependent pieces re-measure */
+  ["sans", "serif"].forEach((k) => document.querySelectorAll(`.font-switch [data-${k}]`).forEach((b) => b.addEventListener("click", () => {
+    const R = document.documentElement;
+    document.querySelectorAll(`.font-switch [data-${k}]`).forEach((o) => { R.classList.remove(`${k}-${o.dataset[k]}`); o.setAttribute("aria-pressed", String(o === b)); });
+    R.classList.add(`${k}-${b.dataset[k]}`);
+    document.fonts.ready.then(() => dispatchEvent(new Event("resize")));
+  })));
+
   /* footer shapes rise into place when the footer comes into view */
   const shapes = document.querySelector(".shapes");
   // on narrow screens show just the middle cluster, so the shapes stay a good size
   const narrow = matchMedia("(max-width: 600px)");
-  const frame = () => shapes.setAttribute("viewBox", narrow.matches ? "350 0 520 220" : "0 0 1200 220");
+  const frame = () => shapes.setAttribute("viewBox", narrow.matches ? "350 36 520 184" : "0 36 1200 184");
   narrow.addEventListener("change", frame); frame();
   new IntersectionObserver((es, io) => { if (es[0].isIntersecting) { shapes.classList.add("in"); io.disconnect(); } }, { threshold: .3 }).observe(shapes);
 

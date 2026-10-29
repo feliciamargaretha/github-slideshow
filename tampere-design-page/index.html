@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="bold p-trio">
+<html lang="en" class="bold p-scribble">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -102,7 +102,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .redline::before { top: 0; } .redline::after { bottom: 0; }
 .redline b {
   position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
-  padding: 2px 5px; border-radius: 3px; background: var(--redline); color: #fff;
+  padding: 2px 5px; border-radius: 3px; background: var(--redline-label, var(--redline)); color: #fff;
   font: 600 11px/1 var(--f-body); font-variant-numeric: tabular-nums;
 }
 .guide { position: absolute; left: 50%; width: min(22rem, 70vw); transform: translateX(-50%); border-top: 1px dashed var(--redline); opacity: 0; transition: opacity .4s; }
@@ -322,7 +322,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .pad { position: absolute; left: 0; top: 50%; width: 32px; height: 1px; background: var(--redline); }
 .pad::before, .pad::after { content: ""; position: absolute; top: -4px; width: 1px; height: 9px; background: var(--redline); }
 .pad::before { left: 0; } .pad::after { right: 0; }
-.pad b { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); padding: 2px 4px; border-radius: 3px; background: var(--redline); color: #fff; font: 600 11px/1 var(--f-body); }
+.pad b { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); padding: 2px 4px; border-radius: 3px; background: var(--redline-label, var(--redline)); color: #fff; font: 600 11px/1 var(--f-body); }
 .pin { position: absolute; right: -16px; top: -24px; display: flex; align-items: flex-end; gap: 8px; }
 .pin .dot { width: 32px; height: 32px; border-radius: 50% 50% 50% 4px; background: var(--peer-bg); color: var(--peer-ink); display: grid; place-items: center; font: 600 12px/1 var(--f-body); box-shadow: var(--shadow); }
 .pin .bubble { padding: 8px 12px; border-radius: 12px 12px 12px 4px; background: var(--chrome); box-shadow: var(--shadow); font-size: 14px; white-space: nowrap; }
@@ -422,9 +422,14 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .stickie .author::before { background: currentColor; }
 .av[style*="t-violet"] { color: var(--k1); } .av[style*="t-pink"], .av[style*="t-tangerine"] { color: var(--k2); } .av[style*="t-lime"] { color: var(--k3); } .av[style*="t-aqua"] { color: var(--k4); }
 .date, .date .dow { background: var(--date); color: var(--date-k); }
-#events .frame-body { background: var(--band); border-color: color-mix(in srgb, var(--band) 85%, #000 15%); color: var(--bk); }
+#events .frame-body { background: var(--band); color: var(--bk); }
+/* Figma conventions: red spacing, blue frame selection, purple rounded component */
+:root.bold { --redline: #F24822; --redline-label: #D2340F; --select: #0D99FF; --select-text: #0A6FC2; --component: #9747FF; }
+:root.bold #events .frame-body { border: 1.5px solid var(--select); border-radius: 2px; }
+:root.bold #events .ecard { border: 1.5px solid var(--component); border-radius: 16px; }
+:root.bold #events .comp-name { color: var(--component); }
 #events .h2 { color: var(--bk); }
-#events .comp-name { color: var(--select-text, var(--component)); }
+
 #events .ecard { background: #fff; color: #252525; }
 .foot { background-color: var(--band2); }
 .foot .bye { color: var(--b2k); }
@@ -434,33 +439,43 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   --k1: #fff; --k2: #252525; --k3: #252525; --k4: #252525; --sw1: #3D7BFF; --sw2: #F04FB8; --sw3: #2FC172; --sw4: #FFCE3A;
   --date: #FFCE3A; --date-k: #252525; --band: #3D7BFF; --bk: #fff; --band2: #FFCE3A; --b2k: #252525;
   --peer: #3D7BFF; --peer-bg: #3D7BFF; --peer-ink: #fff; --me: #2FC172; --me-bg: #2FC172; --me-ink: #fff;
-  --redline: #F04FB8; --component: #F04FB8; --select: #3D7BFF; }
+  }
 :root.bold.p-riso { --t-violet: #FF48B0; --t-pink: #FFE800; --t-lime: #0078BF; --t-aqua: #00A95C; --t-tangerine: #FFE800;
   --k1: #252525; --k2: #252525; --k3: #fff; --k4: #fff; --sw1: #FF48B0; --sw2: #FFE800; --sw3: #0078BF; --sw4: #00A95C;
   --date: #00A95C; --date-k: #fff; --band: #0078BF; --bk: #fff; --band2: #FF48B0; --b2k: #252525;
   --peer: #0078BF; --peer-bg: #0078BF; --peer-ink: #fff; --me: #00A95C; --me-bg: #00A95C; --me-ink: #fff;
-  --redline: #FF6C2F; --component: #FF6C2F; --select: #0078BF; }
+  }
 :root.bold.p-pop { --t-violet: #FF5C5C; --t-pink: #B8E62E; --t-lime: #4CC3FF; --t-aqua: #8A5CFF; --t-tangerine: #B8E62E;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #fff; --sw1: #FF5C5C; --sw2: #B8E62E; --sw3: #4CC3FF; --sw4: #8A5CFF;
   --date: #8A5CFF; --date-k: #fff; --band: #8A5CFF; --bk: #fff; --band2: #B8E62E; --b2k: #252525;
   --peer: #8A5CFF; --peer-bg: #8A5CFF; --peer-ink: #fff; --me: #2FBF71; --me-bg: #2FBF71; --me-ink: #fff;
-  --redline: #FF5C5C; --component: #FF5C5C; --select: #4C8DFF; }
+  }
 :root.bold.p-sunny { --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #FFD23F; --t-tangerine: #D23F14;
   --k1: #fff; --k2: #fff; --k3: #fff; --k4: #252525; --sw1: #184DCB; --sw2: #D23F14; --sw3: #27784F; --sw4: #FFD23F;
   --date: #FFD23F; --date-k: #252525; --band: #184DCB; --bk: #fff; --band2: #FFD23F; --b2k: #252525;
   --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
-  --redline: #D23F14; --component: #D23F14; --select: #184DCB; }
+  }
 :root.bold.p-bold { --t-violet: #184DCB; --t-pink: #D23F14; --t-lime: #27784F; --t-aqua: #252525; --t-tangerine: #D23F14;
   --k1: #fff; --k2: #fff; --k3: #fff; --k4: #fff; --sw1: #184DCB; --sw2: #D23F14; --sw3: #27784F; --sw4: #252525;
   --date: #252525; --date-k: #fff; --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525;
   --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
-  --redline: #D23F14; --component: #D23F14; --select: #184DCB; }
+  }
+/* Scribble: bright grounds with dark text; the strong partner colours appear only where they stay readable */
+:root.bold.p-scribble { --t-violet: #FEE400; --t-pink: #FEBAFF; --t-lime: #00DCEF; --t-aqua: #A8FF5E; --t-tangerine: #FEBAFF;
+  --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525;
+  --sw1: #FE5803; --sw2: #F4052F; --sw3: #5500C0; --sw4: #085E56;
+  --date: #5500C0; --date-k: #ffffff; --band: #ffffff; --bk: #252525; --band2: #A8FF5E; --b2k: #085E56;
+  --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #085E56; --me-bg: #085E56; --me-ink: #fff; }
+:root.bold.p-scribble .stickie p, :root.bold.p-scribble .stickie .author { opacity: 1; }
+:root.bold.p-scribble .av[style*="t-lime"] { color: #5500C0; }
+:root.bold.p-scribble .av[style*="t-aqua"] { color: #085E56; }
+:root.bold.p-scribble .foot .pick > .sel, :root.bold.p-scribble .foot .pick > .sel i { border-color: #085E56; }
 /* Trio: softened magenta, yellow, aqua and a softened purple; deeper shades carry white text; selection stays design-tool blue */
 :root.bold.p-trio { --t-violet: #DF7DE8; --t-pink: #FBD449; --t-lime: #4ADEDB; --t-aqua: #9A83D8; --t-tangerine: #DF7DE8;
   --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525; --sw1: #DF7DE8; --sw2: #FBD449; --sw3: #4ADEDB; --sw4: #9A83D8;
   --date: #9A83D8; --date-k: #252525; --band: #ffffff; --bk: #252525; --band2: #FBD449; --b2k: #252525;
   --peer: #252525; --peer-bg: #252525; --peer-ink: #fff; --me: #0B6B69; --me-bg: #0B6B69; --me-ink: #fff;
-  --redline: #B21FC2; --component: #0D99FF; --select: #0D99FF; --select-text: #0A6FC2; }
+  }
 /* keep body text on the coloured notes at full strength so it stays above 4.5:1 */
 :root.bold.p-trio .stickie p, :root.bold.p-trio .stickie .author { opacity: 1; }
 /* in the bold palette the footer band and event frame stay white, the date sits on blue */
@@ -689,7 +704,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
 <div class="pal-switch" role="group" aria-label="Palette (review only)">
   <span>Palette</span>
-  <button type="button" data-pal="trio" aria-pressed="true">Trio</button>
+  <button type="button" data-pal="scribble" aria-pressed="true">Scribble</button>
+  <button type="button" data-pal="trio" aria-pressed="false">Trio</button>
   <button type="button" data-pal="bright" aria-pressed="false">Bright</button>
   <button type="button" data-pal="riso" aria-pressed="false">Riso</button>
   <button type="button" data-pal="pop" aria-pressed="false">Pop</button>

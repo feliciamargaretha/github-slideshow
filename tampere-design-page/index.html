@@ -444,6 +444,24 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .pal-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: #252525; cursor: pointer; }
 .pal-switch button[aria-pressed="true"] { background: #252525; color: #fff; }
 @media (max-width: 900px) { .pal-switch { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } }
+/* ===== palette option 3: Bold + a bright yellow, with colour in larger areas ===== */
+:root.sunny { --sw4: #FFD23F; --t-aqua: #FFD23F; }
+:root.sunny .stickie:nth-child(4), :root.sunny .stickie:nth-child(4) h3, :root.sunny .stickie:nth-child(4) svg { color: #252525; }
+:root.sunny .stickie:nth-child(4) p, :root.sunny .stickie:nth-child(4) .author { color: rgba(37,37,37,.78); }
+:root.sunny .stickie:nth-child(4) .author::before { background: #252525; }
+:root.sunny .av[style*="t-aqua"] { color: #252525; }
+:root.sunny .date, :root.sunny .date .dow { background: #FFD23F; color: #252525; }
+:root.sunny .toolbar .swatch[data-sw="4"] span { box-shadow: inset 0 0 0 1px rgba(20,20,20,.12); }
+/* the event frame in solid blue, the card on it stays white */
+:root.sunny #events .frame-body { background: #184DCB; border-color: #184DCB; color: #fff; }
+:root.sunny #events .h2 { color: #fff; }
+:root.sunny #events .ecard { background: #fff; color: #252525; border-color: #fff; }
+:root.sunny #events .comp-name { color: #FFD23F; }
+:root.sunny #events .comp-name svg { stroke: #FFD23F; }
+/* the footer as a yellow band */
+:root.sunny .foot { background-color: #FFD23F; background-image: radial-gradient(circle, rgba(37,37,37,.22) 1px, transparent 1.4px); }
+:root.sunny .foot .bye { color: #252525; }
+:root.sunny .foot .pick > .sel, :root.sunny .foot .pick > .sel i { border-color: #252525; }
 </style>
 </head>
 <body>
@@ -659,6 +677,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 <div class="pal-switch" role="group" aria-label="Palette (review only)">
   <span>Palette</span>
   <button type="button" data-pal="bold" aria-pressed="true">Bold</button>
+  <button type="button" data-pal="sunny" aria-pressed="false">Bold + yellow</button>
   <button type="button" data-pal="pastel" aria-pressed="false">Pastel</button>
 </div>
 <script>
@@ -938,7 +957,8 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 
   /* palette review switch */
   document.querySelectorAll(".pal-switch button").forEach((b) => b.addEventListener("click", () => {
-    document.documentElement.classList.toggle("bold", b.dataset.pal === "bold");
+    document.documentElement.classList.toggle("bold", b.dataset.pal !== "pastel");
+    document.documentElement.classList.toggle("sunny", b.dataset.pal === "sunny");
     document.querySelectorAll(".pal-switch button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
     const on = document.querySelector(".swatch[aria-checked='true']");
     if (on) color = getComputedStyle(on).getPropertyValue("--c").trim();

@@ -90,7 +90,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .slot.selected .sel i { opacity: 1; }
 .tag {
   position: absolute; left: -1px; bottom: calc(100% + 8px);
-  font: 500 12px/1 var(--f-body); letter-spacing: .01em; color: var(--select);
+  font: 500 12px/1 var(--f-body); letter-spacing: .01em; color: var(--select-text, var(--select));
   white-space: nowrap; opacity: 0; transition: opacity .25s; pointer-events: none;
 }
 .slot.selected .tag { opacity: 1; }
@@ -337,7 +337,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 600 12px/1 var(--f-body); background: var(--a); color: #141414; }
 .by { display: block; font: 500 12px/1.2 var(--f-body); color: #8a8d93; margin-bottom: 4px; }
 .q { font: 600 16px/1.35 var(--f-body); }
-.count { font: 500 12px/1 var(--f-body); color: var(--select); white-space: nowrap; }
+.count { font: 500 12px/1 var(--f-body); color: var(--select-text, var(--select)); white-space: nowrap; }
 .thread[open] .count { visibility: hidden; }
 .reply { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; padding: 0 16px 16px 60px; }
 .reply .av { --a: var(--peer-bg); color: var(--peer-ink); }
@@ -454,12 +454,12 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
   --date: #252525; --date-k: #fff; --band: #ffffff; --bk: #252525; --band2: #ffffff; --b2k: #252525;
   --peer: #184DCB; --peer-bg: #184DCB; --peer-ink: #fff; --me: #27784F; --me-bg: #27784F; --me-ink: #fff;
   --redline: #D23F14; --component: #D23F14; --select: #184DCB; }
-/* Trio: magenta, yellow and aqua as given, deeper shades wherever white text or thin lines sit on them */
-:root.bold.p-trio { --t-violet: #E848F7; --t-pink: #FBD449; --t-lime: #4ADEDB; --t-aqua: #5A1670; --t-tangerine: #E848F7;
-  --k1: #252525; --k2: #252525; --k3: #252525; --k4: #ffffff; --sw1: #E848F7; --sw2: #FBD449; --sw3: #4ADEDB; --sw4: #5A1670;
-  --date: #5A1670; --date-k: #ffffff; --band: #4ADEDB; --bk: #252525; --band2: #FBD449; --b2k: #252525;
+/* Trio: softened magenta, yellow, aqua and a softened purple; deeper shades carry white text; selection stays design-tool blue */
+:root.bold.p-trio { --t-violet: #DF7DE8; --t-pink: #FBD449; --t-lime: #4ADEDB; --t-aqua: #9A83D8; --t-tangerine: #DF7DE8;
+  --k1: #252525; --k2: #252525; --k3: #252525; --k4: #252525; --sw1: #DF7DE8; --sw2: #FBD449; --sw3: #4ADEDB; --sw4: #9A83D8;
+  --date: #9A83D8; --date-k: #252525; --band: #4ADEDB; --bk: #252525; --band2: #FBD449; --b2k: #252525;
   --peer: #8E1A9E; --peer-bg: #8E1A9E; --peer-ink: #fff; --me: #0B6B69; --me-bg: #0B6B69; --me-ink: #fff;
-  --redline: #B21FC2; --component: #8E1A9E; --select: #8E1A9E; }
+  --redline: #B21FC2; --component: #8E1A9E; --select: #0D99FF; --select-text: #0A6FC2; }
 /* keep body text on the coloured notes at full strength so it stays above 4.5:1 */
 :root.bold.p-trio .stickie p, :root.bold.p-trio .stickie .author { opacity: 1; }
 /* in the bold palette the footer band and event frame stay white, the date sits on blue */

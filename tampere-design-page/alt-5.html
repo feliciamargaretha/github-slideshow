@@ -560,6 +560,20 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
 .win .sketch .sq { inset: auto; left: -3.2%; top: -3.2%; width: 106.4%; height: 106.4%; }
 .logo .logo-img { display: block; height: 28px; width: auto; }
 .logo .logo-img { height: 30px; }
+[hidden] { display: none !important; }
+/* footer option: the walkers in Koskipuisto, with a line of copy in the sky */
+.foot-park { position: relative; background: var(--paper); }
+.park-shot { position: relative; margin: 0; }
+.park-shot img { display: block; width: 100%; height: clamp(420px, 62vw, 860px); object-fit: cover; object-position: 60% 100%; }
+.park-copy { position: absolute; left: max(24px, 6vw); top: clamp(32px, 6vw, 96px); display: grid; justify-items: start; gap: 24px; max-width: min(36rem, 60%); }
+.park-title { position: relative; z-index: 0; margin: 0; font: 400 clamp(2.2rem, 5vw, 4.6rem)/1.02 var(--f-display); letter-spacing: -.025em; color: #fff; text-shadow: 0 1px 24px rgba(10,40,90,.25); }
+.park-title .hl::before { opacity: .9; }
+.park-title .hl { color: var(--ink); text-shadow: none; }
+.foot-park .foot-bar { padding-block: 24px 40px; }
+@media (max-width: 640px) {
+  .park-shot img { height: 520px; object-position: 72% 100%; }
+  .park-copy { max-width: calc(100% - 48px); }
+}
 </style>
 </head>
 <body>
@@ -743,7 +757,7 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   </div>
 </section>
 
-<footer class="foot-a" aria-label="Footer, option A">
+<footer class="foot-a" data-foot="boxes" aria-label="Footer">
   <div class="bricks" aria-hidden="true"></div>
   <div class="in wrap">
         <div class="drop armed" id="drop" aria-label="your design people are here"><span class="word-box">your</span><span class="word-box" style="--c:var(--marker)">design</span><span class="word-box">people</span><span class="word-box">are</span><span class="word-box">here</span></div>
@@ -752,6 +766,23 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
         <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
         <span>© 2026</span>
       </div>
+  </div>
+</footer>
+
+<footer class="foot-park" data-foot="park" aria-label="Footer" hidden>
+  <figure class="park-shot">
+    <picture><source srcset="assets/footer/koskipuisto-walkers.webp" type="image/webp"><img src="assets/footer/koskipuisto-walkers.jpg" width="2000" height="1333" alt="Two illustrated designers walking along the riverside path in Koskipuisto, Tampere" loading="lazy"></picture>
+    <figcaption class="park-copy">
+      <h2 class="park-title">See you at <span class="hl">the next one</span></h2>
+      <a class="cta" href="#">Come say hi</a>
+    </figcaption>
+  </figure>
+  <div class="in wrap">
+    <div class="foot-bar">
+      <span class="brand">Tampere Design</span>
+      <nav aria-label="Footer"><a href="#">Instagram</a><a href="#">LinkedIn</a><a href="#">Mailing list</a></nav>
+      <span>© 2026</span>
+    </div>
   </div>
 </footer>
 
@@ -767,6 +798,9 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   <span>Header</span>
   <button type="button" data-head="center" aria-pressed="true">Centred</button>
   <button type="button" data-head="split" aria-pressed="false">Split</button>
+  <span>Footer</span>
+  <button type="button" data-footer="boxes" aria-pressed="true">Boxes</button>
+  <button type="button" data-footer="park" aria-pressed="false">Park</button>
   <span>Join in</span>
   <button type="button" data-photos="yes" aria-pressed="true">Photos</button>
   <button type="button" data-photos="no" aria-pressed="false">No photos</button>
@@ -1004,6 +1038,10 @@ body { font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; o
   }));
   group("win", (v) => document.querySelector(".windows").classList.toggle("sketchy", v === "sketch"));
   group("head", (v) => document.querySelector(".hero").classList.toggle("split", v === "split"));
+  group("footer", (v) => {
+    document.querySelectorAll("[data-foot]").forEach((f) => (f.hidden = f.dataset.foot !== v));
+    if (v === "park") document.querySelector(".foot-park .hl").classList.add("on");
+  });
   document.querySelectorAll(".mode-switch [data-photos]").forEach((b) => b.addEventListener("click", () => {
     document.querySelector(".peeks").classList.toggle("no-photos", b.dataset.photos === "no");
     document.querySelectorAll(".mode-switch [data-photos]").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));

@@ -136,19 +136,24 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .deco-loop { top: 18%; }
 }
 
-/* ---------- activities: pinned, cards fly in and stack ---------- */
+/* ---------- activities: pinned, cards fly in and spread out across the band ---------- */
 .acts { position: relative; background: linear-gradient(90deg, var(--orange) 0 58%, #FFA27A 100%); border-bottom: var(--line); }
 .acts .pin { position: sticky; top: 0; height: 100svh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 24px; padding-top: clamp(72px, 12vh, 110px); overflow: hidden; }
 .acts h2 { text-align: center; color: var(--ink); }
 .deck { position: relative; list-style: none; margin: 0; padding: 0; }
 .card {
-  position: absolute; left: 50%; top: 42%; width: clamp(230px, 26vw, 300px); margin: 0;
+  position: absolute; left: 50%; top: 50%; width: clamp(220px, 22vw, 290px); margin: 0;
   display: grid; gap: 6px; padding: 12px 12px 18px; background: #fff; border: var(--line); border-radius: 18px; box-shadow: 6px 6px 0 var(--ink);
   transform: translate(-50%, -50%); will-change: transform;
 }
 .card img { display: block; width: 100%; aspect-ratio: 5 / 4; object-fit: cover; border: var(--line); border-radius: 10px; margin-bottom: 8px; }
 .card h3 { font-size: 1.3rem; font-weight: 800; padding-inline: 4px; }
 .card p { margin: 0; color: var(--soft); font-size: 15px; padding-inline: 4px; }
+@media (max-width: 700px) {
+  .card { width: min(44vw, 190px); padding: 8px 8px 12px; gap: 4px; }
+  .card h3 { font-size: 1.05rem; }
+  .card p { font-size: 13px; line-height: 1.4; }
+}
 .card .tag { position: absolute; top: -14px; right: 16px; padding: 4px 10px; border: var(--line); border-radius: 999px; background: var(--yellow); font: 700 13px/1.2 var(--f-body); transform: rotate(4deg); }
 
 /* ---------- footer ---------- */
@@ -349,7 +354,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     if (es[0].isIntersecting) { io.disconnect(); document.fonts.ready.then(dropIn); }
   }, { threshold: .35 }).observe(pile);
 
-  /* activities: pinned while each card flies in from the bottom right and lands on the stack */
+  /* activities: pinned while each card flies in from the bottom right and takes its own spot, so they end up spread out */
   const acts = document.getElementById("activities"), cards = [...acts.querySelectorAll(".card")];
   const sizeActs = () => (acts.style.height = innerHeight * (1 + (cards.length - 1) * .75) + "px");
 
@@ -357,14 +362,24 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     // activities
     const a = acts.getBoundingClientRect();
     const pa = clamp(-a.top / (a.height - innerHeight || 1)) * (cards.length - 1);
+    const deck = document.getElementById("deck"), DW = deck.clientWidth, DH = deck.clientHeight;
+    const cw = cards[0].offsetWidth, ch = cards[0].offsetHeight, n = cards.length;
+    const narrow = DW < 700;
+    const spot = (i) => {
+      if (narrow) {                                      // 2 x 2 on phones, slightly overlapping
+        const gx = Math.min(cw * .56, DW * .26), gy = Math.min(ch * .53, DH * .27);
+        return [(i % 2 ? 1 : -1) * gx, (i < 2 ? -1 : 1) * gy + (i % 2 ? 10 : -10)];
+      }
+      const step = Math.min(cw * 1.08, (DW - cw - 48) / (n - 1));
+      return [(i - (n - 1) / 2) * step, [-14, 18, -8, 14][i % 4]];
+    };
     cards.forEach((c, i) => {
       const rest = parseFloat(c.style.getPropertyValue("--rest")) || 0;
       const e = i === 0 ? 1 : ease(clamp(pa - (i - 1)));
-      const under = clamp(pa - i);                       // how far later cards have covered this one
-      const x = (1 - e) * 70, y = (1 - e) * 60;          // in vw / vh, from bottom right
-      const rot = rest + (1 - e) * 38 - under * 2.5;
-      const lift = -under * 14;
-      c.style.transform = `translate(calc(-50% + ${x}vw), calc(-50% + ${y}vh + ${lift}px)) rotate(${rot}deg) scale(${1 - under * .03})`;
+      const [tx, ty] = spot(i);
+      const x = tx + (1 - e) * innerWidth * .7, y = ty + (1 - e) * innerHeight * .6;   // fly in from the bottom right
+      const rot = rest + (1 - e) * 38;
+      c.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${rot}deg)`;
       c.style.zIndex = i + 1;
     });
     ticking = false;

@@ -91,20 +91,20 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .stk-cursor { right: 150px; bottom: 30px; }
 }
 
-/* ---------- roles: pinned, pills slide right ---------- */
-.roles { position: relative; background: var(--blue); color: #fff; border-bottom: var(--line); }
-.roles .pin { position: sticky; top: 0; min-height: 100svh; display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; gap: clamp(32px, 6vh, 56px); overflow: hidden; padding-block: 80px; }
+/* ---------- roles: the pills drop in with gravity and pile up; drag and throw them ---------- */
+.roles { position: relative; background: var(--blue); color: #fff; border-bottom: var(--line); padding-block: clamp(64px, 9vw, 104px) 0; }
 .roles h2 { text-align: center; padding-inline: 16px; }
-.rows { display: grid; gap: clamp(20px, 4vh, 36px); }
-.row { display: flex; gap: clamp(16px, 2.4vw, 32px); width: max-content; padding: 6px 0; list-style: none; margin: 0; will-change: transform; }
-.pill { flex: none; padding: .55em 1.1em; border: var(--line); border-radius: 999px; box-shadow: var(--shadow); color: var(--ink); font: 700 clamp(15px, 1.6vw, 20px)/1.1 var(--f-body); white-space: nowrap; transform: rotate(var(--r, 0deg)); }
-.pill:nth-child(5n+1) { background: var(--pink); --r: -4deg; }
-.pill:nth-child(5n+2) { background: var(--yellow); --r: 3deg; }
-.pill:nth-child(5n+3) { background: var(--lime); --r: -2deg; }
-.pill:nth-child(5n+4) { background: var(--orange); --r: 4deg; }
-.pill:nth-child(5n+5) { background: var(--cyan); --r: -5deg; }
-.row:nth-child(2) { margin-left: 6vw; }
-.row:nth-child(3) { margin-left: -4vw; }
+.roles .hint { margin: 10px 0 0; text-align: center; font-size: 15px; color: #fff; opacity: .9; }
+.pile { position: relative; max-width: 1200px; height: clamp(420px, 60svh, 580px); margin: clamp(16px, 3vw, 32px) auto 0; padding: 0; list-style: none; overflow: hidden; touch-action: pan-y; }
+.pill { position: absolute; left: 0; top: 0; padding: .55em 1.1em; border: var(--line); border-radius: 999px; box-shadow: var(--shadow); color: var(--ink); font: 700 clamp(15px, 1.6vw, 20px)/1.1 var(--f-body); white-space: nowrap; user-select: none; -webkit-user-select: none; will-change: transform; }
+.pile.armed .pill { visibility: hidden; }
+.pile.grab .pill { cursor: grab; }
+.pile.grab .pill:active { cursor: grabbing; }
+.pill:nth-child(5n+1) { background: var(--pink); }
+.pill:nth-child(5n+2) { background: var(--yellow); }
+.pill:nth-child(5n+3) { background: var(--lime); }
+.pill:nth-child(5n+4) { background: var(--orange); }
+.pill:nth-child(5n+5) { background: var(--cyan); }
 
 /* ---------- event ticket ---------- */
 .event { position: relative; overflow: hidden; padding-block: clamp(64px, 9vw, 112px); }
@@ -164,10 +164,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   html { scroll-behavior: auto; }
   .stk { animation: none; transform: rotate(var(--r)); }
   .swap, .swap span { transition: none; }
-  .roles, .acts { height: auto !important; }
-  .roles .pin, .acts .pin { position: static; min-height: 0; height: auto; }
-  .row { width: auto; flex-wrap: wrap; justify-content: center; padding-inline: 16px; transform: none !important; }
-  .row:nth-child(n) { margin-left: 0; }
+  .acts { height: auto !important; }
+  .acts .pin { position: static; min-height: 0; height: auto; }
+  .roles { padding-bottom: 72px; }
+  .pile { height: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; padding-inline: 16px; }
+  .pile.armed .pill { visibility: visible; }
+  .pill { position: static; }
   .acts .pin { padding-bottom: 72px; }
   .deck { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 32px; max-width: 1200px; margin: 0 auto; padding-inline: 16px; }
   .card { position: relative; left: auto; top: auto; width: auto; transform: rotate(var(--rest, 0deg)) !important; }
@@ -206,20 +208,11 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   </section>
 
   <section class="roles" id="roles" aria-labelledby="roles-title">
-    <div class="pin">
+    <div class="wrap">
       <h2 id="roles-title">Here, it doesn't matter if you're…</h2>
-      <div class="rows">
-        <ul class="row" data-speed="1">
-          <li class="pill">Creative Directors</li><li class="pill">Graphic Designers</li><li class="pill">Illustrators</li><li class="pill">UX Designers</li><li class="pill">Architects</li><li class="pill">UI Designers</li><li class="pill">Type Designers</li>
-        </ul>
-        <ul class="row" data-speed=".75">
-          <li class="pill">Service Designers</li><li class="pill">Students</li><li class="pill">Motion Designers</li><li class="pill">Product Designers</li><li class="pill">Researchers</li><li class="pill">Game Designers</li><li class="pill">Brand Designers</li>
-        </ul>
-        <ul class="row" data-speed="1.25">
-          <li class="pill">Industrial Designers</li><li class="pill">Career Switchers</li><li class="pill">Fashion Designers</li><li class="pill">Content Designers</li><li class="pill">Design Leads</li><li class="pill">Photographers</li><li class="pill">Just Curious</li>
-        </ul>
-      </div>
+      <p class="hint" id="pile-hint" hidden>Grab one and give it a throw.</p>
     </div>
+    <ul class="pile armed" id="pile" aria-labelledby="roles-title"><li class="pill">Creative Directors</li><li class="pill">Graphic Designers</li><li class="pill">Illustrators</li><li class="pill">UX Designers</li><li class="pill">Architects</li><li class="pill">UI Designers</li><li class="pill">Students</li><li class="pill">Service Designers</li><li class="pill">Motion Designers</li><li class="pill">Product Designers</li><li class="pill">Career Switchers</li><li class="pill">Researchers</li><li class="pill">Game Designers</li><li class="pill">Brand Designers</li><li class="pill">Industrial Designers</li><li class="pill">Type Designers</li><li class="pill">Fashion Designers</li><li class="pill">Content Designers</li><li class="pill">Design Leads</li><li class="pill">Photographers</li><li class="pill">Just Curious</li></ul>
   </section>
 
   <section class="event" id="event" aria-labelledby="event-title">
@@ -274,6 +267,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 <script>
 (() => {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -308,28 +302,58 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 
   if (reduce) return;
 
-  /* roles: pinned while the pill rows slide to the right */
-  const roles = document.getElementById("roles"), rows = [...roles.querySelectorAll(".row")];
-  let travel = 0;
-  const sizeRoles = () => {
-    travel = Math.max(...rows.map((r) => r.scrollWidth)) - innerWidth + 80;
-    travel = Math.max(travel, innerWidth * .4);
-    roles.style.height = innerHeight + travel + "px";
+  /* roles: the pills fall in with gravity when the section comes into view, then can be dragged and thrown */
+  const pile = document.getElementById("pile");
+  const pills = [...pile.querySelectorAll(".pill")];
+  const dropIn = () => {
+    if (!window.Matter) { pile.classList.remove("armed"); return; }
+    const { Engine, Bodies, Body, Composite, Runner, Mouse, MouseConstraint } = Matter;
+    const live = pills.filter((p, i) => !(innerWidth < 600 && i >= 14));   // fewer pills on phones
+    pills.forEach((p) => (p.hidden = !live.includes(p)));
+    const W = pile.clientWidth, H = pile.clientHeight, T = 120;
+    const engine = Engine.create({ gravity: { y: 1.1 } });
+    const floor = Bodies.rectangle(W / 2, H + T / 2, W * 4, T, { isStatic: true });
+    const wallL = Bodies.rectangle(-T / 2, -H, T, H * 6, { isStatic: true });
+    const wallR = Bodies.rectangle(W + T / 2, -H, T, H * 6, { isStatic: true });
+    const bodies = live.map((el, i) => {
+      const w = el.offsetWidth, h = el.offsetHeight;
+      const b = Bodies.rectangle(w / 2 + Math.random() * Math.max(1, W - w), -h - i * 70, w, h,
+        { restitution: .35, friction: .4, frictionAir: .012, angle: (Math.random() - .5) * .8, chamfer: { radius: h / 2 - 1 } });
+      b.el = el; b.w = w; b.h = h;
+      return b;
+    });
+    Composite.add(engine.world, [floor, wallL, wallR, ...bodies]);
+    if (matchMedia("(pointer: fine)").matches) {
+      const mouse = Mouse.create(pile);
+      // let the wheel keep scrolling the page
+      ["mousewheel", "DOMMouseScroll", "wheel"].forEach((ev) => mouse.element.removeEventListener(ev, mouse.mousewheel));
+      Composite.add(engine.world, MouseConstraint.create(engine, { mouse, constraint: { stiffness: .2, render: { visible: false } } }));
+      pile.classList.add("grab");
+      document.getElementById("pile-hint").hidden = false;
+    }
+    Runner.run(Runner.create(), engine);
+    pile.classList.remove("armed");
+    const draw = () => {
+      for (const b of bodies) b.el.style.transform = `translate(${b.position.x - b.w / 2}px, ${b.position.y - b.h / 2}px) rotate(${b.angle}rad)`;
+      requestAnimationFrame(draw);
+    };
+    draw();
+    addEventListener("resize", () => {
+      const w = pile.clientWidth, h = pile.clientHeight;
+      Body.setPosition(wallR, { x: w + T / 2, y: -h });
+      Body.setPosition(floor, { x: w / 2, y: h + T / 2 });
+      for (const b of bodies) if (b.position.x > w) Body.setPosition(b, { x: w - b.w / 2, y: b.position.y - 60 });
+    });
   };
+  new IntersectionObserver((es, io) => {
+    if (es[0].isIntersecting) { io.disconnect(); document.fonts.ready.then(dropIn); }
+  }, { threshold: .35 }).observe(pile);
 
   /* activities: pinned while each card flies in from the bottom right and lands on the stack */
   const acts = document.getElementById("activities"), cards = [...acts.querySelectorAll(".card")];
   const sizeActs = () => (acts.style.height = innerHeight * (1 + (cards.length - 1) * .75) + "px");
 
   const frame = () => {
-    // roles
-    const r = roles.getBoundingClientRect();
-    const pr = clamp(-r.top / (r.height - innerHeight || 1));
-    rows.forEach((row) => {
-      const sp = parseFloat(row.dataset.speed);
-      const span = row.scrollWidth - innerWidth + 80;
-      row.style.transform = `translateX(${-span + pr * travel * sp}px)`;
-    });
     // activities
     const a = acts.getBoundingClientRect();
     const pa = clamp(-a.top / (a.height - innerHeight || 1)) * (cards.length - 1);
@@ -347,7 +371,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   };
   let ticking = false;
   const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } };
-  const sizeAll = () => { sizeRoles(); sizeActs(); frame(); };
+  const sizeAll = () => { sizeActs(); frame(); };
   document.fonts.ready.then(sizeAll);
   sizeAll();
   addEventListener("scroll", onScroll, { passive: true });

@@ -1,34 +1,35 @@
 import { useEffect, useRef } from "react"
 import { addPropertyControls, ControlType } from "framer"
-// @ts-ignore – Framer resolves URL imports
-import Matter from "https://esm.sh/matter-js@0.19.0"
 
 type Pill = {
     label: string
     color: string
     textColor: string
+    row: number // 1 = bottom row
+    tilt: number // degrees, positive = clockwise
     dashed?: boolean
 }
 
 const DEFAULT_PILLS: Pill[] = [
-    { label: "Creative Directors", color: "#EE8AF5", textColor: "#5B1263" },
-    { label: "UX Designers", color: "#EF7F4C", textColor: "#4A1A05" },
-    { label: "Graphic Designers", color: "#F6CF6E", textColor: "#4A3405" },
-    { label: "Architects", color: "#AFC3FB", textColor: "#1E2F7A" },
-    { label: "Game Designers", color: "#D6FC7A", textColor: "#2E3D06" },
-    { label: "Illustrators", color: "#7FDDA0", textColor: "#0F3D21" },
-    { label: "+ your role", color: "#F3EFE6", textColor: "#6B625A", dashed: true },
+    { label: "Creative Directors", color: "#EE8AF5", textColor: "#5B1263", row: 1, tilt: 3 },
+    { label: "UX Designers", color: "#EF7F4C", textColor: "#4A1A05", row: 1, tilt: -1 },
+    { label: "Graphic Designers", color: "#F6CF6E", textColor: "#4A3405", row: 1, tilt: 1 },
+    { label: "Architects", color: "#AFC3FB", textColor: "#1E2F7A", row: 2, tilt: -4 },
+    { label: "Game Designers", color: "#D6FC7A", textColor: "#2E3D06", row: 2, tilt: 3 },
+    { label: "Illustrators", color: "#7FDDA0", textColor: "#0F3D21", row: 3, tilt: 3 },
+    { label: "+ your role", color: "#F3EFE6", textColor: "#6B625A", row: 4, tilt: 0, dashed: true },
 ]
 
-const WALL = 400 // thick walls so fast pills can't tunnel through
-const STEP = 1000 / 60
-const CAT_PILL = 0x0001
-const CAT_WALL = 0x0002
-const CAT_CEILING = 0x0004
+const GAP = 2 // px between pills in a row
+
+// Accelerate down, land, one small bounce
+const fallCurve = (q: number) =>
+    q < 0.72 ? (q / 0.72) ** 2 : 1 - 0.06 * Math.sin((Math.PI * (q - 0.72)) / 0.28)
+
+type Target = { x: number; y: number; angle: number; w: number; h: number; hh: number }
 
 /**
- * Pills rain down from the top, pile up, and can be grabbed and flung around —
- * always staying inside the frame.
+ * Role pills drop in one by one and land in their own place in a stack.
  *
  * @framerSupportedLayoutWidth any
  * @framerSupportedLayoutHeight any
@@ -43,9 +44,7 @@ export default function FallingPills(props) {
         outlineColor = "#1E1E1E",
         outlineWidth = 1.5,
         shadowOffset = 5,
-        gravity = 1,
-        bounciness = 0.4,
-        friction = 0.3,
+        fallDuration = 0.8,
         startDelay = 0.2,
         dropInterval = 0.25,
         startOnView = true,
@@ -60,170 +59,116 @@ export default function FallingPills(props) {
     useEffect(() => {
         const container = containerRef.current
         if (!container) return
-        const { Engine, Bodies, Body, Composite, Constraint, Query } = Matter
+        const els = pills.map((_, i) => pillRefs.current[i]).filter(Boolean) as HTMLDivElement[]
+        if (els.length !== pills.length) return
 
         let cancelled = false
-        let started = false
         let raf = 0
-        const timers: ReturnType<typeof setTimeout>[] = []
+        let landed = false
+        let targets: Target[] = []
+        const baseFont = parseFloat(font?.fontSize) || 28
 
-        const engine = Engine.create()
-        engine.gravity.y = gravity
-        const world = engine.world
+        // Measure pills, shrink them if the stack doesn't fit, and work out where each one lands
+        const computeLayout = (W: number, H: number) => {
+            const setScale = (s: number) =>
+                els.forEach((el) => {
+                    el.style.fontSize = `${baseFont * s}px`
+                    el.style.padding = `${paddingY * s}px ${paddingX * s}px`
+                })
+            setScale(1)
+            const rows: Record<number, number[]> = {}
+            pills.forEach((p: Pill, i: number) => (rows[p.row || 1] ??= []).push(i))
+            const rowKeys = Object.keys(rows).map(Number).sort((a, b) => a - b)
+            const rowWidth = (r: number) =>
+                rows[r].reduce((s, i) => s + els[i].offsetWidth, 0) + GAP * (rows[r].length - 1)
+            const widest = Math.max(...rowKeys.map(rowWidth))
+            const h0 = els[0].offsetHeight
+            const scale = Math.min(1, (W - 12) / widest, (H - 12) / (rowKeys.length * h0 * 1.08))
+            if (scale < 1) setScale(scale)
 
-        let W = container.offsetWidth
-        let H = container.offsetHeight
-        const items: { body: any; el: HTMLDivElement; w: number; h: number; inside: boolean }[] = []
-
-        // ---------- walls ----------
-        let walls: any[] = []
-        const buildWalls = () => {
-            if (walls.length) Composite.remove(world, walls)
-            const wallOpts = (category: number) => ({
-                isStatic: true,
-                friction: 0.3,
-                restitution: bounciness,
-                collisionFilter: { category, mask: CAT_PILL },
+            const out: Target[] = []
+            let prevTop = H
+            rowKeys.forEach((r) => {
+                const box = rows[r].map((i) => {
+                    const w = els[i].offsetWidth
+                    const h = els[i].offsetHeight
+                    const a = ((pills[i].tilt || 0) * Math.PI) / 180
+                    return {
+                        i, w, h, a,
+                        hw: (w * Math.cos(a) + h * Math.abs(Math.sin(a))) / 2,
+                        hh: (w * Math.abs(Math.sin(a)) + h * Math.cos(a)) / 2,
+                    }
+                })
+                const total = box.reduce((s, b) => s + b.hw * 2, 0) + GAP * (box.length - 1)
+                const half = Math.max(...box.map((b) => (b.h / 2 + b.hh) / 2))
+                const cy = prevTop - half
+                let x = W / 2 - total / 2
+                box.forEach((b) => {
+                    out[b.i] = { x: x + b.hw, y: cy, angle: b.a, w: b.w, h: b.h, hh: b.hh }
+                    x += b.hw * 2 + GAP
+                })
+                prevTop = cy - half
             })
-            const tall = H + WALL * 2 + 2000 // side walls reach high above the frame
-            walls = [
-                Bodies.rectangle(W / 2, H + WALL / 2, W + WALL * 2, WALL, wallOpts(CAT_WALL)), // floor
-                Bodies.rectangle(-WALL / 2, H + WALL - tall / 2, WALL, tall, wallOpts(CAT_WALL)), // left
-                Bodies.rectangle(W + WALL / 2, H + WALL - tall / 2, WALL, tall, wallOpts(CAT_WALL)), // right
-                Bodies.rectangle(W / 2, -WALL / 2, W + WALL * 2, WALL, wallOpts(CAT_CEILING)), // ceiling
-            ]
-            Composite.add(world, walls)
+            return out
         }
-        buildWalls()
 
-        // ---------- spawning ----------
-        const spawn = (i: number) => {
-            const el = pillRefs.current[i]
-            if (!el || cancelled) return
-            const w = el.offsetWidth
-            const h = el.offsetHeight
-            const x = w >= W ? W / 2 : w / 2 + Math.random() * (W - w)
-            const y = -h - Math.random() * 40 // start just above the frame
-            const body = Bodies.rectangle(x, y, w, h, {
-                chamfer: { radius: Math.min(w, h) / 2 - 0.5 },
-                angle: (Math.random() - 0.5) * 0.5,
-                restitution: bounciness,
-                friction,
-                frictionAir: 0.01,
-                density: 0.002,
-                // Ignore the ceiling until the pill has fully entered the frame
-                collisionFilter: { category: CAT_PILL, mask: CAT_PILL | CAT_WALL },
-            })
-            Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 2 })
-            Composite.add(world, body)
-            items.push({ body, el, w, h, inside: false })
-            el.style.visibility = "visible"
+        const draw = (el: HTMLDivElement, x: number, y: number, t: Target, a: number) => {
+            el.style.transform = `translate(${x - t.w / 2}px, ${y - t.h / 2}px) rotate(${a}rad)`
         }
+        const placeAll = () =>
+            targets.forEach((t, i) => {
+                els[i].style.visibility = "visible"
+                draw(els[i], t.x, t.y, t, t.angle)
+            })
 
         const start = () => {
-            if (started || cancelled) return
-            started = true
-            pills.forEach((_, i) => {
-                timers.push(setTimeout(() => spawn(i), (startDelay + i * dropInterval) * 1000))
-            })
-        }
-
-        // ---------- drag & fling ----------
-        let drag: { constraint: any; pointerId: number } | null = null
-        const toLocal = (e: PointerEvent) => {
-            const r = container.getBoundingClientRect()
-            const scale = r.width / container.offsetWidth || 1 // handles Framer canvas zoom
-            return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }
-        }
-        const clampToFrame = (p: { x: number; y: number }) => ({
-            x: Math.max(0, Math.min(W, p.x)),
-            y: Math.max(0, Math.min(H, p.y)),
-        })
-        const hit = (p: { x: number; y: number }) =>
-            Query.point(
-                items.map((it) => it.body),
-                p
-            )[0]
-
-        const onDown = (e: PointerEvent) => {
-            const p = toLocal(e)
-            const body = hit(p)
-            if (!body) return
-            e.preventDefault()
-            container.setPointerCapture(e.pointerId)
-            const constraint = Constraint.create({
-                pointA: p,
-                bodyB: body,
-                pointB: { x: p.x - body.position.x, y: p.y - body.position.y },
-                stiffness: 0.2,
-                damping: 0.05,
-                length: 0,
-            })
-            Composite.add(world, constraint)
-            drag = { constraint, pointerId: e.pointerId }
-            container.style.cursor = "grabbing"
-        }
-        const onMove = (e: PointerEvent) => {
-            const p = toLocal(e)
-            if (drag && drag.pointerId === e.pointerId) {
-                drag.constraint.pointA = clampToFrame(p)
-            } else if (e.pointerType === "mouse") {
-                container.style.cursor = hit(p) ? "grab" : ""
+            if (cancelled) return
+            targets = computeLayout(container.offsetWidth, container.offsetHeight)
+            const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+            if (reduceMotion) {
+                landed = true
+                placeAll()
+                return
             }
-        }
-        const onUp = (e: PointerEvent) => {
-            if (!drag || drag.pointerId !== e.pointerId) return
-            Composite.remove(world, drag.constraint)
-            drag = null
-            container.style.cursor = hit(toLocal(e)) ? "grab" : ""
-        }
-        container.addEventListener("pointerdown", onDown)
-        container.addEventListener("pointermove", onMove)
-        container.addEventListener("pointerup", onUp)
-        container.addEventListener("pointercancel", onUp)
-
-        // ---------- loop ----------
-        let last = performance.now()
-        let acc = 0
-        const MAX_SPEED = 45
-        const tick = (now: number) => {
-            acc += Math.min(now - last, 100)
-            last = now
-            while (acc >= STEP) {
-                Engine.update(engine, STEP)
-                acc -= STEP
-            }
-            for (const it of items) {
-                const b = it.body
-                // Turn on the ceiling once the pill is fully inside
-                if (!it.inside && b.bounds.min.y > 0) {
-                    it.inside = true
-                    b.collisionFilter.mask = CAT_PILL | CAT_WALL | CAT_CEILING
-                }
-                // Speed limit + safety net in case anything ever escapes
-                const v = b.velocity
-                const speed = Math.hypot(v.x, v.y)
-                if (speed > MAX_SPEED) Body.setVelocity(b, { x: (v.x / speed) * MAX_SPEED, y: (v.y / speed) * MAX_SPEED })
-                const { x, y } = b.position
-                if (x < -50 || x > W + 50 || y > H + 50 || (it.inside && y < -50)) {
-                    Body.setPosition(b, { x: W / 2, y: it.h })
-                    Body.setVelocity(b, { x: 0, y: 0 })
-                }
-                it.el.style.transform = `translate(${x - it.w / 2}px, ${y - it.h / 2}px) rotate(${b.angle}rad)`
+            const order = pills.map((_, i) => i).sort((a, b) => (pills[a].row || 1) - (pills[b].row || 1))
+            const startAngles = pills.map(() => (Math.random() - 0.5) * 0.6)
+            const t0 = performance.now()
+            const tick = (now: number) => {
+                let done = true
+                order.forEach((i, k) => {
+                    const p = (now - t0 - (startDelay + k * dropInterval) * 1000) / (fallDuration * 1000)
+                    if (p < 1) done = false
+                    if (p < 0) return
+                    const q = Math.min(1, p)
+                    const t = targets[i]
+                    const y0 = -t.hh - 10 // start just above the frame
+                    const a = startAngles[i] + (t.angle - startAngles[i]) * (1 - (1 - q) ** 3)
+                    els[i].style.visibility = "visible"
+                    draw(els[i], t.x, y0 + (t.y - y0) * fallCurve(q), t, a)
+                })
+                if (done) landed = true
+                else raf = requestAnimationFrame(tick)
             }
             raf = requestAnimationFrame(tick)
         }
-        raf = requestAnimationFrame(tick)
 
-        // ---------- resize ----------
+        // Keep the landed stack centred if the frame changes size
+        let lastW = container.offsetWidth
+        let lastH = container.offsetHeight
         const ro = new ResizeObserver(() => {
-            W = container.offsetWidth
-            H = container.offsetHeight
-            buildWalls()
+            const W = container.offsetWidth
+            const H = container.offsetHeight
+            if (W === lastW && H === lastH) return
+            lastW = W
+            lastH = H
+            if (landed) {
+                targets = computeLayout(W, H)
+                placeAll()
+            }
         })
         ro.observe(container)
 
-        // ---------- start (after fonts load so pill widths are right) ----------
+        // Start after fonts load (so pill widths are right), optionally when scrolled into view
         let io: IntersectionObserver | null = null
         const fontsReady = (document as any).fonts?.ready ?? Promise.resolve()
         fontsReady.then(() => {
@@ -232,8 +177,8 @@ export default function FallingPills(props) {
                 io = new IntersectionObserver(
                     (entries) => {
                         if (entries.some((en) => en.isIntersecting)) {
-                            start()
                             io?.disconnect()
+                            start()
                         }
                     },
                     { threshold: 0.3 }
@@ -247,18 +192,11 @@ export default function FallingPills(props) {
         return () => {
             cancelled = true
             cancelAnimationFrame(raf)
-            timers.forEach(clearTimeout)
             ro.disconnect()
             io?.disconnect()
-            container.removeEventListener("pointerdown", onDown)
-            container.removeEventListener("pointermove", onMove)
-            container.removeEventListener("pointerup", onUp)
-            container.removeEventListener("pointercancel", onUp)
-            Composite.clear(world, false)
-            Engine.clear(engine)
-            pillRefs.current.forEach((el) => el && (el.style.visibility = "hidden"))
+            els.forEach((el) => (el.style.visibility = "hidden"))
         }
-    }, [deps, gravity, bounciness, friction, startDelay, dropInterval, startOnView])
+    }, [deps, fallDuration, startDelay, dropInterval, startOnView])
 
     return (
         <div
@@ -292,12 +230,11 @@ export default function FallingPills(props) {
                         boxShadow: p.dashed ? "none" : `${shadowOffset}px ${shadowOffset}px 0 ${outlineColor}`,
                         userSelect: "none",
                         WebkitUserSelect: "none",
-                        touchAction: "none", // drag pills on touch, but still scroll the page on the background
                         willChange: "transform",
                         lineHeight: 1.2,
-                        fontSize: 28,
                         fontWeight: 500,
                         ...font,
+                        fontSize: parseFloat(font?.fontSize) || 28,
                     }}
                 >
                     {p.label}
@@ -318,6 +255,8 @@ addPropertyControls(FallingPills, {
                 label: { type: ControlType.String, defaultValue: "Role" },
                 color: { type: ControlType.Color, defaultValue: "#F6CF6E" },
                 textColor: { type: ControlType.Color, defaultValue: "#1E1E1E" },
+                row: { type: ControlType.Number, title: "Row (1 = bottom)", defaultValue: 1, min: 1, max: 10, step: 1, displayStepper: true },
+                tilt: { type: ControlType.Number, title: "Tilt", defaultValue: 0, min: -20, max: 20, step: 0.5, unit: "°" },
                 dashed: { type: ControlType.Boolean, defaultValue: false },
             },
         },
@@ -334,9 +273,7 @@ addPropertyControls(FallingPills, {
     outlineColor: { type: ControlType.Color, title: "Outline", defaultValue: "#1E1E1E" },
     outlineWidth: { type: ControlType.Number, title: "Outline W", defaultValue: 1.5, min: 0, max: 6, step: 0.5 },
     shadowOffset: { type: ControlType.Number, title: "Shadow", defaultValue: 5, min: 0, max: 20 },
-    gravity: { type: ControlType.Number, defaultValue: 1, min: 0, max: 3, step: 0.1 },
-    bounciness: { type: ControlType.Number, defaultValue: 0.4, min: 0, max: 1, step: 0.05 },
-    friction: { type: ControlType.Number, defaultValue: 0.3, min: 0, max: 1, step: 0.05 },
+    fallDuration: { type: ControlType.Number, title: "Fall Time", defaultValue: 0.8, min: 0.2, max: 3, step: 0.1, unit: "s" },
     startDelay: { type: ControlType.Number, title: "Start Delay", defaultValue: 0.2, min: 0, max: 5, step: 0.1, unit: "s" },
     dropInterval: { type: ControlType.Number, title: "Drop Gap", defaultValue: 0.25, min: 0, max: 2, step: 0.05, unit: "s" },
     startOnView: { type: ControlType.Boolean, title: "Start In View", defaultValue: true },

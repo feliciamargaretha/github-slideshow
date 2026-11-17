@@ -5,12 +5,9 @@ text{font-family:Mynerve;font-size:66px;fill:#FFD60A}
 </style></head><body>
 <svg id="s" width="1920" height="1080" viewBox="0 0 1920 1080">
 <defs>
- <filter id="crayon" x="-20%" y="-50%" width="140%" height="200%">
+ <filter id="crayon" filterUnits="userSpaceOnUse" x="0" y="0" width="1920" height="1080">
   <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="4" result="wob"/>
-  <feDisplacementMap in="SourceGraphic" in2="wob" scale="5" xChannelSelector="R" yChannelSelector="G" result="rough"/>
-  <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="9" result="grain"/>
-  <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.5 1.55" result="grainA"/>
-  <feComposite in="rough" in2="grainA" operator="in"/>
+  <feDisplacementMap in="SourceGraphic" in2="wob" scale="5" xChannelSelector="R" yChannelSelector="G"/>
  </filter>
  <clipPath id="c1"><rect id="r1" x="0" y="530" height="160" width="0"/></clipPath>
  <clipPath id="c2"><rect id="r2" x="0" y="530" height="160" width="0"/></clipPath>

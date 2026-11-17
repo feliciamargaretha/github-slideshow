@@ -1,12 +1,12 @@
 <!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{font-family:Mynerve;src:url(Mynerve.ttf) format("truetype");}
 html,body{margin:0;background:transparent;width:1920px;height:1080px;overflow:hidden}
-svg text{font-family:Mynerve;font-size:34px;fill:#fff}
+svg text{font-family:Mynerve;font-size:27px;fill:#fff}
 #cardWrap{position:absolute;left:0;top:0;width:1920px;height:1080px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.35))}
-#card{position:absolute;left:240px;top:160px;width:1440px;height:904px;overflow:hidden;background:#fff;border-radius:0}
+#card{position:absolute;left:550px;top:680px;width:820px;height:440px;overflow:hidden;background:#fff;border-radius:0}
 #page{position:absolute;left:0;top:0;width:1382px;transform-origin:0 0;font-family:Inter,sans-serif;color:#1d1d29}
 #page img{display:block;width:1382px}
-#fade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 45%,rgba(255,255,255,.75) 82%,rgba(255,255,255,.97) 100%)}
+#fade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 45%,rgba(255,255,255,.75) 82%,rgba(255,255,255,.97) 91%)}
 .extra{position:relative;padding:18px 0 60px}
 .cols{display:flex;gap:30px;padding:0 34px 0 18px}
 .main{width:1008px}.side{width:292px}
@@ -72,18 +72,18 @@ h3 .see{margin-left:auto;font-size:14px;font-weight:400;color:#6b6b7b}
 </defs>
 <g filter="url(#pen)" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round">
  <line id="l0"/><line id="l1"/><line id="l2"/>
- <circle id="base" cx="960" cy="964" r="100"/>
- <g id="n0"><circle r="100"/><text text-anchor="middle" stroke="none" y="12">challenger</text></g>
- <g id="n1"><circle r="100"/><text text-anchor="middle" stroke="none" y="12">connector</text></g>
- <g id="n2"><circle r="100"/><text text-anchor="middle" stroke="none"><tspan x="0" y="-6">alternative</tspan><tspan x="0" y="30">thinker</tspan></text></g>
+ <circle id="base" cx="960" cy="994" r="70"/>
+ <g id="n0"><circle r="70"/><text text-anchor="middle" stroke="none" y="9">challenger</text></g>
+ <g id="n1"><circle r="70"/><text text-anchor="middle" stroke="none" y="9">connector</text></g>
+ <g id="n2"><circle r="70"/><text text-anchor="middle" stroke="none"><tspan x="0" y="-5">alternative</tspan><tspan x="0" y="24">thinker</tspan></text></g>
 </g>
 </svg>
 <script>
-const R=100, B={x:960,y:964}, C=[{x:520,y:580},{x:960,y:560},{x:1400,y:580}];
+const R=70, B={x:960,y:994}, C=[{x:660,y:780},{x:960,y:764},{x:1260,y:780}];
 const cl=v=>Math.max(0,Math.min(1,v)), seg=(t,a,b)=>cl((t-a)/(b-a)), lerp=(a,b,p)=>a+(b-a)*p;
 const eio=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2, eo=p=>1-Math.pow(1-p,3), ei=p=>p*p*p;
 const back=p=>{const c1=2.0,c3=c1+1;return p<=0?0:1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2)};
-const $=id=>document.getElementById(id), base=$('base'), card=$('card'), page=$('page'), K=1440/1382;
+const $=id=>document.getElementById(id), base=$('base'), card=$('card'), page=$('page'), K=820/1382;
 page.style.transform=`scale(${K})`;
 const circ=2*Math.PI*R; base.setAttribute('stroke-dasharray',circ);
 const dirs=C.map(c=>{const dx=c.x-B.x,dy=c.y-B.y,L=Math.hypot(dx,dy);return {ux:dx/L,uy:dy/L,L}});
@@ -115,11 +115,11 @@ window.renderAt=t=>{
   base.setAttribute('fill',`rgba(255,255,255,${eo(seg(t,2.9,3.15))})`);
   // 3. circle morphs into the card
   const e=eio(seg(t,3.15,3.8));
-  const top=lerp(B.y-R-160,0,e), bot=lerp(1064-(B.y+R),0,e), lft=lerp(B.x-R-240,0,e), rgt=lerp(1680-(B.x+R),0,e), rad=lerp(R,24,e);
+  const top=lerp(B.y-R-680,0,e), bot=lerp(1120-(B.y+R),0,e), lft=lerp(B.x-R-550,0,e), rgt=lerp(1370-(B.x+R),0,e), rad=lerp(R,18,e);
   card.style.clipPath=`inset(${top}px ${rgt}px ${bot}px ${lft}px round ${rad}px)`;
   card.style.visibility=t>=3.15?'visible':'hidden';
   $('tree').style.opacity=t>=3.2?0:1;
-  page.style.top=lerp(-120,0,e)+'px';
+  page.style.top=lerp(-60,0,e)+'px';
   // 4. user scrolls through the hub
   const sc=lerp(0,470,eio(seg(t,3.95,5.0)))+lerp(0,560,eio(seg(t,5.3,6.4)));
   page.style.transform=`translateY(${-sc*K}px) scale(${K})`;

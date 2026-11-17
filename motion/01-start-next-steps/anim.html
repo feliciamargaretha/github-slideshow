@@ -16,16 +16,16 @@ text{font-family:Mynerve;font-size:66px;fill:#FFD60A}
  <clipPath id="c2"><rect id="r2" x="0" y="530" height="160" width="0"/></clipPath>
 </defs>
 <g filter="url(#crayon)" fill="#FFD60A" stroke="#FFD60A" stroke-linecap="round" stroke-linejoin="round">
- <g id="d1" transform="translate(42 500)"><path d="M-17,-3 C-16,-15 -4,-19 6,-17 C16,-14 19,-3 17,7 C14,16 3,19 -7,17 C-15,14 -19,6 -17,-3Z" stroke-width="3"/></g>
+ <g id="d1" transform="translate(106 500)"><path d="M-17,-3 C-16,-15 -4,-19 6,-17 C16,-14 19,-3 17,7 C14,16 3,19 -7,17 C-15,14 -19,6 -17,-3Z" stroke-width="3"/></g>
  <g id="line"></g>
- <g id="d2" transform="translate(1878 500)"><path d="M-18,-2 C-17,-13 -6,-19 5,-18 C15,-15 19,-5 18,6 C15,15 4,19 -6,18 C-15,15 -19,7 -18,-2Z" stroke-width="3"/></g>
- <g clip-path="url(#c1)"><text id="t1" x="22" y="610" text-anchor="start">start</text></g>
- <g clip-path="url(#c2)"><text id="t2" x="1898" y="610" text-anchor="end">next steps</text></g>
+ <g id="d2" transform="translate(1741 500)"><path d="M-18,-2 C-17,-13 -6,-19 5,-18 C15,-15 19,-5 18,6 C15,15 4,19 -6,18 C-15,15 -19,7 -18,-2Z" stroke-width="3"/></g>
+ <g clip-path="url(#c1)"><text id="t1" x="106" y="610" text-anchor="middle">start</text></g>
+ <g clip-path="url(#c2)"><text id="t2" x="1741" y="610" text-anchor="middle">next steps</text></g>
 </g>
 </svg>
 <script>
 const NS='http://www.w3.org/2000/svg', line=document.getElementById('line');
-const X0=88, X1=1832, GAP=26, dots=[];
+const X0=152, X1=1695, GAP=26, dots=[];
 for(let x=X0;x<=X1+0.1;x+=(X1-X0)/Math.round((X1-X0)/GAP)){
   const c=document.createElementNS(NS,'ellipse');
   const j=Math.abs(Math.sin(x*12.9898)*43758.5453%1);
@@ -40,11 +40,11 @@ const b1=t1.getBBox(),b2=t2.getBBox();
 function pop(id,cx,p){const s=back(p);document.getElementById(id).setAttribute('transform',`translate(${cx} 500) scale(${s})`);document.getElementById(id).style.opacity=p>0?1:0}
 function reveal(id,b,p){const r=document.getElementById(id);r.setAttribute('x',b.x-10);r.setAttribute('width',(b.width+20)*eo(p))}
 window.renderAt=t=>{
-  pop("d1",42,seg(t,0,0.28));
+  pop("d1",106,seg(t,0,0.28));
   reveal('r1',b1,seg(t,0.12,0.5));
   const lp=eio(seg(t,0.28,1.08)), head=X0+(X1-X0+30)*lp;
   for(const d of dots){const q=cl((head-d.x)/30);d.c.style.opacity=q;d.c.setAttribute('transform',`translate(${d.x} ${500}) scale(${eo(q)}) translate(${-d.x} -500)`)}
-  pop("d2",1878,seg(t,1.0,1.28));
+  pop("d2",1741,seg(t,1.0,1.28));
   reveal('r2',b2,seg(t,1.08,1.6));
 };
 window.renderAt(0);

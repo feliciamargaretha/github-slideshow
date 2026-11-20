@@ -1,0 +1,186 @@
+<title>Tampere Designs About</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Rethink+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: About page for Tampere Designs. Centred intro; one column of photos down the middle with short notes
+   alternating left/right; the first photo straightens and grows as you scroll in, the fourth follows you and
+   widens to the full screen width at one third of the screen height. Same grid paper and type as the main site. */
+:root {
+  --paper: #ffffff;
+  --grid: #eeeef0;
+  --ink: #161616;
+  --soft: #4b4b50;
+  --blue: #1A44D6;
+  --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Rethink Sans", "Helvetica Neue", Arial, sans-serif;
+  /* photo size: 3-4 photos fit in one screen height */
+  --ph: clamp(150px, 24vh, 260px);
+  --pw: calc(var(--ph) * 4 / 3);
+  --gap: clamp(20px, 4vh, 40px);
+  --side: max(16px, env(safe-area-inset-left, 0px));
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; color: var(--ink); font: 400 17px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; overflow-x: clip;
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+/* header, as on the main site */
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px max(16px, 5vw); padding-left: max(16px, 5vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 5vw, env(safe-area-inset-right, 0px)); }
+.logo { display: inline-flex; align-items: center; gap: 8px; font: 800 15px/1.05 var(--f-display); text-decoration: none; letter-spacing: -.01em; }
+.logo svg { width: 30px; height: 30px; }
+.nav ul { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; font-size: 15px; }
+.nav ul a { text-decoration: none; }
+.nav ul a[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 14px; border: 2px solid var(--ink); border-radius: 6px; background: #fff; box-shadow: 3px 3px 0 var(--ink); font: 600 14px/1 var(--f-body); text-decoration: none; transition: transform .12s, box-shadow .12s; }
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.btn.dark { background: var(--ink); color: #fff; }
+@media (max-width: 720px) { .nav ul { display: none; } }
+
+/* intro */
+.intro { display: grid; justify-items: center; align-content: center; gap: 16px; text-align: center; min-height: calc(100svh - 76px - var(--ph) * .5); padding: 24px var(--side); }
+.intro h1 { margin: 0; font: 800 clamp(2.6rem, 6vw, 4.6rem)/1 var(--f-display); letter-spacing: -.03em; }
+.intro p { margin: 0; max-width: 58ch; color: var(--soft); font-size: clamp(16px, 1.3vw, 18px); }
+
+/* the photo column */
+.story { position: relative; display: grid; justify-items: center; gap: var(--gap); padding: clamp(40px, 8vh, 72px) var(--side) var(--gap); }
+.row { position: relative; width: var(--pw); height: var(--ph); }
+.shot { position: absolute; inset: 0; margin: 0; border-radius: 12px; overflow: hidden; background: #ddd; }
+.shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.note { position: absolute; top: 50%; width: min(30ch, calc((100vw - var(--pw)) / 2 - 56px)); margin: 0; transform: translateY(-50%); font: 500 clamp(16px, 1.25vw, 19px)/1.4 var(--f-body); }
+.note b { font-family: var(--f-display); font-weight: 800; }
+.note.left { right: calc(100% + clamp(24px, 4vw, 64px)); text-align: right; }
+.note.right { left: calc(100% + clamp(24px, 4vw, 64px)); }
+/* first photo: starts tilted and smaller, half below the fold */
+.row.first .shot { transform-origin: 50% 0; will-change: transform; }
+
+/* fourth photo: pinned while it widens to the full screen width at a third of the screen height */
+.grow { position: relative; width: 100%; }
+.grow .pin { position: sticky; height: var(--ph); }
+.grow .shot { inset: auto; left: 50%; top: 50%; width: var(--pw); height: var(--ph); transform: translate(-50%, -50%); will-change: width, height; }
+
+.outro { display: grid; justify-items: center; gap: 18px; text-align: center; padding: clamp(48px, 9vh, 96px) var(--side) clamp(72px, 12vh, 140px); }
+.outro h2 { margin: 0; font: 800 clamp(1.8rem, 3.6vw, 2.8rem)/1.05 var(--f-display); letter-spacing: -.02em; }
+.outro p { margin: 0; max-width: 46ch; color: var(--soft); }
+
+footer { background: #111; color: #fff; padding: 40px var(--side) 24px; padding-left: max(16px, 5vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 5vw, env(safe-area-inset-right, 0px)); }
+footer .links { display: flex; justify-content: space-between; gap: 24px; font-size: 14px; }
+footer .links div { display: grid; gap: 6px; }
+footer .links a { text-decoration: none; }
+footer .links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--f-display); letter-spacing: -.02em; white-space: nowrap; overflow: hidden; }
+
+/* phones: notes go under their photo */
+@media (max-width: 760px) {
+  :root { --ph: clamp(150px, 26vh, 220px); }
+  .row { height: auto; display: grid; gap: 12px; }
+  .row .shot { position: relative; height: var(--ph); }
+  .note, .note.left, .note.right { position: static; width: auto; transform: none; text-align: left; font-size: 15px; }
+  .row .note.left { order: 2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row.first .shot { transform: none !important; }
+  .grow { height: auto !important; }
+  .grow .pin { position: static; height: auto; }
+  .grow .shot { position: relative; left: auto; top: auto; transform: none; width: 100vw !important; height: 33vh !important; margin-left: calc(50% - 50vw); border-radius: 0 !important; }
+}
+</style>
+
+<header class="nav">
+  <a class="logo" href="#"><span>Tampere<br>Designs</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M2 4h16v6h-5v18H7V10H2z" fill="currentColor"/><path d="M15 4h4a12 12 0 0 1 0 24h-4v-6h4a6 6 0 0 0 0-12h-4z" fill="currentColor"/></svg></a>
+  <ul><li><a href="#">Events</a></li><li><a href="#">Contribute</a></li><li><a href="#" aria-current="page">About us</a></li></ul>
+  <a class="btn" href="#">← Join our Telegram</a>
+</header>
+
+<main>
+  <section class="intro" aria-labelledby="about-title">
+    <h1 id="about-title">About us</h1>
+    <p>Tampere Designs is a community for designers, creatives and IT people in Tampere. We gather, share ideas and make things together, help each other grow, and in turn help the city around us grow too.</p>
+  </section>
+
+  <section class="story" aria-label="Our story">
+    <div class="row first" id="first">
+      <figure class="shot"><img src="assets/picnic.webp" alt="A group of friends sitting on blankets in a sunny park, talking" style="object-position: 50% 78%" width="736" height="981"></figure>
+      <p class="note left">It started with a handful of designers who wanted <b>somewhere to talk shop</b> outside of work and school.</p>
+    </div>
+    <div class="row">
+      <figure class="shot"><img src="assets/picnic.webp" alt="Close-up of people chatting on a picnic blanket" style="object-position: 30% 82%; transform: scale(1.5); transform-origin: 30% 82%" width="736" height="981" loading="lazy"></figure>
+      <p class="note right">Today we're students, juniors, seniors and the design-curious, from <b>every corner of design and tech</b>.</p>
+    </div>
+    <div class="row">
+      <figure class="shot"><img src="assets/picnic.webp" alt="Tall trees and blue sky over the park" style="object-position: 50% 28%" width="736" height="981" loading="lazy"></figure>
+      <p class="note left">We meet to learn from each other, try new things, and <b>give back to the city</b> we live in.</p>
+    </div>
+  </section>
+
+  <section class="grow" id="grow" aria-label="Together">
+    <div class="pin" id="pin">
+      <figure class="shot" id="wide"><img src="assets/picnic.webp" alt="The whole group sitting together in the park on a sunny afternoon" style="object-position: 50% 74%" width="736" height="981" loading="lazy"></figure>
+    </div>
+  </section>
+
+  <section class="outro" aria-labelledby="outro-title">
+    <h2 id="outro-title">There's a seat for you</h2>
+    <p>Come to a meetup, bring a friend, or just say hi in our Telegram group.</p>
+    <a class="btn dark" href="#">← Join our Telegram</a>
+  </section>
+</main>
+
+<footer>
+  <div class="links"><div><a href="#">About</a><a href="#">Contact</a><span>© 2026 Tampere Designs</span></div><div style="text-align:right"><a href="#">LinkedIn</a><a href="#">Telegram</a><a href="#">Instagram</a></div></div>
+  <p class="big" aria-hidden="true">TAMPERE DESIGNS</p>
+</footer>
+
+<script>
+(() => {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ease = (t) => 1 - Math.pow(1 - t, 3);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const first = document.querySelector("#first .shot");
+  const grow = document.getElementById("grow"), pin = document.getElementById("pin"), wide = document.getElementById("wide");
+  let vw, vh, ph, pw, travel, gap;
+
+  const size = () => {
+    vw = document.documentElement.clientWidth; vh = innerHeight;
+    pw = first.offsetWidth; ph = first.offsetHeight;        // the photo itself, not its caption
+    gap = parseFloat(getComputedStyle(document.querySelector(".story")).rowGap) || 32;
+    // place the first photo so only its top half shows on the first screen
+    const story = document.querySelector(".story");
+    story.style.paddingTop = "0px";
+    const top0 = first.parentElement.getBoundingClientRect().top + scrollY;
+    story.style.paddingTop = Math.max(24, vh - ph * .5 - top0) + "px";
+    travel = vh * 1.1;                                   // how long the fourth photo stays pinned while it widens
+    pin.style.top = (vh - ph) / 2 + "px";                // it pins once it reaches the middle of the screen
+    grow.style.height = ph + travel + "px";
+    frame();
+  };
+
+  const frame = () => {
+    // first photo: tilted and at 72% while it peeks in from the bottom, straight and full size once it has risen
+    const r1 = first.parentElement.getBoundingClientRect();
+    const p = ease(clamp((vh - r1.top) / (vh * .75) - .15));
+    first.style.transform = `rotate(${(1 - p) * -9}deg) scale(${lerp(.72, 1, p)})`;
+
+    // fourth photo: widen from photo size to the full screen width, and to a third of the screen height
+    const g = grow.getBoundingClientRect();
+    const t = ease(clamp(((vh - ph) / 2 - g.top) / travel));
+    wide.style.width = lerp(pw, vw, t) + "px";
+    wide.style.height = lerp(ph, vh / 3, t) + "px";
+    wide.style.borderRadius = lerp(12, 0, t) + "px";
+    ticking = false;
+  };
+  let ticking = false;
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }, { passive: true });
+  addEventListener("resize", size);
+  size();
+})();
+</script>

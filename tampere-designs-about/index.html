@@ -67,6 +67,15 @@ a { color: inherit; }
 .grow .pin { position: sticky; height: var(--ph); }
 .grow .shot { inset: auto; left: 50%; top: 50%; width: var(--pw); height: var(--ph); transform: translate(-50%, -50%); will-change: width, height; }
 
+/* appear effects: notes fade in beside their photo; photos 2-4 rise into place as they come into view */
+.js .note { opacity: 0; transition: opacity .5s ease, translate .6s cubic-bezier(.2,.8,.2,1); }
+.js .note.left { translate: -16px 0; } .js .note.right { translate: 16px 0; }
+.js .row.in .note { opacity: 1; translate: 0 0; transition-delay: .15s; }
+.js .row.first.in .note { transition-delay: 0s; }
+.js .row.rise .shot, .js .grow .pin { opacity: 0; translate: 0 48px; scale: .92; transition: opacity .6s ease, translate .8s cubic-bezier(.2,.8,.2,1), scale .8s cubic-bezier(.2,.8,.2,1); }
+.js .row.rise.in .shot, .js .grow.in .pin { opacity: 1; translate: 0 0; scale: 1; }
+@media (max-width: 760px) { .js .note.left, .js .note.right { translate: 0 12px; } }
+@media (prefers-reduced-motion: reduce) { .js .note, .js .row.rise .shot, .js .grow .pin { opacity: 1 !important; translate: none !important; scale: none !important; transition: none !important; } }
 .outro { display: grid; justify-items: center; gap: 18px; text-align: center; padding: clamp(48px, 9vh, 96px) var(--side) clamp(72px, 12vh, 140px); }
 .outro h2 { margin: 0; font: 800 clamp(1.8rem, 3.6vw, 2.8rem)/1.05 var(--f-display); letter-spacing: -.02em; }
 .outro p { margin: 0; max-width: 46ch; color: var(--soft); }
@@ -111,11 +120,11 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
       <figure class="shot"><img src="assets/picnic.webp" alt="A group of friends sitting on blankets in a sunny park, talking" style="object-position: 50% 78%" width="736" height="981"></figure>
       <p class="note left">It started with a handful of designers who wanted <b>somewhere to talk shop</b> outside of work and school.</p>
     </div>
-    <div class="row">
+    <div class="row rise">
       <figure class="shot"><img src="assets/picnic.webp" alt="Close-up of people chatting on a picnic blanket" style="object-position: 30% 82%; transform: scale(1.5); transform-origin: 30% 82%" width="736" height="981" loading="lazy"></figure>
       <p class="note right">Today we're students, juniors, seniors and the design-curious, from <b>every corner of design and tech</b>.</p>
     </div>
-    <div class="row">
+    <div class="row rise">
       <figure class="shot"><img src="assets/picnic.webp" alt="Tall trees and blue sky over the park" style="object-position: 50% 28%" width="736" height="981" loading="lazy"></figure>
       <p class="note left">We meet to learn from each other, try new things, and <b>give back to the city</b> we live in.</p>
     </div>
@@ -141,7 +150,11 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
 
 <script>
 (() => {
+  document.documentElement.classList.add("js");
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // photos 2-4 (and their notes) appear as they come into view
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0, rootMargin: "0px 0px -18% 0px" });
+  document.querySelectorAll(".row.rise, .grow").forEach((el) => io.observe(el));
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -169,6 +182,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
     const r1 = first.parentElement.getBoundingClientRect();
     const p = ease(clamp((vh - r1.top) / (vh * .75) - .15));
     first.style.transform = `rotate(${(1 - p) * -9}deg) scale(${lerp(.72, 1, p)})`;
+    first.parentElement.classList.toggle("in", p > .97);    // its note shows once the photo is straight
 
     // fourth photo: widen from photo size to the full screen width, and to a third of the screen height
     const g = grow.getBoundingClientRect();

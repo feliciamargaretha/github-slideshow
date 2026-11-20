@@ -16,9 +16,9 @@
   --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --f-body: "Rethink Sans", "Helvetica Neue", Arial, sans-serif;
   /* photo size: 3-4 photos fit in one screen height */
-  --ph: clamp(150px, 24vh, 260px);
+  --ph: clamp(180px, 30vh, 340px);
   --pw: calc(var(--ph) * 4 / 3);
-  --gap: clamp(20px, 4vh, 40px);
+  --gap: clamp(28px, 6vh, 64px);
   --side: max(16px, env(safe-area-inset-left, 0px));
   color-scheme: light;
 }
@@ -72,8 +72,7 @@ a { color: inherit; }
 .js .note.left { translate: -16px 0; } .js .note.right { translate: 16px 0; }
 .js .row.in .note { opacity: 1; translate: 0 0; transition-delay: .15s; }
 .js .row.first.in .note { transition-delay: 0s; }
-.js .row.rise .shot, .js .grow .pin { opacity: 0; translate: 0 48px; scale: .92; transition: opacity .6s ease, translate .8s cubic-bezier(.2,.8,.2,1), scale .8s cubic-bezier(.2,.8,.2,1); }
-.js .row.rise.in .shot, .js .grow.in .pin { opacity: 1; translate: 0 0; scale: 1; }
+.js .row.rise .shot, .js .grow .pin { opacity: 0; will-change: opacity, translate, scale; }
 @media (max-width: 760px) { .js .note.left, .js .note.right { translate: 0 12px; } }
 @media (prefers-reduced-motion: reduce) { .js .note, .js .row.rise .shot, .js .grow .pin { opacity: 1 !important; translate: none !important; scale: none !important; transition: none !important; } }
 .outro { display: grid; justify-items: center; gap: 18px; text-align: center; padding: clamp(48px, 9vh, 96px) var(--side) clamp(72px, 12vh, 140px); }
@@ -89,7 +88,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
 
 /* phones: notes go under their photo */
 @media (max-width: 760px) {
-  :root { --ph: clamp(150px, 26vh, 220px); }
+  :root { --ph: clamp(170px, 30vh, 260px); }
   .row { height: auto; display: grid; gap: 12px; }
   .row .shot { position: relative; height: var(--ph); }
   .note, .note.left, .note.right { position: static; width: auto; transform: none; text-align: left; font-size: 15px; }
@@ -152,9 +151,9 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
 (() => {
   document.documentElement.classList.add("js");
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  // photos 2-4 (and their notes) appear as they come into view
-  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0, rootMargin: "0px 0px -18% 0px" });
-  document.querySelectorAll(".row.rise, .grow").forEach((el) => io.observe(el));
+  // photos 2-4 fade and rise in step with the scroll, one after another; each note follows once its photo has landed
+  const risers = [...document.querySelectorAll(".row.rise")].map((r) => [r, r.querySelector(".shot")]);
+  risers.push([document.getElementById("grow"), document.getElementById("pin")]);
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -180,9 +179,18 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
   const frame = () => {
     // first photo: tilted and at 72% while it peeks in from the bottom, straight and full size once it has risen
     const r1 = first.parentElement.getBoundingClientRect();
-    const p = ease(clamp((vh - r1.top) / (vh * .75) - .15));
+    const p = ease(clamp((vh - r1.top) / (vh * .5) - .1));
     first.style.transform = `rotate(${(1 - p) * -9}deg) scale(${lerp(.72, 1, p)})`;
     first.parentElement.classList.toggle("in", p > .97);    // its note shows once the photo is straight
+
+    for (const [row, el] of risers) {
+      const top = row.getBoundingClientRect().top;
+      const t = ease(clamp((vh * .98 - top) / (vh * .38)));   // starts as it enters the bottom, done by about 60% up
+      el.style.opacity = t;
+      el.style.translate = `0 ${(1 - t) * 80}px`;
+      el.style.scale = 0.88 + t * .12;
+      row.classList.toggle("in", t > .95);
+    }
 
     // fourth photo: widen from photo size to the full screen width, and to a third of the screen height
     const g = grow.getBoundingClientRect();

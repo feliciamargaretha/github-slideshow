@@ -82,36 +82,14 @@ h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); line-height: 1.05; font-weight: 80
   .collage { max-width: 520px; width: 100%; justify-self: center; }
 }
 
-/* ---------- numbers band, like the homepage's blue band ---------- */
-.band { color: #fff; }
-.band .inner { background: var(--blue); border-radius: 10px; padding: clamp(28px, 4vw, 48px); display: grid; grid-template-columns: minmax(0, 1.1fr) repeat(3, minmax(0, 1fr)); gap: 24px 32px; align-items: end; }
-.band h2 { font-size: clamp(1.4rem, 2.4vw, 1.9rem); }
-.stat { display: grid; gap: 4px; border-left: 2px solid rgba(255,255,255,.4); padding-left: 18px; }
-.stat b { font: 800 clamp(2.4rem, 4.6vw, 3.8rem)/1 var(--f-display); letter-spacing: -.03em; }
-.stat span { font-size: 15px; }
-@media (max-width: 860px) { .band .inner { grid-template-columns: repeat(3, minmax(0, 1fr)); } .band h2 { grid-column: 1 / -1; } }
-@media (max-width: 520px) { .band .inner { grid-template-columns: minmax(0, 1fr); } }
 
-/* ---------- story: three steps along a hand-drawn line ---------- */
-.story { padding-block: clamp(72px, 12vh, 128px) clamp(40px, 6vh, 64px); }
-.story .head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 48px; align-items: end; margin-bottom: clamp(32px, 5vw, 56px); }
-.story .head p { margin: 0; color: var(--soft); max-width: 46ch; }
-.steps { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 3vw, 40px); list-style: none; margin: 0; padding: 0; }
-.steps::before { content: ""; position: absolute; left: 4%; right: 4%; top: 28px; border-top: 2px dashed var(--ink); }
-.step { position: relative; display: grid; gap: 10px; align-content: start; }
-.step .dot { width: 56px; height: 56px; display: grid; place-items: center; border: 2px solid var(--ink); border-radius: 50%; background: #fff; box-shadow: 3px 3px 0 var(--ink); font: 800 20px/1 var(--f-display); }
-.step:nth-child(1) .dot { background: var(--yellow); } .step:nth-child(2) .dot { background: var(--pink); } .step:nth-child(3) .dot { background: var(--mint); }
-.step .when { font: 600 22px/1 var(--f-hand); color: var(--blue); margin-top: 6px; }
-.step h3 { font-size: 1.35rem; line-height: 1.15; font-weight: 800; }
-.step p { margin: 0; color: var(--soft); font-size: 16px; max-width: 34ch; }
-@media (max-width: 760px) {
-  .story .head { grid-template-columns: minmax(0, 1fr); }
-  .steps { grid-template-columns: minmax(0, 1fr); padding-left: 0; }
-  .steps::before { left: 27px; right: auto; top: 28px; bottom: 28px; border-top: 0; border-left: 2px dashed var(--ink); }
-  .step { grid-template-columns: 56px minmax(0, 1fr); column-gap: 16px; }
-  .step > :not(.dot) { grid-column: 2; }
-  .step .dot { grid-row: 1 / span 4; }
-}
+/* ---------- our story: a few large sentences, no heading ---------- */
+.story { padding-block: clamp(64px, 11vh, 128px); }
+.story .text { max-width: 30ch; margin: 0; font: 800 clamp(1.7rem, 3.4vw, 2.9rem)/1.18 var(--f-display); letter-spacing: -.02em; text-wrap: pretty; }
+.story .text .hi { padding: 0 .12em; border-radius: 4px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.story .text .y { background: var(--yellow); } .story .text .p { background: var(--pink); } .story .text .m { background: var(--mint); }
+.story .text .soft { color: #8a8a90; }
+.story .sign { display: block; margin-top: 24px; font: 600 26px/1 var(--f-hand); color: var(--blue); transform: rotate(-2deg); }
 
 /* ---------- values: the homepage's tilted colour cards ---------- */
 .values { padding-block: clamp(56px, 9vh, 96px); }
@@ -180,7 +158,7 @@ footer .big { margin: 40px 0 0; font: 800 min(8.4vw, 8.2rem)/.9 var(--f-display)
     <div class="wrap">
       <div class="copy">
         <span class="eyebrow">hello, nice to meet you</span>
-        <h1 id="about-title">About <span class="ul">us<svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8C30 3 60 3 98 7" fill="none" stroke="#161616" stroke-width="3" stroke-linecap="round"/></svg></span></h1>
+        <h1 id="about-title">About us</h1>
         <p>Tampere Designs is a community for designers, creatives and IT people in Tampere. We gather, share ideas and make things together, help each other grow, and in turn help the city around us grow too.</p>
         <div class="ctas"><a class="btn dark" href="#">← Join our Telegram</a><a class="link" href="#">← Browse events</a></div>
       </div>
@@ -194,23 +172,11 @@ footer .big { margin: 40px 0 0; font: 800 min(8.4vw, 8.2rem)/.9 var(--f-display)
     </div>
   </section>
 
-  <section class="band" aria-labelledby="band-title">
-    <div class="wrap"><div class="inner">
-      <h2 id="band-title">A small community that keeps growing</h2>
-      <div class="stat"><b>2023</b><span>Started over coffee</span></div>
-      <div class="stat"><b>300+</b><span>Members on Telegram</span></div>
-      <div class="stat"><b>40+</b><span>Meetups and workshops</span></div>
-    </div></div>
-  </section>
 
-  <section class="story" aria-labelledby="story-title">
+  <section class="story" aria-label="Our story">
     <div class="wrap">
-      <div class="head"><h2 id="story-title">How it started</h2><p>No big plan, just a few designers who wanted somewhere to talk shop outside work and school. It grew from there.</p></div>
-      <ol class="steps">
-        <li class="step"><span class="dot">1</span><span class="when">a coffee table</span><h3>A handful of designers</h3><p>A few of us met up to share work and swap tips. Then we kept doing it.</p></li>
-        <li class="step"><span class="dot">2</span><span class="when">word got around</span><h3>Friends brought friends</h3><p>Students, juniors, seniors and the design-curious joined from every corner of design and tech.</p></li>
-        <li class="step"><span class="dot">3</span><span class="when">today</span><h3>A community for the city</h3><p>Weekly meetups, guest talks and workshops, and projects that give back to Tampere.</p></li>
-      </ol>
+      <p class="text">It started with <span class="hi y">a handful of designers</span> who wanted somewhere to talk shop outside work and school. <span class="soft">Then friends brought friends.</span> Today we're students, juniors and seniors from <span class="hi p">every corner of design and tech</span>, meeting every week to learn, make things and <span class="hi m">give back to Tampere</span>.</p>
+      <span class="sign">– the Tampere Designs crew</span>
     </div>
   </section>
 

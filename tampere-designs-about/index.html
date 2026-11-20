@@ -16,7 +16,7 @@
   --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --f-body: "Rethink Sans", "Helvetica Neue", Arial, sans-serif;
   /* photo size: 3-4 photos fit in one screen height */
-  --ph: clamp(180px, 30vh, 340px);
+  --ph: clamp(220px, 40vh, 460px);
   --pw: calc(var(--ph) * 4 / 3);
   --gap: clamp(28px, 6vh, 64px);
   --side: max(16px, env(safe-area-inset-left, 0px));
@@ -53,8 +53,30 @@ a { color: inherit; }
 /* the photo column */
 .story { position: relative; display: grid; justify-items: center; gap: var(--gap); padding: clamp(40px, 8vh, 72px) var(--side) var(--gap); }
 .row { position: relative; width: var(--pw); height: var(--ph); }
-.shot { position: absolute; inset: 0; margin: 0; border-radius: 12px; overflow: hidden; background: #ddd; }
-.shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.shot { position: absolute; inset: 0; margin: 0; border-radius: 12px; background: #ddd; }
+.shot .crop { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: inherit; }
+.shot img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+
+/* style A: neobrutalist solid shadow */
+:root[data-photo="shadow"] .shot { border: 3px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); }
+:root[data-photo="shadow"] .shot img, :root[data-photo="shadow"] .shot .crop { border-radius: calc(var(--r, 12px) - 3px); }
+
+/* style B: washi tape across the top, like a scrapbook */
+:root[data-photo="tape"] .shot { border-radius: 2px; box-shadow: 0 10px 24px rgba(20,20,20,.14); }
+:root[data-photo="tape"] .shot::before {
+  content: ""; position: absolute; z-index: 2; top: -18px; left: var(--tx, 50%); width: clamp(90px, 26%, 150px); height: 36px;
+  background: rgba(70, 98, 214, .86); transform: translateX(-50%) rotate(var(--tr, -4deg));
+  clip-path: polygon(0 6%, 4% 0, 8% 8%, 12% 1%, 17% 7%, 22% 0, 100% 0, 100% 94%, 96% 100%, 91% 92%, 86% 99%, 81% 93%, 76% 100%, 0 100%);
+}
+:root[data-photo="tape"] .row:nth-child(2) .shot { --tx: 22%; --tr: 6deg; }
+:root[data-photo="tape"] .row:nth-child(3) .shot { --tx: 76%; --tr: -7deg; }
+:root[data-photo="tape"] .grow .shot { --tx: 14%; --tr: -3deg; }
+:root[data-photo="tape"] .grow .shot::after { content: ""; position: absolute; z-index: 2; top: -18px; right: 6%; width: clamp(90px, 9vw, 150px); height: 36px; background: rgba(70, 98, 214, .86); transform: rotate(5deg); }
+
+.style-switch { position: fixed; z-index: 60; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; align-items: center; gap: 4px; padding: 4px; background: #fff; border: 1px solid #e3e3e6; border-radius: 10px; box-shadow: 0 8px 24px rgba(20,20,20,.12); font: 500 13px/1 var(--f-body); }
+.style-switch span { padding: 0 8px; color: #66666b; }
+.style-switch button { height: 32px; padding: 0 12px; border: 0; border-radius: 7px; background: none; font: inherit; color: var(--ink); cursor: pointer; }
+.style-switch button[aria-pressed="true"] { background: var(--ink); color: #fff; }
 .note { position: absolute; top: 50%; width: min(30ch, calc((100vw - var(--pw)) / 2 - 56px)); margin: 0; transform: translateY(-50%); font: 500 clamp(16px, 1.25vw, 19px)/1.4 var(--f-body); }
 .note b { font-family: var(--f-display); font-weight: 800; }
 .note.left { right: calc(100% + clamp(24px, 4vw, 64px)); text-align: right; }
@@ -88,7 +110,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
 
 /* phones: notes go under their photo */
 @media (max-width: 760px) {
-  :root { --ph: clamp(170px, 30vh, 260px); }
+  :root { --pw: min(calc(100vw - 40px), 440px); --ph: calc(var(--pw) * 3 / 4); }
   .row { height: auto; display: grid; gap: 12px; }
   .row .shot { position: relative; height: var(--ph); }
   .note, .note.left, .note.right { position: static; width: auto; transform: none; text-align: left; font-size: 15px; }
@@ -102,6 +124,11 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
 }
 </style>
 
+<div class="style-switch" role="group" aria-label="Photo style (review only)">
+  <span>Photos</span>
+  <button type="button" data-v="tape" aria-pressed="true">Tape</button>
+  <button type="button" data-v="shadow" aria-pressed="false">Solid shadow</button>
+</div>
 <header class="nav">
   <a class="logo" href="#"><span>Tampere<br>Designs</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M2 4h16v6h-5v18H7V10H2z" fill="currentColor"/><path d="M15 4h4a12 12 0 0 1 0 24h-4v-6h4a6 6 0 0 0 0-12h-4z" fill="currentColor"/></svg></a>
   <ul><li><a href="#">Events</a></li><li><a href="#">Contribute</a></li><li><a href="#" aria-current="page">About us</a></li></ul>
@@ -120,7 +147,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
       <p class="note left">It started with a handful of designers who wanted <b>somewhere to talk shop</b> outside of work and school.</p>
     </div>
     <div class="row rise">
-      <figure class="shot"><img src="assets/picnic.webp" alt="Close-up of people chatting on a picnic blanket" style="object-position: 30% 82%; transform: scale(1.5); transform-origin: 30% 82%" width="736" height="981" loading="lazy"></figure>
+      <figure class="shot"><span class="crop"><img src="assets/picnic.webp" alt="Close-up of people chatting on a picnic blanket" style="object-position: 30% 82%; transform: scale(1.5); transform-origin: 30% 82%" width="736" height="981" loading="lazy"></span></figure>
       <p class="note right">Today we're students, juniors, seniors and the design-curious, from <b>every corner of design and tech</b>.</p>
     </div>
     <div class="row rise">
@@ -150,6 +177,12 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
 <script>
 (() => {
   document.documentElement.classList.add("js");
+  document.documentElement.dataset.photo = "tape";
+  document.querySelectorAll(".style-switch button").forEach((b) => b.addEventListener("click", () => {
+    document.documentElement.dataset.photo = b.dataset.v;
+    document.querySelectorAll(".style-switch button").forEach((o) => o.setAttribute("aria-pressed", String(o === b)));
+    dispatchEvent(new Event("scroll"));
+  }));
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   // photos 2-4 fade and rise in step with the scroll, one after another; each note follows once its photo has landed
   const risers = [...document.querySelectorAll(".row.rise")].map((r) => [r, r.querySelector(".shot")]);
@@ -197,7 +230,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
     const t = ease(clamp(((vh - ph) / 2 - g.top) / travel));
     wide.style.width = lerp(pw, vw, t) + "px";
     wide.style.height = lerp(ph, vh / 3, t) + "px";
-    wide.style.borderRadius = lerp(12, 0, t) + "px";
+    wide.style.borderRadius = lerp(document.documentElement.dataset.photo === "tape" ? 2 : 12, 0, t) + "px";
     ticking = false;
   };
   let ticking = false;

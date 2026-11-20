@@ -46,12 +46,12 @@ a { color: inherit; }
 @media (max-width: 720px) { .nav ul { display: none; } }
 
 /* intro */
-.intro { display: grid; justify-items: center; align-content: center; gap: 16px; text-align: center; min-height: calc(100svh - 76px - var(--ph) * .5); padding: 24px var(--side); }
+.intro { display: grid; justify-items: center; align-content: center; gap: 16px; text-align: center; padding: clamp(48px, 11vh, 110px) var(--side) 0; }
 .intro h1 { margin: 0; font: 800 clamp(2.6rem, 6vw, 4.6rem)/1 var(--f-display); letter-spacing: -.03em; }
 .intro p { margin: 0; max-width: 58ch; color: var(--soft); font-size: clamp(16px, 1.3vw, 18px); }
 
 /* the photo column */
-.story { position: relative; display: grid; justify-items: center; gap: var(--gap); padding: clamp(40px, 8vh, 72px) var(--side) var(--gap); }
+.story { position: relative; display: grid; justify-items: center; gap: var(--gap); padding: clamp(40px, 7vh, 72px) var(--side) var(--gap); }
 .row { position: relative; width: var(--pw); height: var(--ph); }
 .shot { position: absolute; inset: 0; margin: 0; border-radius: 12px; background: #ddd; }
 .shot .crop { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: inherit; }
@@ -200,9 +200,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
     gap = parseFloat(getComputedStyle(document.querySelector(".story")).rowGap) || 32;
     // place the first photo so only its top half shows on the first screen
     const story = document.querySelector(".story");
-    story.style.paddingTop = "0px";
-    const top0 = first.parentElement.getBoundingClientRect().top + scrollY;
-    story.style.paddingTop = Math.max(24, vh - ph * .5 - top0) + "px";
+    story.style.paddingTop = "";   // fixed gap under the intro (set in CSS)
     travel = vh * 1.1;                                   // how long the fourth photo stays pinned while it widens
     pin.style.top = (vh - ph) / 2 + "px";                // it pins once it reaches the middle of the screen
     grow.style.height = ph + travel + "px";
@@ -212,7 +210,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
   const frame = () => {
     // first photo: tilted and at 72% while it peeks in from the bottom, straight and full size once it has risen
     const r1 = first.parentElement.getBoundingClientRect();
-    const p = ease(clamp((vh - r1.top) / (vh * .5) - .1));
+    const p = ease(clamp(scrollY / (vh * .4)));   // tilted on load, straight after scrolling ~40% of a screen
     first.style.transform = `rotate(${(1 - p) * -9}deg) scale(${lerp(.72, 1, p)})`;
     first.parentElement.classList.toggle("in", p > .97);    // its note shows once the photo is straight
 

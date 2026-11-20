@@ -19,6 +19,7 @@
   --ph: clamp(220px, 40vh, 460px);
   --pw: calc(var(--ph) * 4 / 3);
   --gap: clamp(28px, 6vh, 64px);
+  --lead: clamp(32px, 6vh, 56px);   /* space between the intro text and the first photo */
   --side: max(16px, env(safe-area-inset-left, 0px));
   color-scheme: light;
 }
@@ -46,12 +47,12 @@ a { color: inherit; }
 @media (max-width: 720px) { .nav ul { display: none; } }
 
 /* intro */
-.intro { display: grid; justify-items: center; align-content: center; gap: 16px; text-align: center; padding: clamp(48px, 11vh, 110px) var(--side) 0; }
+.intro { display: grid; justify-items: center; align-content: center; gap: 16px; text-align: center; align-content: end; min-height: calc(100svh - 76px - var(--ph) * .72 - var(--lead)); padding: 32px var(--side) 0; }
 .intro h1 { margin: 0; font: 800 clamp(2.6rem, 6vw, 4.6rem)/1 var(--f-display); letter-spacing: -.03em; }
 .intro p { margin: 0; max-width: 58ch; color: var(--soft); font-size: clamp(16px, 1.3vw, 18px); }
 
 /* the photo column */
-.story { position: relative; display: grid; justify-items: center; gap: var(--gap); padding: clamp(40px, 7vh, 72px) var(--side) var(--gap); }
+.story { position: relative; display: grid; justify-items: center; gap: var(--gap); padding: var(--lead) var(--side) var(--gap); }
 .row { position: relative; width: var(--pw); height: var(--ph); }
 .shot { position: absolute; inset: 0; margin: 0; border-radius: 12px; background: #ddd; }
 .shot .crop { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: inherit; }
@@ -211,7 +212,7 @@ footer .big { margin: 40px 0 0; font: 800 clamp(2.6rem, 10.4vw, 10rem)/.9 var(--
     // first photo: tilted and at 72% while it peeks in from the bottom, straight and full size once it has risen
     const r1 = first.parentElement.getBoundingClientRect();
     const p = ease(clamp(scrollY / (vh * .4)));   // tilted on load, straight after scrolling ~40% of a screen
-    first.style.transform = `rotate(${(1 - p) * -9}deg) scale(${lerp(.72, 1, p)})`;
+    first.style.transform = `rotate(${(1 - p) * -9}deg) scale(${lerp(.85, 1, p)})`;
     first.parentElement.classList.toggle("in", p > .97);    // its note shows once the photo is straight
 
     for (const [row, el] of risers) {

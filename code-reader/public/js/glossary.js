@@ -59,7 +59,7 @@ export const GLOSSARY = {
   },
   alignment: {
     title: 'Alignment',
-    match: /\b(?:lines? (?:them|the items|up)|centers? the items)\b/i,
+    match: /\b(?:line the items up|lines up the text|centers? the items)\b/i,
     text: 'How the items of a flex or grid box sit along the row (justify-content) and across it (align-items): at the start, centered, at the end, or spread out.',
     example: '.row { display: flex; justify-content: center; align-items: center; }',
     demo: 'alignment',
@@ -91,6 +91,62 @@ export const GLOSSARY = {
     text: 'An animation written as moments in time, from 0% to 100%, each saying how the element looks then. The browser fills in the frames between.',
     example: '@keyframes pulse { from { opacity: 1; } to { opacity: 0.4; } }',
     demo: 'keyframes',
+  },
+  display: {
+    title: 'display',
+    match: /(?!)/,
+    text: 'Decides how a box takes part in the layout. block starts on a new line and takes the full width. inline flows inside a line of text. flex and grid arrange the box’s children. none hides it.',
+    example: '.tag { display: inline-block; }',
+    demo: 'display',
+  },
+  'inline-flex': {
+    title: 'inline-flex',
+    match: /(?!)/,
+    text: 'Works like flex for the children, which line up in a row, but the box itself sits inside a line of text like a word, only as wide as its content. Good for buttons and badges with an icon and a label.',
+    example: '.btn { display: inline-flex; align-items: center; gap: 8px; }',
+    demo: 'inlineflex',
+  },
+  block: {
+    title: 'block',
+    match: /(?!)/,
+    text: 'A block box starts on a new line and stretches to the full width of its parent. Headings, paragraphs and divs are block by default.',
+    example: 'p { display: block; }',
+    demo: 'display',
+  },
+  inline: {
+    title: 'inline',
+    match: /(?!)/,
+    text: 'An inline box flows inside a line of text, like a word. It ignores width and height. Links, spans and strong text are inline by default.',
+    example: 'span { display: inline; }',
+    demo: 'display',
+  },
+  'inline-block': {
+    title: 'inline-block',
+    match: /(?!)/,
+    text: 'Sits inside a line of text like inline, but still accepts a width, a height and spacing like block.',
+    example: '.tag { display: inline-block; padding: 4px 8px; }',
+    demo: 'display',
+  },
+  'box-sizing': {
+    title: 'box-sizing',
+    match: /(?!)/,
+    text: 'Decides what a width measures. With border-box, a 300px box stays 300px wide after you add padding and a border. Without it, they make the box wider.',
+    example: '* { box-sizing: border-box; }',
+    demo: 'padding',
+  },
+  transform: {
+    title: 'transform',
+    match: /(?!)/,
+    text: 'Moves, turns or resizes an element after the layout is done, without pushing its neighbours. It is what most hover lifts and grows use, because it animates smoothly.',
+    example: '.card:hover { transform: translateY(-4px); }',
+    demo: 'lift',
+  },
+  radius: {
+    title: 'border-radius',
+    match: /(?!)/,
+    text: 'Rounds the corners of a box. A bigger number means rounder corners; 50% on a square makes a circle.',
+    example: '.card { border-radius: 12px; }',
+    demo: 'radius',
   },
   'z-index': {
     title: 'Layers (z-index)',
@@ -131,25 +187,27 @@ export function withConcepts(text, used) {
   return out;
 }
 
-export function conceptLabel(key, text) {
-  const b = h('button', { class: `concept ${isLearned(key) ? 'learned' : ''}`, type: 'button', 'aria-haspopup': 'dialog', 'aria-label': `${text}: show what ${GLOSSARY[key].title.toLowerCase()} means` }, text);
+export function conceptLabel(key, text, { code = false, prompt = null } = {}) {
+  const b = h('button', { class: `concept ${code ? 'code-concept' : ''} ${isLearned(key) ? 'learned' : ''}`, type: 'button', 'aria-haspopup': 'dialog', 'aria-label': `${text}: show what ${GLOSSARY[key].title.toLowerCase()} means` }, text);
   b.addEventListener('click', () => {
     learn(key);
     document.querySelectorAll(`.concept[data-k="${key}"]`).forEach((x) => x.classList.add('learned'));
     b.classList.add('learned');
-    popover(b, conceptCard(key), { focus: false, className: 'concept-pop' });
+    popover(b, conceptCard(key, prompt), { focus: false, className: 'concept-pop' });
   });
   b.dataset.k = key;
   return b;
 }
 
-function conceptCard(key) {
+function conceptCard(key, prompt) {
   const g = GLOSSARY[key];
   return h('div', { class: 'concept-card' },
     h('div', { class: 'concept-head' }, h('span', { class: 't-strong' }, g.title), h('span', { class: 't-caption ink-3' }, 'Saved to your dictionary')),
     g.demo ? demo(g.demo) : null,
     h('p', {}, g.text),
-    g.example ? h('pre', { class: 'concept-code' }, g.example) : null);
+    g.example ? h('pre', { class: 'concept-code' }, g.example) : null,
+    prompt ? h('div', { class: 'concept-prompt' }, h('span', { class: 't-caption ink-3' }, 'Worth knowing for prompts'),
+      h('div', { class: 'pair-row' }, h('span', {}, `“${prompt.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, prompt.precise))) : null);
 }
 
 // ---- Demos ------------------------------------------------------------------
@@ -290,10 +348,59 @@ const DEMOS = {
   }),
 };
 
+// ---- Code words: `display: inline-flex` becomes two labels ---------------------------
+
+const CODE_CONCEPT = {
+  display: 'display', 'inline-flex': 'inline-flex', 'inline-grid': 'grid', flex: 'flexbox', grid: 'grid',
+  block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
+  'justify-content': 'alignment', 'align-items': 'alignment', 'place-items': 'alignment', position: 'position', absolute: 'position',
+  transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+};
+
+/** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */
+export function codeWithConcepts(code, used, prompt) {
+  const parts = [];
+  let pos = 0, any = false;
+  for (const m of code.matchAll(/@?[a-zA-Z][\w-]*/g)) {
+    const key = CODE_CONCEPT[m[0]];
+    if (!key || used.has(key)) continue;
+    used.add(key);
+    if (m.index > pos) parts.push(code.slice(pos, m.index));
+    parts.push(conceptLabel(key, m[0], { code: true, prompt: any ? null : prompt }));
+    any = true;
+    pos = m.index + m[0].length;
+  }
+  if (!any) return null;
+  if (pos < code.length) parts.push(code.slice(pos));
+  return h('code', { class: 'inline-code' }, ...parts);
+}
+
 // ---- Prompt-term demos: the same moving boxes, one per prompt term ------------------
 
 const T = (label, w, h, cls) => ({ label, w, h, cls });
 Object.assign(DEMOS, {
+  display: () => {
+    const line = h('div', { class: 'demo-outline', style: { width: '200px', height: '22px' } });
+    return {
+      boxes: [T('A', 200, 22), T('B', 200, 22)], height: 52, extras: [line],
+      frames: [
+        { pos: [[0, 0, 200], [0, 30, 200]], caption: 'block: each box takes a full line' },
+        { pos: [[0, 0, 40], [48, 0, 40]], caption: 'inline: the boxes flow side by side, like words' },
+      ],
+    };
+  },
+  inlineflex: () => {
+    const text = h('div', { class: 'demo-text' }, 'Some text');
+    const text2 = h('div', { class: 'demo-text' }, 'more text');
+    return {
+      boxes: [T('icon', 36, 22), T('label', 44, 22)], height: 60, extras: [text, text2],
+      frames: [
+        { pos: [[0, 30], [44, 30]], caption: 'flex: the box takes its own full line', apply: () => { text.style.transform = 'translate(0, 0)'; text2.style.transform = 'translate(0, 0)'; text2.style.opacity = '0'; } },
+        { pos: [[70, 0], [114, 0]], caption: 'inline-flex: the same row, sitting inside the line of text', apply: () => { text.style.transform = 'translate(0, 2px)'; text2.style.opacity = '1'; text2.style.transform = 'translate(166px, 2px)'; } },
+      ],
+    };
+  },
   radius: () => ({
     boxes: [T('', 72, 48)], height: 48,
     frames: [

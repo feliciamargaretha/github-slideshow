@@ -535,3 +535,6 @@ textarea:focus-visible, input[type="text"]:focus-visible, input:not([type]):focu
 /* Workspace preview: white, no grey stage and no border, component centered */
 .preview-col .stage { background: var(--surface); padding: 0; }
 .preview-col .frame-wrap { border: 0; border-radius: 0; background: transparent; }
+.concept.code-concept { font-family: var(--mono); font-size: 1em; padding: 0 3px; }
+.concept-prompt { display: grid; gap: var(--space-1); border-top: 1px solid var(--line); padding-top: var(--space-2); }
+.demo-text { position: absolute; top: 0; left: 0; font: 400 14px/18px var(--font); color: var(--ink-2); transition: transform 700ms var(--ease), opacity 500ms var(--ease); white-space: nowrap; }

@@ -50,6 +50,7 @@ export function linesLabel(lines) {
 
 export function plural(word, n = 2) {
   if (n === 1) return word;
+  if (/^piece of /.test(word)) return word.replace(/^piece/, 'pieces');
   if (/(s|x|ch|sh)$/.test(word)) return word + 'es';
   if (/[^aeiou]y$/.test(word)) return word.slice(0, -1) + 'ies';
   return word + 's';

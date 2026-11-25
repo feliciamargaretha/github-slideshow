@@ -13,7 +13,7 @@ import { mountMotionPanel } from './motion-panel.js';
 import { api } from './api.js';
 import { DIALECTS, detectDialect } from './detect.js';
 import { linesLabel, escapeHtml, hash } from './util.js';
-import { withConcepts, termDemo } from './glossary.js';
+import { withConcepts, termDemo, codeWithConcepts } from './glossary.js';
 import { renderBanner, go, startReading } from './app.js';
 
 const COLOR = { structure: '#2563EB', layout: '#15803D', style: '#7C3AED', motion: '#C2410C', overview: '#0A0A0A', issue: '#B91C1C' };
@@ -385,7 +385,9 @@ export function mountWorkspace(app) {
       if (!part.startsWith('`')) { if (part) out.push(...withConcepts(part, usedConcepts)); continue; }
       const code = part.slice(1, -1);
       const chip = se.chips?.find((c) => c.code === code);
-      if (chip && !known.has(chip.key)) out.push(termChip(chip.key, code));
+      const labelled = codeWithConcepts(code, usedConcepts, chip && !known.has(chip.key) ? TERMS[chip.key] : null);
+      if (labelled) out.push(labelled);
+      else if (chip && !known.has(chip.key)) out.push(termChip(chip.key, code));
       else out.push(h('code', { class: 'inline-code' }, code));
     }
     return out;

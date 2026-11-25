@@ -62,10 +62,10 @@ export function staticIssues(model, match, { supports } = {}) {
         const bad = dead[0];
         out.push(issue({
           kind: bad.invalid ? 'bad-selector' : 'no-match',
-          title: bad.invalid ? 'This selector is not valid' : 'This rule matches nothing',
+          title: bad.invalid ? 'The browser can’t read this rule' : 'These styles never show',
           why: bad.invalid
-            ? `The browser cannot read the selector \`${bad.p.text}\`, so it skips the whole rule.`
-            : `No element in the HTML matches \`${bad.p.text}\`, so none of these lines apply. Check the class name against the HTML.`,
+            ? `The part before the braces, \`${bad.p.text}\`, is written in a way the browser doesn’t understand, so it skips every line in this rule.`
+            : `This rule styles ${describeTarget(bad.p.base)}, but nothing in the HTML has that name, so none of its lines show up. Often it’s a typo, or the name changed in the HTML but not in the CSS.`,
           lines: rangeOf(rule), declIds: rule.decls.map((d) => d.id), ruleId: rule.id,
         }));
       }
@@ -162,6 +162,22 @@ export function runtimeIssues(model, match, computed) {
     }
   }
   return out;
+}
+
+/** ".card .title" -> "elements with the class title inside elements with the class card" */
+function describeTarget(sel) {
+  const word = (part) => {
+    const cls = (part.match(/\.([\w-]+)/g) || []).map((c) => c.slice(1));
+    const id = /#([\w-]+)/.exec(part)?.[1];
+    const tag = /^[a-z][\w-]*/i.exec(part)?.[0];
+    if (id) return `the element with the id “${id}”`;
+    if (cls.length) return `elements with the class “${cls.join('” and “')}”${tag ? ` (\`<${tag}>\`)` : ''}`;
+    if (tag) return `\`<${tag}>\` elements`;
+    return `\`${part}\``;
+  };
+  const parts = sel.trim().split(/\s*[\s>+~]\s*/).filter(Boolean);
+  if (parts.length === 1) return word(parts[0]);
+  return `${word(parts[parts.length - 1])} inside ${word(parts[0])}`;
 }
 
 const cmpSpec = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];

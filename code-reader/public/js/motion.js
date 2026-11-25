@@ -169,7 +169,7 @@ function classSplit(sel, cls) {
 }
 
 function sameTarget(stateSel, baseSel, jsClasses) {
-  let s = stateSel.replace(/:(hover|focus|focus-visible|focus-within|active)\b/g, '');
+  let s = stateSel.replace(/:(hover|focus-visible|focus-within|focus|active)(?![\w-])/g, '');
   for (const c of jsClasses) s = s.replace(new RegExp(`\\.${c}(?![\\w-])`, 'g'), '');
   const norm = (x) => x.replace(/\s+/g, ' ').replace(/\s*([>+~])\s*/g, '$1').trim();
   s = norm(s);

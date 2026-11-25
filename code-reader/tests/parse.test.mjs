@@ -121,3 +121,10 @@ test('line diff', () => {
   const d = diffLines('a\nb\nc', 'a\nx\nc');
   assert.deepEqual(d.map((x) => x.type), ['same', 'del', 'add', 'same']);
 });
+
+test('state pseudo-classes with hyphens are stripped whole', async () => {
+  const { baseSelector, stateOf } = await import('../public/js/parse-css.js');
+  assert.equal(baseSelector('.test-btn:focus-visible'), '.test-btn');
+  assert.equal(stateOf('.test-btn:focus-visible'), 'focus-visible');
+  assert.equal(baseSelector('.form:focus-within .label'), '.form .label');
+});

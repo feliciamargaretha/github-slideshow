@@ -187,7 +187,7 @@ function matchBrace(src, open, to) {
 
 // ---- Selectors ---------------------------------------------------------
 
-const STATE_RE = /:(hover|focus|focus-visible|focus-within|active|visited|checked|target)\b/g;
+const STATE_RE = /:(hover|focus-visible|focus-within|focus|active|visited|checked|target)(?![\w-])/g;
 const PSEUDO_EL_RE = /::?(before|after|placeholder|selection|marker|first-line|first-letter|backdrop|-webkit-[\w-]+|-moz-[\w-]+)\b/g;
 
 export function splitSelectors(sel) {
@@ -236,8 +236,8 @@ export function addForceHover(cssText) {
     if (!STATE_RE.test(prelude) || prelude.trim().startsWith('@')) { STATE_RE.lastIndex = 0; return m; }
     STATE_RE.lastIndex = 0;
     const parts = splitSelectors(prelude);
-    const twins = parts.filter((p) => /:(hover|focus|focus-visible|focus-within|active)\b/.test(p))
-      .map((p) => p.replace(/:(hover|focus|focus-visible|focus-within|active)\b/g, '.__crhover'));
+    const twins = parts.filter((p) => /:(hover|focus-visible|focus-within|focus|active)(?![\w-])/.test(p))
+      .map((p) => p.replace(/:(hover|focus-visible|focus-within|focus|active)(?![\w-])/g, '.__crhover'));
     if (!twins.length) return m;
     const lead = prelude.match(/^\s*/)[0];
     return `${lead}${parts.join(', ')}, ${twins.join(', ')} {`;
@@ -246,7 +246,7 @@ export function addForceHover(cssText) {
 
 /** The trigger part of a state selector: ".card:hover .title" -> ".card" */
 export function triggerSelector(sel) {
-  const m = /^(.*?):(hover|focus|focus-visible|focus-within|active)\b/.exec(sel);
+  const m = /^(.*?):(hover|focus-visible|focus-within|focus|active)(?![\w-])/.exec(sel);
   if (!m) return null;
   return m[1].trim() || '*';
 }

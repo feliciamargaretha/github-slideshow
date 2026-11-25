@@ -69,6 +69,8 @@ for (const p of problems) {
   if (hit) found++;
   check(`R15 planted "${p.name}" flagged on its step`, !!hit, kinds.join(', ') || 'no flags');
 }
+await pasteCode('<style>\n  .test-btn:focus-visible {\n    outline: 2px solid #0a0a0a;\n  }\n</style>\n<button class="test-btn">Go</button>\n');
+check('R15: a :focus-visible rule on a real class is not flagged', (await ws()).steps.every((x) => !x.issues.length));
 check('R15: every planted problem flagged', found === problems.length, `${found} of ${problems.length}`);
 
 // ---- R3: click any part ----------------------------------------------------------------

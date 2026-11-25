@@ -128,6 +128,44 @@ export async function generate({ prompt }) {
   });
 }
 
+/** A follow-up prompt that changes the current component. */
+export async function revise({ code, instruction, history }) {
+  const schema = obj({
+    kind: { type: 'string', enum: ['component', 'several', 'unsupported'] },
+    message: { type: 'string' },
+    code: { type: 'string' },
+  });
+  return call({
+    system:
+      `You change an existing UI component to follow the learner's latest request. ${GEN_RULES} ${DATA_RULE} ` +
+      'Keep everything the request does not mention exactly as it is. Return the whole file, not a diff. ' +
+      'If the request asks for several components or a whole page, return kind "several", empty code and a one-sentence message. Otherwise kind "component" and an empty message.',
+    user: `Earlier requests, oldest first:\n${history.map((p, i) => `${i + 1}. <prompt>${p}</prompt>`).join('\n')}\n\nCurrent code:\n<code>\n${code}\n</code>\n\nLatest request:\n<prompt>\n${instruction}\n</prompt>`,
+    schema,
+    effort: 'medium',
+  });
+}
+
+/** Review a series of prompts that led to the final component. */
+export async function reviewSeries({ prompts, code }) {
+  const schema = obj({
+    steps: { type: 'array', items: obj({ index: { type: 'integer' }, changed: { type: 'string' }, upfront: { type: 'string' } }) },
+    terms: { type: 'array', items: obj({ casual: { type: 'string' }, precise: { type: 'string' } }) },
+    combined: { type: 'string' },
+  });
+  return call({
+    system:
+      `You coach a designer who reached a UI component through a series of prompts. ${READER} ${DATA_RULE} ` +
+      'Work only from the prompts and the final code.',
+    user: `Prompts, in order:\n${prompts.map((p, i) => `${i + 1}. <prompt>${p}</prompt>`).join('\n')}\n\nFinal code:\n<code>\n${number(code)}\n</code>\n\n` +
+      'For each prompt after the first, say in one sentence what it changed, and in one sentence what the first prompt could have said instead so this follow-up was not needed (index is the prompt number). ' +
+      'List up to 5 casual phrases from the prompts with the precise term that says it better. ' +
+      'Then write one combined prompt that would get the final component in a single try, using precise terms.',
+    schema,
+    effort: 'medium',
+  });
+}
+
 /** Prompt practice comparison: works only from the two versions of code and the prompt. */
 export async function compare({ original, yours, prompt }) {
   const schema = obj({

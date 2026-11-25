@@ -24,6 +24,8 @@ export const api = {
   issues: (code, known) => post('issues', { code, known }),
   generate: (prompt) => post('generate', { prompt }),
   compare: (original, yours, prompt) => post('compare', { original, yours, prompt }),
+  revise: (code, instruction, history) => post('revise', { code, instruction, history }),
+  review: (prompts, code) => post('review', { prompts, code }),
   feedback: (payload) => post('feedback', payload),
 };
 

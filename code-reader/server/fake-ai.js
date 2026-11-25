@@ -60,3 +60,20 @@ export async function compare({ yours, prompt }) {
     sharper: 'Test mode: A 280px white card with 24px padding and a 12px radius. On hover, lift it 6px with translateY and grow the shadow, over 240ms with ease-out.',
   };
 }
+
+export async function revise({ code, instruction }) {
+  let out = code;
+  if (/slow|smooth/i.test(instruction)) out = out.replace(/(\d+)ms/, (m, n) => `${Number(n) * 2}ms`);
+  if (/round/i.test(instruction)) out = out.replace(/border-radius: \d+px/, 'border-radius: 16px');
+  if (/blue/i.test(instruction)) out = out.replace(/background: #fff;/, 'background: #EAF1FE;');
+  if (out === code) out = out.replace('<p>', '<p>Test mode revised. ');
+  return { kind: 'component', message: '', code: out };
+}
+
+export async function reviewSeries({ prompts }) {
+  return {
+    steps: prompts.slice(1).map((p, i) => ({ index: i + 2, changed: `Test mode: prompt ${i + 2} changed one detail.`, upfront: 'Test mode: name this detail in the first prompt.' })),
+    terms: [{ casual: 'make it smooth', precise: 'transition 300ms ease-out' }],
+    combined: 'Test mode: one prompt that names the size, spacing, color and motion up front.',
+  };
+}

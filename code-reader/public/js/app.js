@@ -5,6 +5,7 @@ import { detectDialect, DIALECTS, OVERRIDABLE, lineCount } from './detect.js';
 import { api } from './api.js';
 import { mountWorkspace } from './workspace.js';
 import { mountPractice } from './practice.js';
+import { mountBuild } from './build.js';
 
 const AI_PROMPT = `Write one UI component as a single HTML file: semantic HTML, one <style> block, and plain JavaScript only if it needs motion CSS cannot do (or GSAP 3 from https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js). No frameworks, no Tailwind, no other libraries, no external images or fonts. Keep it under 100 lines. Start with the <style> block, then the markup, then any script. The component is: `;
 
@@ -47,6 +48,7 @@ async function init() {
   buildPaste();
   app.workspace = mountWorkspace(app);
   app.practice = mountPractice(app);
+  app.build = mountBuild(app);
   document.addEventListener('keydown', onKey);
   go('paste');
 }
@@ -87,6 +89,7 @@ function newComponent() {
   closePopover();
   app.workspace.reset();
   app.practice.reset();
+  app.build.reset();
   paste.editor.lock(false);
   go('paste');
   paste.editor.focus();
@@ -313,19 +316,16 @@ async function writeIt() {
     paste.inline.replaceChildren(message('That did not work.', 'Claude wrote code this tool cannot read. This attempt was not counted.', h('button', { class: 'btn btn-text', type: 'button', onclick: writeIt }, 'Try again')));
     return;
   }
-  app.state.source = code;
-  app.state.dialect = dialect;
-  app.state.dialectManual = false;
-  app.state.originalPrompt = prompt;
-  await startReading(code, { dialect, prompt, origin: 'describe' });
+  // Show the result first. The learner refines it with follow-up prompts, and the code opens when they are done.
+  app.build.open({ prompt, code });
 }
 
 /** Hand-off: the editor card travels into the walkthrough column and becomes step 1's code. */
-export async function startReading(source, { dialect, prompt, origin }) {
+export async function startReading(source, { dialect, prompt, origin, history }) {
   const from = paste.editor.el.getBoundingClientRect();
   const ghost = !reducedMotion() && app.state.screen === 'paste' ? paste.editor.el.cloneNode(true) : null;
   go('workspace');
-  app.workspace.load({ source, dialect, prompt, origin, entering: true });
+  app.workspace.load({ source, dialect, prompt, origin, history, entering: true });
   if (!ghost) return;
   const target = document.querySelector('.walk-col .code') || document.querySelector('.walk-col .step');
   if (!target) return;
@@ -351,6 +351,7 @@ function onKey(e) {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     if (app.state.screen === 'paste') { e.preventDefault(); submit(); }
     else if (app.state.screen === 'practice') { e.preventDefault(); app.practice.generate(); }
+    else if (app.state.screen === 'build') { e.preventDefault(); app.build.send(); }
     return;
   }
   if (e.key === 'Escape') {

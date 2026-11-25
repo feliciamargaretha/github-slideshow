@@ -24,10 +24,27 @@ check('R16: several components gets "One component at a time."', /One component 
 // R16: one component
 await page.locator('.paste-editor textarea').fill('a card that lifts smoothly on hover');
 await page.click('.paste-actions .btn-primary');
+await page.waitForSelector('[data-screen="build"]:not([hidden]) .build-input');
+check('Shape it: shows the result first, not the code', await page.locator('[data-screen="build"] iframe.preview-iframe').count() === 1 && await page.locator('[data-screen="build"] .code').count() === 0);
+await page.locator('.build-input').fill('make the corners rounder');
+await page.keyboard.press('Enter');
+await page.waitForSelector('.turn.result >> nth=1');
+if (SHOTS) await page.screenshot({ path: SHOTS + '/build.png' });
+check('Shape it: a follow-up prompt makes version 2', /Version 2 of 2/.test(await page.locator('.build-preview .preview-head').innerText()));
+await page.click('.turn.result >> nth=0 >> button');
+check('Shape it: an earlier version can be shown again', /Version 1 of 2/.test(await page.locator('.build-preview .preview-head').innerText()));
+await page.click('.turn.result >> nth=1 >> button');
+await page.click('.build-chat-head .btn-primary');
 await page.waitForSelector('[data-screen="workspace"]:not([hidden]) #step-title');
-await page.waitForTimeout(800);
-check('R16: generated code opens in the breakdown', true);
-check('R16: prompt saved for practice', await page.evaluate(() => window.__codeReader.workspace.state.prompt) === 'a card that lifts smoothly on hover');
+await page.waitForTimeout(600);
+check('Shape it: I am done opens the breakdown with the last version', /border-radius: 16px/.test(await page.evaluate(() => window.__codeReader.workspace.state.model.source)));
+check('R16: prompt series saved for practice', JSON.stringify(await page.evaluate(() => window.__codeReader.workspace.state.history)) === JSON.stringify(['a card that lifts smoothly on hover', 'make the corners rounder']));
+await page.click('.progress .seg-btn.practice');
+await page.waitForSelector('#practice-prompt');
+check('Practice: asks to rewrite the first prompt for a one-try result', /in one try/.test(await page.locator('.practice-main').innerText()));
+await page.click('.series-review >> xpath=.. >> button:has-text("Review my prompts")');
+await page.waitForSelector('.series-steps');
+check('Practice: reviewing the series shows what each prompt changed and one combined prompt', await page.locator('.series-steps li').count() === 1 && /One prompt that gets there/.test(await page.locator('.practice-rail').innerText()));
 
 // AI rows: paste code with a property the dictionary lacks
 await page.goto(BASE);
@@ -42,6 +59,8 @@ await page.goto(BASE);
 await page.click('.paste-switch button:has-text("Describe it")');
 await page.locator('.paste-editor textarea').fill('a card that lifts on hover');
 await page.click('.paste-actions .btn-primary');
+await page.waitForSelector('[data-screen="build"]:not([hidden]) .build-input');
+await page.click('.build-chat-head .btn-primary');
 await page.waitForSelector('[data-screen="workspace"]:not([hidden]) #step-title');
 await page.click('.progress .seg-btn.practice');
 await page.waitForSelector('#practice-prompt');

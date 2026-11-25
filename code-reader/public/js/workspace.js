@@ -83,7 +83,8 @@ export function mountWorkspace(app) {
   const motion = mountMotionPanel(app, { host: motionHost, preview, getModel: () => S.model, getTweaks: () => S.tweaks, onTweak: (...a) => onTweak(...a), rerender: () => renderPreview() });
 
   // ---- Loading ----------------------------------------------------------------
-  function load({ source, dialect, prompt, origin, entering }) {
+  function load({ source, dialect, prompt, origin, history, entering }) {
+    S.history = history || (prompt ? [prompt] : []);
     S.model = buildModel(source, dialect);
     S.match = makeMatcher(S.model);
     S.steps = buildSteps(S.model, S.match);
@@ -677,7 +678,7 @@ export function mountWorkspace(app) {
       if (DIALECTS[d].unsupported) { apply.textContent = 'This code is not supported'; setTimeout(() => (apply.textContent = 'Read it again'), 1600); return; }
       closeDrawer(true);
       app.state.source = v;
-      load({ source: v, dialect: d, prompt: S.prompt, origin: S.origin });
+      load({ source: v, dialect: d, prompt: S.prompt, origin: S.origin, history: S.history });
     } }, 'Read it again');
     drawer.replaceChildren(
       h('div', { class: 'drawer-head' }, h('span', { class: 't-strong' }, 'Edit source'), h('button', { class: 'btn-icon', type: 'button', 'aria-label': 'Close', onclick: () => closeDrawer() }, icon('close'))),
@@ -734,7 +735,7 @@ export function mountWorkspace(app) {
       const k = termKey(m[1], TERMS);
       if (k && !seen.has(k)) { seen.add(k); terms.push(k); }
     }
-    app.practice.open({ source: S.model.source, prompt: S.prompt, origin: S.origin, terms, known, lost: Object.keys(signals).filter((c) => signals[c] === 'lost'), dialect: S.model.dialect });
+    app.practice.open({ source: S.model.source, prompt: S.prompt, history: S.history, origin: S.origin, terms, known, lost: Object.keys(signals).filter((c) => signals[c] === 'lost'), dialect: S.model.dialect });
     go('practice');
   }
 

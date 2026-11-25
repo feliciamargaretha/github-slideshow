@@ -31,7 +31,9 @@ export function mountPractice(app) {
   function renderWrite() {
     const ctx = P.ctx;
     const promptFirst = !!ctx.prompt;
-    promptBox = h('textarea', { class: 'prompt', id: 'practice-prompt', 'aria-label': promptFirst ? 'Rewrite this prompt' : 'Write the prompt that would build this code' });
+    const series = (ctx.history || []).length > 1;
+    const label = series ? 'Rewrite your first prompt so it gets this result in one try' : promptFirst ? 'Rewrite this prompt' : 'Write the prompt that would build this code';
+    promptBox = h('textarea', { class: 'prompt', id: 'practice-prompt', 'aria-label': label });
     promptBox.value = P.draft ?? ctx.prompt ?? '';
     promptBox.addEventListener('input', () => { P.draft = promptBox.value; genBtn.disabled = !canGenerate(); });
 
@@ -50,7 +52,7 @@ export function mountPractice(app) {
     const main = h('div', { class: 'practice-main' },
       h('div', {}, h('button', { class: 'btn btn-text', type: 'button', onclick: () => go('workspace') }, icon('arrowLeft'), 'Back to the walkthrough')),
       h('h1', { class: 't-title' }, 'Practice the prompt'),
-      h('label', { for: 'practice-prompt', class: 't-strong' }, promptFirst ? 'Rewrite this prompt' : 'Write the prompt that would build this code'),
+      h('label', { for: 'practice-prompt', class: 't-strong' }, label),
       promptBox,
       ctx.terms.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Terms from this breakdown. Click one to add it.'), chips) : null,
       h('div', { class: 'gen-row' }, genBtn, attemptsCap),
@@ -59,6 +61,7 @@ export function mountPractice(app) {
     else if (DIALECTS[ctx.dialect]?.preview === false) inlineMsg.replaceChildren(message('No preview for this code.', 'You can still write a prompt; the original side shows no preview.', null));
 
     const rail = h('aside', { class: 'practice-rail', 'aria-label': 'Hints' },
+      series ? seriesPanel(ctx) : null,
       h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, 'What makes a sharp UI prompt'),
       h('ul', { class: 'hint-list' },
         h('li', {}, 'Name the layout: a row, a column, or a grid with a number of columns.'),
@@ -70,6 +73,34 @@ export function mountPractice(app) {
     root.replaceChildren(h('div', { class: 'practice-write' }, main, rail));
     renderTopbar();
     setTimeout(() => promptBox.focus(), 50);
+  }
+
+  // The series of prompts that led to this component, and what Claude learns from it.
+  function seriesPanel(ctx) {
+    const out = h('div', { class: 'series-review', 'aria-live': 'polite' });
+    const list = h('ol', { class: 'series-list' }, ...ctx.history.map((p) => h('li', {}, p)));
+    const btn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: async () => {
+      btn.disabled = true;
+      btn.replaceChildren(icon('spinner'), 'Reviewing');
+      out.replaceChildren(...[0, 1, 2].map(() => h('span', { class: 'placeholder-line', 'aria-hidden': 'true' })));
+      const r = await api.review(ctx.history, ctx.source);
+      btn.replaceChildren('Review my prompts');
+      btn.disabled = false;
+      if (!r.ok) { out.replaceChildren(message('No review yet.', r.status === 503 ? 'Claude is not available right now.' : 'That did not work. Try again.', null)); return; }
+      const d = r.data;
+      const steps = (d.steps || []).map((s) => h('li', {}, h('div', { class: 't-strong' }, `Prompt ${s.index}`), h('div', {}, s.changed), h('div', { class: 'ink-2' }, 'Could have said up front: ', s.upfront)));
+      const terms = (d.terms || []).map((t) => h('div', { class: 'pair-row' }, h('span', {}, `“${t.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, t.precise)));
+      const copy = h('button', { class: 'btn btn-text', type: 'button', onclick: () => copyWithFeedback(copy, d.combined, () => [icon('copy'), 'Copy']) }, icon('copy'), 'Copy');
+      const use = h('button', { class: 'btn btn-text', type: 'button', onclick: () => { promptBox.value = d.combined; P.draft = d.combined; genBtn.disabled = !canGenerate(); promptBox.focus(); } }, 'Use as my prompt');
+      out.replaceChildren(
+        steps.length ? h('ol', { class: 'series-steps' }, ...steps) : null,
+        terms.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Say it more precisely'), ...terms) : null,
+        d.combined ? h('div', { class: 'sharper' }, h('span', { class: 't-strong' }, 'One prompt that gets there'), h('p', {}, d.combined), h('div', { style: { display: 'flex', gap: '8px' } }, copy, use)) : null,
+        h('span', { class: 't-caption ink-2' }, 'Written by AI from your prompts and the code'));
+    } }, 'Review my prompts');
+    return h('div', { style: { display: 'grid', gap: '16px' } },
+      h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, `Your ${ctx.history.length} prompts`),
+      list, h('div', {}, btn), out);
   }
 
   function canGenerate() {

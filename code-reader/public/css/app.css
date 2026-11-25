@@ -446,3 +446,22 @@ button.tag:hover:not(.filled) { border-color: var(--ink); color: var(--ink); }
 .stack-notes p { margin: 0; }
 .stack-note { color: var(--ink-2); }
 .stack-note:hover, .stack-note.hot { color: var(--ink); }
+
+/* Shape it: result on the left, the prompt conversation on the right */
+.build { display: grid; grid-template-columns: minmax(480px, 1fr) minmax(420px, 560px); height: 100%; }
+.build-preview { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4); min-height: 0; border-right: 1px solid var(--line); }
+.build-chat { display: flex; flex-direction: column; min-height: 0; }
+.build-chat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); border-bottom: 1px solid var(--line); }
+.build-log { flex: 1; min-height: 0; overflow: auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.turn { display: grid; gap: var(--space-1); }
+.turn p { margin: 0; white-space: pre-wrap; }
+.turn.you { justify-self: end; max-width: 85%; border: 1px solid var(--line-strong); border-radius: var(--radius-m); padding: var(--space-2) var(--space-3); }
+.turn.result { display: flex; align-items: center; gap: var(--space-2); }
+.build-bar { display: flex; gap: var(--space-2); align-items: flex-end; padding: var(--space-3) var(--space-4) var(--space-2); border-top: 1px solid var(--line); }
+.build-input { flex: 1; min-height: 40px; max-height: 160px; resize: vertical; border: 1px solid var(--line-strong); border-radius: var(--radius-m); padding: 8px 12px; line-height: 24px; }
+.build-input:focus { border-color: var(--ink); outline: 2px solid var(--ink); outline-offset: 2px; }
+.series-list, .series-steps { margin: 0; padding-left: 20px; display: grid; gap: var(--space-2); }
+.series-steps li { display: grid; gap: 2px; }
+.series-review { display: grid; gap: var(--space-3); }
+.pair-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.turn.pending { display: flex; align-items: center; gap: var(--space-2); }

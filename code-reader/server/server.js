@@ -83,6 +83,16 @@ const ROUTES = {
     clean: (b) => ({ prompt: str(b.prompt, 2000) }),
     run: ai.generate,
   },
+  revise: {
+    kind: 'generate',
+    clean: (b) => ({ code: str(b.code, config.maxChars), instruction: str(b.instruction, 2000), history: (Array.isArray(b.history) ? b.history : []).slice(-12).map((p) => str(p, 2000)) }),
+    run: ai.revise,
+  },
+  review: {
+    kind: 'review',
+    clean: (b) => ({ prompts: (Array.isArray(b.prompts) ? b.prompts : []).slice(0, 20).map((p) => str(p, 2000)), code: str(b.code, config.maxChars) }),
+    run: ai.reviewSeries,
+  },
   compare: {
     kind: 'compare',
     clean: (b) => ({ original: str(b.original, config.maxChars), yours: str(b.yours, config.maxChars), prompt: str(b.prompt, 2000) }),

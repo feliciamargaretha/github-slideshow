@@ -126,7 +126,10 @@ check('R6: Reset restores the original', reset === before, reset);
 
 // ---- R8: CSS motion panel ---------------------------------------------------------------------------
 await pasteCode(fs.readFileSync(new URL('../../samples/hover-card.html', import.meta.url), 'utf8'));
-check('R8: motion panel opens for CSS motion', await page.locator('.motion-panel.open').count() === 1);
+const toMotion = async () => { await page.click('.tab[data-panel="motion"]'); await page.waitForTimeout(400); };
+check('Motion panel is not docked under the preview', await page.locator('.preview-col .motion-panel').count() === 0);
+await toMotion();
+check('R8: motion panel shows in the Motion step', await page.locator('.step-area .motion-panel').count() === 1);
 const cells = await page.locator('.motion-cells .cell-label').allTextContents();
 check('R8: four cells', JSON.stringify(cells) === JSON.stringify(['Trigger', 'Changes', 'Timing', 'Easing']), cells.join(','));
 await page.click('.motion-controls .btn-primary');
@@ -144,10 +147,12 @@ check('R8: speed control has 1x 0.5x 0.25x 0.1x', (await page.locator('.motion-c
 
 // ---- R9: GSAP ------------------------------------------------------------------------------------------
 await pasteCode(fs.readFileSync(new URL('../../samples/gsap-hero.html', import.meta.url), 'utf8'));
+await toMotion();
 const gsapLoaded = await page.frameLocator('iframe.preview-iframe').locator('body').evaluate(() => !!window.gsap).catch(() => false);
 check('R9: GSAP loads from the pinned CDN build in the sandbox', gsapLoaded);
 check('R9: GSAP shows Replay and speed, no scrub', (await page.locator('.motion-controls .btn-primary').count()) === 1 && (await page.locator('.scrub').count()) === 0);
 await pasteCode(fs.readFileSync(new URL('../../samples/toggle-menu.html', import.meta.url), 'utf8'));
+await toMotion();
 const trig = await page.locator('.motion-head .tag').textContent();
 check('R9: class toggled by JS reads as the click trigger', /click of \.toggle/.test(trig), trig);
 
@@ -160,6 +165,7 @@ check('Try it: submitting a form runs its submit handler', (await page.frameLoca
 
 // ---- R10: React + Framer explain-only ---------------------------------------------------------------------
 await pasteCode(fs.readFileSync(new URL('../../samples/framer-button.jsx', import.meta.url), 'utf8'));
+await toMotion();
 check('R10: banner explains text-only mode', /Running React is not supported here yet/.test(await page.locator('.motion-panel').innerText()));
 check('R10: preview shows the empty state', /No preview for React yet/.test(await page.locator('.frame-empty').innerText()));
 

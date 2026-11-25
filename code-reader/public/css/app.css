@@ -429,3 +429,12 @@ button.tag:hover:not(.filled) { border-color: var(--ink); color: var(--ink); }
 .diff-line.add { background: var(--surface-3); }
 .diff-line.del { background: repeating-linear-gradient(135deg, var(--surface-3) 0 1px, transparent 1px 6px); color: var(--ink-2); }
 .diff-line.hot { outline: 1px solid var(--ink); outline-offset: -1px; }
+
+/* Motion panel inside a Motion step of the walkthrough */
+.motion-panel.in-step { height: auto; margin: 0; border: 1px solid var(--line); border-radius: var(--radius-m); overflow: visible; }
+.motion-panel.in-step .motion-inner { height: auto; grid-template-rows: 24px auto 40px; }
+.motion-panel.in-step .motion-cells { min-height: 120px; }
+.motion-panel.in-step .cell { animation: fadeUp var(--dur-3) var(--ease) forwards; }
+.motion-panel.in-step .cell:nth-child(2) { animation-delay: 40ms; }
+.motion-panel.in-step .cell:nth-child(3) { animation-delay: 80ms; }
+.motion-panel.in-step .cell:nth-child(4) { animation-delay: 120ms; }

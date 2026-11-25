@@ -47,7 +47,9 @@ export function mountWorkspace(app) {
   }, { label: 'Preview mode' });
   const previewHead = h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Preview'), modeSeg), h('div', { class: 'left' }, hint, resetBtn));
   const motionHost = h('div', { class: 'motion-panel', 'aria-label': 'Motion' });
-  const previewCol = h('section', { class: 'col preview-col', 'aria-label': 'Preview' }, previewHead, h('div', { class: 'stage' }, frameWrap), motionHost);
+  motionHost.classList.add('in-step');
+  // The motion panel lives in the Motion steps of the walkthrough, not under the preview.
+  const previewCol = h('section', { class: 'col preview-col', 'aria-label': 'Preview' }, previewHead, h('div', { class: 'stage' }, frameWrap));
 
   const tabsEl = h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Panels' });
   const underline = h('span', { class: 'tab-underline', 'aria-hidden': 'true' });
@@ -276,6 +278,9 @@ export function mountWorkspace(app) {
     card.append(h('h2', { class: 't-title', id: 'step-title' }, s.title));
     // Issue blocks sit above the explanation
     for (const is of s.issues) card.append(issueBlock(is));
+    // Motion steps carry the motion panel, above the code: trigger, changes, timing, easing and the controls.
+    if (s.panel === 'motion' && S.model.motions.length) card.append(motionHost);
+    else motionHost.remove();
     // 3/4. Explanation and code by view mode
     const highlight = new Set(s.lines);
     const flagged = new Set(s.issues.flatMap((i) => i.lines));

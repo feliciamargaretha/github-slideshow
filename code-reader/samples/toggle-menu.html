@@ -1,0 +1,47 @@
+<style>
+  body {
+    margin: 0;
+    padding: 32px;
+    font-family: system-ui, sans-serif;
+  }
+  .toggle {
+    padding: 8px 16px;
+    border: 1px solid #cfcfcf;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .menu {
+    margin-top: 8px;
+    width: 200px;
+    padding: 8px 0;
+    list-style: none;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
+  .menu.is-open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .menu li {
+    padding: 8px 16px;
+  }
+</style>
+
+<button class="toggle">Menu</button>
+<ul class="menu">
+  <li>Profile</li>
+  <li>Settings</li>
+  <li>Sign out</li>
+</ul>
+
+<script>
+  const toggle = document.querySelector('.toggle');
+  const menu = document.querySelector('.menu');
+  toggle.addEventListener('click', () => {
+    menu.classList.toggle('is-open');
+  });
+</script>

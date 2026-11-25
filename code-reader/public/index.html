@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code Reader</title>
+  <meta name="description" content="Paste AI-generated UI code and read it step by step, in plain English.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='14' height='14' rx='2' fill='%230A0A0A'/%3E%3Cpath d='M6 5.5L3.5 8 6 10.5M10 5.5L12.5 8 10 10.5' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <script type="module" src="/js/app.js"></script>
+</head>
+<body>
+  <div class="narrow-message"><p class="t-body">Open this on a desktop screen</p></div>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="1" width="14" height="14" rx="2" fill="#0A0A0A"/><path d="M6 5.5L3.5 8 6 10.5M10 5.5L12.5 8 10 10.5" stroke="#fff" stroke-width="1.5" fill="none"/></svg>
+        Code Reader
+      </div>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </header>
+    <div class="banner" id="banner" role="status" hidden></div>
+    <main class="body" id="body">
+      <section class="screen paste" data-screen="paste" aria-label="Paste and prompt"></section>
+      <section class="screen" data-screen="workspace" aria-label="Workspace" hidden></section>
+      <section class="screen practice" data-screen="practice" aria-label="Prompt practice" hidden></section>
+    </main>
+  </div>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+</body>
+</html>

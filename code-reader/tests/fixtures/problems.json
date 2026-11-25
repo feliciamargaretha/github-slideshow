@@ -1,0 +1,68 @@
+[
+ {
+  "name": "gap-without-flex",
+  "code": "<style>\n  .row {\n    gap: 16px;\n  }\n  .item {\n    padding: 8px;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 3,
+  "kind": "no-effect"
+ },
+ {
+  "name": "typo-property",
+  "code": "<style>\n  .row {\n    display: flex;\n  }\n  .item {\n    colr: #2563eb;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 6,
+  "kind": "unknown-prop"
+ },
+ {
+  "name": "transition-on-display",
+  "code": "<style>\n  .item {\n    opacity: 1;\n    transition: display 300ms ease;\n  }\n  .item:hover {\n    opacity: 0.5;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 4,
+  "kind": "cant-animate"
+ },
+ {
+  "name": "selector-matches-nothing",
+  "code": "<style>\n  .row {\n    display: flex;\n  }\n  .itme {\n    padding: 8px;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 5,
+  "kind": "no-match"
+ },
+ {
+  "name": "overridden-later",
+  "code": "<style>\n  .item {\n    color: #2563eb;\n  }\n  .row .item {\n    color: #0a0a0a;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 3,
+  "kind": "overridden"
+ },
+ {
+  "name": "hover-only-transition",
+  "code": "<style>\n  .item {\n    background: #fff;\n  }\n  .item:hover {\n    background: #f0f0f0;\n    transition: background 200ms ease;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 7,
+  "kind": "hover-only-transition"
+ },
+ {
+  "name": "missing-keyframes",
+  "code": "<style>\n  .item {\n    animation: fade-in 400ms ease-out;\n  }\n  @keyframes fadeIn {\n    from { opacity: 0; }\n    to { opacity: 1; }\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 3,
+  "kind": "missing-keyframes"
+ },
+ {
+  "name": "width-on-inline",
+  "code": "<style>\n  .tag {\n    width: 120px;\n    background: #f0f0f0;\n  }\n</style>\n<p>Status: <span class=\"tag\">Active</span></p>\n",
+  "line": 3,
+  "kind": "no-effect"
+ },
+ {
+  "name": "offset-on-static",
+  "code": "<style>\n  .badge {\n    top: 8px;\n    right: 8px;\n    background: #b91c1c;\n  }\n</style>\n<div class=\"card\">\n  <span class=\"badge\">New</span>\n</div>\n",
+  "line": 3,
+  "kind": "no-effect"
+ },
+ {
+  "name": "invalid-value",
+  "code": "<style>\n  .row {\n    display: flex;\n  }\n  .item {\n    padding: 16 px;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 6,
+  "kind": "bad-value"
+ },
+ {
+  "name": "duplicate-in-rule",
+  "code": "<style>\n  .item {\n    margin: 8px;\n    color: #525252;\n    margin: 16px;\n  }\n</style>\n<div class=\"row\">\n  <div class=\"item\">One</div>\n  <div class=\"item\">Two</div>\n</div>\n",
+  "line": 3,
+  "kind": "dup"
+ }
+]

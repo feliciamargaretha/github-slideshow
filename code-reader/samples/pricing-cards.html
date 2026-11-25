@@ -1,0 +1,60 @@
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f7f7f7;
+    color: #0a0a0a;
+  }
+  .pricing {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+  .card {
+    width: 240px;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+  }
+  .card h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+  .price {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 16px;
+  }
+  .card button {
+    width: 100%;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 4px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+  }
+</style>
+
+<section class="pricing">
+  <article class="card">
+    <h2>Starter</h2>
+    <p class="price">$9</p>
+    <button>Choose Starter</button>
+  </article>
+  <article class="card">
+    <h2>Pro</h2>
+    <p class="price">$29</p>
+    <button>Choose Pro</button>
+  </article>
+  <article class="card">
+    <h2>Team</h2>
+    <p class="price">$79</p>
+    <button>Choose Team</button>
+  </article>
+</section>

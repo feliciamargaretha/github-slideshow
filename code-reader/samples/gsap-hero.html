@@ -1,0 +1,52 @@
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #0a0a0a;
+    color: #fff;
+  }
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: 48px;
+  }
+  .hero p {
+    margin: 0;
+    color: #cfcfcf;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+  }
+  .badge {
+    padding: 4px 12px;
+    border: 1px solid #525252;
+    border-radius: 999px;
+    font-size: 13px;
+  }
+</style>
+
+<section class="hero">
+  <h1 class="title">Ship it faster</h1>
+  <p class="subtitle">Motion that explains itself.</p>
+  <div class="badges">
+    <span class="badge">Fast</span>
+    <span class="badge">Clear</span>
+    <span class="badge">Calm</span>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+  gsap.from(".title", { y: 40, opacity: 0, duration: 0.8, ease: "power3.out" });
+  gsap.from(".subtitle", { y: 20, opacity: 0, duration: 0.6, delay: 0.2 });
+  gsap.from(".badge", { scale: 0.8, opacity: 0, duration: 0.4, delay: 0.4, stagger: 0.1, ease: "back.out" });
+</script>

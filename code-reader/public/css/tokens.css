@@ -1,0 +1,31 @@
+/* Design tokens. Build from names, not hex codes. Change the five category
+   solids and tints here and nothing else moves. */
+
+/* Saans and Saans Mono are used when installed. To self-host them once the
+   license is in place, add @font-face rules here pointing at /fonts/*.woff2.
+   Until then the stack falls back to Inter and JetBrains Mono. */
+
+:root {
+  --ink: #0A0A0A; --ink-2: #525252; --ink-3: #737373;
+  --line: #E5E5E5; --line-strong: #CFCFCF;
+  --surface: #FFFFFF; --surface-2: #F7F7F7; --surface-3: #F0F0F0;
+  --structure: #2563EB; --structure-tint: #EAF1FE;
+  --layout: #15803D; --layout-tint: #E8F5EC;
+  --style: #7C3AED; --style-tint: #F1EBFE;
+  --motion: #C2410C; --motion-tint: #FDEEE6;
+  --issue: #B91C1C; --issue-tint: #FDECEC;
+  --space-1: 4px; --space-2: 8px; --space-3: 16px; --space-4: 24px;
+  --space-5: 32px; --space-6: 48px; --space-7: 64px;
+  --radius-s: 2px; --radius-m: 4px;
+  --dur-1: 120ms; --dur-2: 200ms; --dur-3: 320ms; --dur-4: 480ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --ink-hover: #262626;
+  --control: 40px; --tab-row: 48px; --top-bar: 56px; --footer-bar: 64px;
+  --font: 'Saans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'Saans Mono', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-2: 120ms; --dur-3: 120ms; --dur-4: 120ms; }
+}

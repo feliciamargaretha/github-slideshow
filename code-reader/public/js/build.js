@@ -43,11 +43,11 @@ export function mountBuild(app) {
     doneBtn = h('button', { class: 'btn btn-primary', type: 'button', onclick: () => done() }, 'I’m done');
     const right = h('section', { class: 'build-chat', 'aria-label': 'Your prompts' },
       h('div', { class: 'build-chat-head' },
-        h('div', {}, h('h1', { class: 't-title' }, 'Shape it'), h('p', { class: 'ink-2', style: { margin: '4px 0 0' } }, 'Keep prompting until it looks right. The code opens when you are done.')),
+        h('div', {}, h('h1', { class: 't-title' }, 'Shape it'), h('p', { class: 'ink-2', style: { margin: '2px 0 0' } }, 'Keep prompting until it looks right. The code opens when you are done.')),
         doneBtn),
       log,
       h('div', { class: 'build-bar' }, box, sendBtn),
-      h('div', { class: 't-caption ink-3', style: { padding: '0 24px 16px' } }, 'Enter sends. Shift Enter adds a line.'));
+      h('div', { class: 't-caption ink-3 build-hint' }, 'Enter sends. Shift Enter adds a line.'));
     root.replaceChildren(h('div', { class: 'build' }, left, right));
     renderLog();
   }

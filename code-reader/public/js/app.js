@@ -140,7 +140,7 @@ function buildPaste() {
   col.append(paste.inline);
 
   // Original prompt (paste mode only)
-  paste.promptArea = h('textarea', { rows: '3', class: 'mono', placeholder: 'The prompt you gave your AI', 'aria-label': 'Your original prompt', style: { width: '100%', border: '1px solid var(--line-strong)', borderRadius: '4px', padding: '8px 16px', font: '400 16px/24px var(--font)', resize: 'vertical' } });
+  paste.promptArea = h('textarea', { rows: '3', class: 'mono', placeholder: 'The prompt you gave your AI', 'aria-label': 'Your original prompt', style: { width: '100%', borderRadius: '4px', padding: '8px 16px', font: '400 16px/24px var(--font)', resize: 'vertical' } });
   paste.promptArea.hidden = true;
   paste.promptToggle = h('button', { class: 'btn btn-text', type: 'button', 'aria-expanded': 'false', onclick: () => {
     const open = paste.promptArea.hidden;

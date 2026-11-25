@@ -507,3 +507,21 @@ button.tag:hover:not(.filled) { border-color: var(--ink); color: var(--ink); }
 .demo-box.text { background: none; border: 0; color: var(--ink); font: 400 14px/14px var(--font); place-items: center start; white-space: nowrap; }
 .demo-pointer { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 12px solid var(--ink); rotate: -30deg; transition: transform 600ms var(--ease); }
 .term-pop .demo-wrap { width: 288px; }
+
+/* Text fields: no focus ring, just a slightly darker border */
+:root { --line-focus: #A3A3A3; }
+textarea:focus-visible, input[type="text"]:focus-visible, input:not([type]):focus-visible, [contenteditable]:focus-visible { outline: none; }
+.editor:focus-within { border-color: var(--line-focus); outline: none; }
+.build-input:focus, .practice textarea.prompt:focus, .prompt-row textarea:focus { border-color: var(--line-focus); outline: none; }
+
+/* Shape it: smaller result, no divider; the conversation fades in under it */
+.build-preview { flex: 0 0 40%; border-bottom: 0; padding-bottom: 0; }
+.build-chat-head { padding-top: var(--space-4); }
+.build-log { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 32px); mask-image: linear-gradient(to bottom, transparent 0, #000 32px); padding-top: var(--space-4); }
+.build-bar { padding: var(--space-4) var(--space-4) var(--space-2); }
+.build-hint { padding-bottom: var(--space-5); }
+.prompt-row textarea:not(:focus) { border: 1px solid var(--line-strong); }
+.prompt-row textarea { border: 1px solid var(--line-focus); }
+.build .stage { border-radius: var(--radius-m) var(--radius-m) 0 0; }
+.build-preview::after { content: ''; flex: none; height: 40px; margin-top: calc(var(--space-3) * -1); background: linear-gradient(var(--surface-2), var(--surface)); }
+.build-chat-head { padding-top: var(--space-2); }

@@ -181,12 +181,19 @@ function bridgeMain() {
 
   // ---- clicks and hover from the preview -----------------------------------
   const tagged = (t) => (t && t.closest ? t.closest('[data-cr]') : null);
+  // Two modes: "try" lets clicks, typing and submit reach the component; "inspect"
+  // stops the click at the element and opens its code instead.
+  let inspect = false;
   document.addEventListener('click', (e) => {
+    if (e.target.closest && e.target.closest('a[href]')) e.preventDefault();
+    if (!inspect) return;
     const el = tagged(e.target);
     if (!el) return;
-    if (e.target.closest('a[href]')) e.preventDefault();
+    e.preventDefault();
+    e.stopPropagation();
     post({ type: 'click', id: Number(el.getAttribute('data-cr')) });
   }, true);
+  // The form's own submit handlers still run; only the page navigation is stopped.
   document.addEventListener('submit', (e) => e.preventDefault(), true);
   // Keyboard shortcuts keep working after a click moved focus into the preview.
   document.addEventListener('keydown', (e) => {
@@ -198,6 +205,7 @@ function bridgeMain() {
   }, true);
   let lastHover = null;
   document.addEventListener('mousemove', (e) => {
+    if (!inspect) { if (lastHover !== null) { lastHover = null; drawHover(null); } return; }
     const el = tagged(e.target);
     const id = el ? Number(el.getAttribute('data-cr')) : null;
     if (id === lastHover) return;
@@ -364,9 +372,13 @@ function bridgeMain() {
     else if (m.type === 'trigger') {
       targetsOf(m.selector).slice(0, 1).forEach((el) => {
         if (m.event === 'click') el.click();
-        else el.dispatchEvent(new Event(m.event, { bubbles: true }));
+        else if (m.event === 'submit') {
+          const form = el.tagName === 'FORM' ? el : el.closest('form');
+          if (form && form.requestSubmit) form.requestSubmit(); else el.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        } else el.dispatchEvent(new Event(m.event, { bubbles: true }));
       });
     }
+    else if (m.type === 'mode') { inspect = !!m.inspect; lastHover = null; drawHover(null); }
   });
 
   window.addEventListener('error', () => {}, true);

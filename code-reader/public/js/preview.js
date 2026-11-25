@@ -62,7 +62,7 @@ export class Preview {
     this.queue = [];
     const f = document.createElement('iframe');
     f.className = 'preview-iframe';
-    f.setAttribute('sandbox', 'allow-scripts');
+    f.setAttribute('sandbox', 'allow-scripts allow-forms');
     f.setAttribute('referrerpolicy', 'no-referrer');
     f.setAttribute('title', title);
     f.srcdoc = buildSrcdoc(instrumented);

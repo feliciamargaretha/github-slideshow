@@ -36,7 +36,16 @@ export function mountWorkspace(app) {
   frameWrap.append(frameEmpty);
   const resetBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: true, onclick: () => resetTweaks() }, icon('reset'), 'Reset');
   tooltip(resetBtn, 'Return every value you changed');
-  const previewHead = h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Preview'), h('span', { class: 't-caption ink-3', id: 'preview-hint' }, 'The outline marks what this step is about. Click any part to see its code.')), resetBtn);
+  let inspectMode = store.get('inspect', false);
+  const hintText = () => (inspectMode ? 'Click any part to see its code.' : '');
+  const hint = h('span', { class: 't-caption ink-3', id: 'preview-hint' }, hintText());
+  const modeSeg = segmented([{ value: 'try', label: 'Try it' }, { value: 'inspect', label: 'Inspect' }], inspectMode ? 'inspect' : 'try', (v) => {
+    inspectMode = v === 'inspect';
+    store.set('inspect', inspectMode);
+    hint.textContent = hintText();
+    preview.send({ type: 'mode', inspect: inspectMode });
+  }, { label: 'Preview mode' });
+  const previewHead = h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Preview'), modeSeg), h('div', { class: 'left' }, hint, resetBtn));
   const motionHost = h('div', { class: 'motion-panel', 'aria-label': 'Motion' });
   const previewCol = h('section', { class: 'col preview-col', 'aria-label': 'Preview' }, previewHead, h('div', { class: 'stage' }, frameWrap), motionHost);
 
@@ -104,7 +113,7 @@ export function mountWorkspace(app) {
       document.getElementById('preview-hint').textContent = '';
       return;
     }
-    document.getElementById('preview-hint').textContent = 'The outline marks what this step is about. Click any part to see its code.';
+    document.getElementById('preview-hint').textContent = hintText();
     const src = Object.keys(S.tweaks).length ? applyTweaks(S.model, S.tweaks) : S.model.source;
     const parsedForPreview = src === S.model.source ? S.model : buildModel(src, S.model.dialect);
     if (entering && !reducedMotion()) {
@@ -115,6 +124,7 @@ export function mountWorkspace(app) {
   }
 
   function syncPreview() {
+    preview.send({ type: 'mode', inspect: inspectMode });
     preview.send({ type: 'analyse' });
     if (S.element !== null) outlineElement(S.element, true);
     else outlineStep();

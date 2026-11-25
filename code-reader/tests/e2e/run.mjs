@@ -73,6 +73,13 @@ check('R15: every planted problem flagged', found === problems.length, `${found}
 
 // ---- R3: click any part ----------------------------------------------------------------
 await pasteCode(problems.find((p) => p.name === 'overridden-later').code);
+check('Preview starts in Try it mode: a click does not open the code', await (async () => {
+  await page.frameLocator('iframe.preview-iframe').locator('.item').first().click();
+  await page.waitForTimeout(300);
+  return !(await page.locator('.element-view').count());
+})());
+await page.click('.preview-head .seg button:has-text("Inspect")');
+await page.waitForTimeout(100);
 await page.frameLocator('iframe.preview-iframe').locator('.item').first().click();
 await page.waitForTimeout(400);
 const ev = await page.evaluate(() => ({
@@ -143,6 +150,13 @@ check('R9: GSAP shows Replay and speed, no scrub', (await page.locator('.motion-
 await pasteCode(fs.readFileSync(new URL('../../samples/toggle-menu.html', import.meta.url), 'utf8'));
 const trig = await page.locator('.motion-head .tag').textContent();
 check('R9: class toggled by JS reads as the click trigger', /click of \.toggle/.test(trig), trig);
+
+// ---- Submit handlers run in the preview ------------------------------------------------
+await pasteCode('<form class="sb"><input value="hi"><button>Go</button></form>\n<p id="out">no</p>\n<script>\n  document.querySelector(".sb").addEventListener("submit", (e) => { e.preventDefault(); document.getElementById("out").textContent = "submitted"; });\n</script>\n');
+await page.click('.preview-head .seg button:has-text("Try it")');
+await page.frameLocator('iframe.preview-iframe').locator('.sb button').click();
+await page.waitForTimeout(200);
+check('Try it: submitting a form runs its submit handler', (await page.frameLocator('iframe.preview-iframe').locator('#out').textContent()) === 'submitted');
 
 // ---- R10: React + Framer explain-only ---------------------------------------------------------------------
 await pasteCode(fs.readFileSync(new URL('../../samples/framer-button.jsx', import.meta.url), 'utf8'));

@@ -13,6 +13,7 @@ import { mountMotionPanel } from './motion-panel.js';
 import { api } from './api.js';
 import { DIALECTS, detectDialect } from './detect.js';
 import { linesLabel, escapeHtml, hash } from './util.js';
+import { withConcepts } from './glossary.js';
 import { renderBanner, go, startReading } from './app.js';
 
 const COLOR = { structure: '#2563EB', layout: '#15803D', style: '#7C3AED', motion: '#C2410C', overview: '#0A0A0A', issue: '#B91C1C' };
@@ -263,7 +264,10 @@ export function mountWorkspace(app) {
     nextBtn.replaceChildren(last ? 'Practice the prompt' : 'Next', icon('arrowRight'));
   }
 
+  // One concept label per concept on each screen of the walkthrough.
+  let usedConcepts = new Set();
   function renderStep(dir = 'fade') {
+    usedConcepts = new Set();
     if (S.element !== null) return renderElement();
     const s = step();
     if (!s) { stepArea.replaceChildren(); return; }
@@ -378,7 +382,7 @@ export function mountWorkspace(app) {
     const out = [];
     const parts = se.text.split(/(`[^`]+`)/);
     for (const part of parts) {
-      if (!part.startsWith('`')) { if (part) out.push(part); continue; }
+      if (!part.startsWith('`')) { if (part) out.push(...withConcepts(part, usedConcepts)); continue; }
       const code = part.slice(1, -1);
       const chip = se.chips?.find((c) => c.code === code);
       if (chip && !known.has(chip.key)) out.push(termChip(chip.key, code));
@@ -536,6 +540,7 @@ export function mountWorkspace(app) {
   }
 
   function renderElement() {
+    usedConcepts = new Set();
     const el = S.model.html.elements[S.element];
     const { matched, overridden } = cascadeFor(S.model, S.element, S.match);
     const view = h('div', { class: 'element-view step fade' });

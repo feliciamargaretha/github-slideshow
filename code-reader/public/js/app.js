@@ -6,6 +6,7 @@ import { api } from './api.js';
 import { mountWorkspace } from './workspace.js';
 import { mountPractice } from './practice.js';
 import { mountBuild } from './build.js';
+import { openDictionary, learnedCount, onLearned } from './glossary.js';
 
 const AI_PROMPT = `Write one UI component as a single HTML file: semantic HTML, one <style> block, and plain JavaScript only if it needs motion CSS cannot do (or GSAP 3 from https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js). No frameworks, no Tailwind, no other libraries, no external images or fonts. Keep it under 100 lines. Start with the <style> block, then the markup, then any script. The component is: `;
 
@@ -50,6 +51,7 @@ async function init() {
   app.practice = mountPractice(app);
   app.build = mountBuild(app);
   document.addEventListener('keydown', onKey);
+  onLearned(() => renderTopbar());
   go('paste');
 }
 
@@ -74,6 +76,8 @@ export function renderTopbar() {
   const a = app.els.actions;
   a.replaceChildren();
   const s = app.state.screen;
+  const dict = h('button', { class: 'btn btn-text', type: 'button', onclick: (e) => openDictionary(e.currentTarget) }, 'Dictionary', h('span', { class: 't-caption ink-3' }, String(learnedCount())));
+  a.append(dict);
   if (s === 'practice') {
     a.append(h('span', { class: 't-caption ink-2', id: 'attempts-top' }, app.practice?.attemptsLabel() || ''));
   }

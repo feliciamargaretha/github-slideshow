@@ -13,7 +13,7 @@ import { mountMotionPanel } from './motion-panel.js';
 import { api } from './api.js';
 import { DIALECTS, detectDialect } from './detect.js';
 import { linesLabel, escapeHtml, hash } from './util.js';
-import { withConcepts } from './glossary.js';
+import { withConcepts, termDemo } from './glossary.js';
 import { renderBanner, go, startReading } from './app.js';
 
 const COLOR = { structure: '#2563EB', layout: '#15803D', style: '#7C3AED', motion: '#C2410C', overview: '#0A0A0A', issue: '#B91C1C' };
@@ -398,6 +398,7 @@ export function mountWorkspace(app) {
     const open = () => {
       popover(b, h('div', { class: 'term-pop' },
         h('div', { class: 't-caption ink-3' }, 'Worth knowing for prompts'),
+        termDemo(key),
         h('div', { class: 'pair' }, h('span', {}, `“${t.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, t.precise)),
         h('div', {}, h('button', { class: 'btn btn-text', type: 'button', onclick: () => { known.add(key); store.set('known', [...known]); closePopover(); renderStep('none'); } }, 'I know this')),
       ), { focus: false });

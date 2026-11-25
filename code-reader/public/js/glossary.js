@@ -162,7 +162,7 @@ function demo(kind) {
   const wrap = h('div', { class: 'demo-wrap' }, stage, cap);
   const states = DEMOS[kind]();
   const boxes = states.boxes.map((b, i) => {
-    const el = h('div', { class: 'demo-box' + (b.cls ? ' ' + b.cls : ''), style: { width: (b.w || BOX) + 'px', height: (b.h || BOX) + 'px' } }, b.label || String(i + 1));
+    const el = h('div', { class: 'demo-box' + (b.cls ? ' ' + b.cls : ''), style: { width: (b.w || BOX) + 'px', height: (b.h || BOX) + 'px' } }, b.label ?? String(i + 1));
     stage.appendChild(el);
     return el;
   });
@@ -179,6 +179,7 @@ function demo(kind) {
       el.style.opacity = p[4] === undefined ? '1' : String(p[4]);
       el.style.zIndex = p[5] || '';
       el.style.transitionTimingFunction = st.ease || '';
+      if (st.styles?.[k]) Object.assign(el.style, st.styles[k]);
     });
     st.apply?.(stage);
     cap.textContent = st.caption;
@@ -288,6 +289,170 @@ const DEMOS = {
     ],
   }),
 };
+
+// ---- Prompt-term demos: the same moving boxes, one per prompt term ------------------
+
+const T = (label, w, h, cls) => ({ label, w, h, cls });
+Object.assign(DEMOS, {
+  radius: () => ({
+    boxes: [T('', 72, 48)], height: 48,
+    frames: [
+      { pos: [[0, 0]], styles: [{ borderRadius: '0px' }], caption: 'border-radius: 0: square corners' },
+      { pos: [[0, 0]], styles: [{ borderRadius: '16px' }], caption: 'border-radius: 16px: rounded corners' },
+    ],
+  }),
+  shadow: () => ({
+    boxes: [T('', 72, 48)], height: 64,
+    frames: [
+      { pos: [[8, 4]], styles: [{ boxShadow: 'none' }], caption: 'No shadow: the box sits flat' },
+      { pos: [[8, 4]], styles: [{ boxShadow: '0 8px 16px rgba(10,10,10,.18)' }], caption: 'box-shadow: the box lifts off the page' },
+    ],
+  }),
+  direction: () => ({
+    boxes: [{}, {}, {}], height: 3 * STEP,
+    frames: [
+      { pos: row(3), caption: 'flex-direction: row: side by side' },
+      { pos: col(3), caption: 'flex-direction: column: stacked' },
+    ],
+  }),
+  justify: () => ({
+    boxes: [{}, {}, {}], height: BOX, every: 1500,
+    extras: [h('div', { class: 'demo-outline', style: { width: '200px', height: '22px' } })],
+    frames: [
+      { pos: row(3, 8, 0, 0), caption: 'justify-content: start' },
+      { pos: row(3, 8, 0, 55), caption: 'justify-content: center' },
+      { pos: [[0, 0], [89, 0], [178, 0]], caption: 'justify-content: space-between' },
+    ],
+  }),
+  columns: () => ({
+    boxes: [T('', 200, 22), T('', 200, 22), T('', 200, 22)], height: 3 * STEP,
+    frames: [
+      { pos: [[0, 0, 200], [0, STEP, 200], [0, 2 * STEP, 200]], caption: 'One column: each item takes the full width' },
+      { pos: [[0, 0, 61], [69, 0, 61], [138, 0, 61]], caption: 'grid-template-columns: repeat(3, 1fr): three equal columns' },
+    ],
+  }),
+  maxwidth: () => ({
+    boxes: [T('Text', 220, 22)], height: 22,
+    extras: [h('div', { class: 'demo-outline', style: { width: '220px', height: '22px' } })],
+    frames: [
+      { pos: [[0, 0, 220]], caption: 'No max-width: stretches as wide as the space' },
+      { pos: [[0, 0, 120]], caption: 'max-width: 120px: never wider than that' },
+    ],
+  }),
+  lineheight: () => ({
+    boxes: [T('line one', 120, 14, 'text'), T('line two', 120, 14, 'text'), T('line three', 120, 14, 'text')], height: 72,
+    frames: [
+      { pos: [[0, 0], [0, 16], [0, 32]], caption: 'line-height: 1.1: lines sit tight' },
+      { pos: [[0, 0], [0, 28], [0, 56]], caption: 'line-height: 2: more space between lines' },
+    ],
+  }),
+  letterspacing: () => ({
+    boxes: [T('SPACING', 150, 24, 'text')], height: 24,
+    frames: [
+      { pos: [[0, 0]], styles: [{ letterSpacing: '0px' }], caption: 'letter-spacing: 0' },
+      { pos: [[0, 0]], styles: [{ letterSpacing: '4px' }], caption: 'letter-spacing: 4px: space between letters' },
+    ],
+  }),
+  weight: () => ({
+    boxes: [T('Aa Bold', 120, 28, 'text')], height: 28,
+    frames: [
+      { pos: [[0, 0]], styles: [{ fontWeight: '400' }], caption: 'font-weight: 400: regular' },
+      { pos: [[0, 0]], styles: [{ fontWeight: '700' }], caption: 'font-weight: 700: bold' },
+    ],
+  }),
+  uppercase: () => ({
+    boxes: [T('Label', 120, 24, 'text')], height: 24,
+    frames: [
+      { pos: [[0, 0]], styles: [{ textTransform: 'none' }], caption: 'As written in the HTML' },
+      { pos: [[0, 0]], styles: [{ textTransform: 'uppercase' }], caption: 'text-transform: uppercase: all caps' },
+    ],
+  }),
+  lift: () => ({
+    boxes: [T('', 72, 40)], height: 56, every: 1200,
+    frames: [
+      { pos: [[0, 12]], styles: [{ boxShadow: 'none' }], caption: 'At rest', ease: 'cubic-bezier(0,0,.58,1)' },
+      { pos: [[0, 4]], styles: [{ boxShadow: '0 8px 14px rgba(10,10,10,.16)' }], caption: 'translateY(-8px): lifts up', ease: 'cubic-bezier(0,0,.58,1)' },
+    ],
+  }),
+  grow: () => ({
+    boxes: [T('', 48, 32)], height: 48, every: 1200,
+    frames: [
+      { pos: [[20, 8]], styles: [{ scale: '1' }], caption: 'scale(1): its own size' },
+      { pos: [[20, 8]], styles: [{ scale: '1.3' }], caption: 'scale(1.3): 30% bigger' },
+    ],
+  }),
+  fade: () => ({
+    boxes: [T('', 72, 40, 'dark')], height: 40, every: 1300,
+    frames: [
+      { pos: [[0, 0, null, null, 1]], caption: 'opacity: 1: fully visible' },
+      { pos: [[0, 0, null, null, 0.2]], caption: 'opacity: 0.2: almost see-through' },
+    ],
+  }),
+  duration: () => ({
+    boxes: [T('200'), T('800', null, null, 'dark')], height: 2 * STEP, every: 1600,
+    frames: [
+      { pos: [[0, 0], [0, STEP]], caption: 'Top: 200ms. Bottom: 800ms', apply: (s) => { s.children[0].style.transitionDuration = '200ms'; s.children[1].style.transitionDuration = '800ms'; } },
+      { pos: [[150, 0], [150, STEP]], caption: 'transition-duration: how long the change takes' },
+    ],
+  }),
+  delay: () => ({
+    boxes: [T('0'), T('400', null, null, 'dark')], height: 2 * STEP, every: 1800,
+    frames: [
+      { pos: [[0, 0], [0, STEP]], caption: 'Top: no delay. Bottom: 400ms delay', apply: (s) => { s.children[0].style.transitionDelay = '0ms'; s.children[1].style.transitionDelay = '400ms'; } },
+      { pos: [[150, 0], [150, STEP]], caption: 'transition-delay: wait before starting' },
+    ],
+  }),
+  stagger: () => ({
+    boxes: [{}, {}, {}, {}], height: BOX + 24, every: 1800,
+    frames: [
+      { pos: row(4, 8, 24, 0).map((p) => [...p, null, null, 0]), caption: 'Hidden', apply: (s) => [...s.children].forEach((c, k) => { c.style.transitionDelay = k * 120 + 'ms'; }) },
+      { pos: row(4, 8, 0, 0), caption: 'stagger: 0.12s: each one starts a moment after the last' },
+    ],
+  }),
+  hover: () => {
+    const pointer = h('div', { class: 'demo-pointer' });
+    return {
+      boxes: [T('Button', 80, 32)], height: 48, every: 1400, extras: [pointer],
+      frames: [
+        { pos: [[0, 8]], styles: [{ background: '' }], caption: 'Mouse away: normal state', apply: () => { pointer.style.transform = 'translate(130px, 30px)'; } },
+        { pos: [[0, 4]], styles: [{ background: '#0A0A0A', color: '#fff' }], caption: ':hover: the style while the mouse is over it', apply: () => { pointer.style.transform = 'translate(50px, 22px)'; } },
+      ],
+    };
+  },
+  aspect: () => ({
+    boxes: [T('', 96, 54)], height: 96,
+    frames: [
+      { pos: [[0, 0, 96, 54]], caption: 'aspect-ratio: 16 / 9: wide' },
+      { pos: [[0, 0, 96, 96]], caption: 'aspect-ratio: 1: always square' },
+    ],
+  }),
+  objectfit: () => {
+    const frame = h('div', { class: 'demo-outline', style: { width: '96px', height: '64px' } });
+    return {
+      boxes: [T('photo', 96, 40, 'dark')], height: 64, extras: [frame],
+      frames: [
+        { pos: [[0, 12, 96, 40]], caption: 'contain: the whole photo fits, with empty bands' },
+        { pos: [[0, 0, 96, 64]], caption: 'cover: fills the box and crops the edges' },
+      ],
+    };
+  },
+});
+
+const TERM_DEMO = {
+  gap: 'gap', padding: 'padding', margin: 'margin', 'justify-content': 'justify', 'align-items': 'alignment',
+  'flex-direction': 'direction', flexbox: 'flexbox', 'grid-template-columns': 'columns', 'border-radius': 'radius',
+  'box-shadow': 'shadow', 'max-width': 'maxwidth', 'line-height': 'lineheight', 'letter-spacing': 'letterspacing',
+  'font-weight': 'weight', 'ease-out': 'easing', 'ease-in-out': 'easing', transition: 'transition', translateY: 'lift',
+  scale: 'grow', opacity: 'fade', 'transition-duration': 'duration', 'transition-delay': 'delay', 'z-index': 'layers',
+  'position: absolute': 'position', '@keyframes': 'keyframes', stagger: 'stagger', ':hover': 'hover',
+  'object-fit': 'objectfit', 'aspect-ratio': 'aspect', 'text-transform': 'uppercase',
+};
+
+/** The moving demo for a prompt term, or null. */
+export function termDemo(key) {
+  const kind = TERM_DEMO[key];
+  return kind && DEMOS[kind] ? demo(kind) : null;
+}
 
 // ---- Dictionary ---------------------------------------------------------------
 

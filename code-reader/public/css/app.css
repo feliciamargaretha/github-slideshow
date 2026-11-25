@@ -503,3 +503,7 @@ button.tag:hover:not(.filled) { border-color: var(--ink); color: var(--ink); }
 .dict-item[open] summary { margin-bottom: var(--space-2); }
 .dict-item .concept-head .t-caption { display: none; }
 @media (prefers-reduced-motion: reduce) { .demo-box, .demo-outline { transition: none; } }
+.demo-box { transition: transform 700ms var(--ease), width 700ms var(--ease), height 700ms var(--ease), opacity 500ms var(--ease), border-radius 700ms var(--ease), box-shadow 700ms var(--ease), letter-spacing 700ms var(--ease), scale 700ms var(--ease), background-color 300ms var(--ease), color 300ms var(--ease); }
+.demo-box.text { background: none; border: 0; color: var(--ink); font: 400 14px/14px var(--font); place-items: center start; white-space: nowrap; }
+.demo-pointer { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 12px solid var(--ink); rotate: -30deg; transition: transform 600ms var(--ease); }
+.term-pop .demo-wrap { width: 288px; }

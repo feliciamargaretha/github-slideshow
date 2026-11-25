@@ -532,3 +532,6 @@ textarea:focus-visible, input[type="text"]:focus-visible, input:not([type]):focu
 .build .stage { background: var(--surface); padding: 0; }
 .build-preview::after { height: 48px; margin-top: 0; background: linear-gradient(to bottom, rgba(10, 10, 10, 0), rgba(10, 10, 10, 0.045) 50%, rgba(10, 10, 10, 0)); }
 .build-preview::after { margin-left: calc(var(--space-4) * -1); margin-right: calc(var(--space-4) * -1); }
+/* Workspace preview: white, no grey stage and no border, component centered */
+.preview-col .stage { background: var(--surface); padding: 0; }
+.preview-col .frame-wrap { border: 0; border-radius: 0; background: transparent; }

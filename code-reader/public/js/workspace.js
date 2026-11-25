@@ -124,7 +124,7 @@ export function mountWorkspace(app) {
       frameWrap.classList.add('entering');
       setTimeout(() => frameWrap.classList.remove('entering'), 160);
     }
-    preview.render(parsedForPreview.instrumented);
+    preview.render(parsedForPreview.instrumented, { center: true });
   }
 
   function syncPreview() {
@@ -675,7 +675,7 @@ export function mountWorkspace(app) {
       drawerTimer = setTimeout(() => {
         const d = detectDialect(v);
         if (!DIALECTS[d].preview) return;
-        preview.render(buildModel(v, d).instrumented);
+        preview.render(buildModel(v, d).instrumented, { center: true });
       }, 300);
     } });
     const apply = h('button', { class: 'btn btn-primary', type: 'button', onclick: () => {

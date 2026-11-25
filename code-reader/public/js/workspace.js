@@ -332,28 +332,43 @@ export function mountWorkspace(app) {
     return nodes;
   }
 
+  /**
+   * Both: a vertical stack. Each piece of code sits in its own bordered block,
+   * and the sentence that explains it sits right below, with no container.
+   */
   function bothView(s, opts) {
-    const code = codeBlock(opts);
-    const notes = h('div', { class: 'both-notes' });
-    const wrap = h('div', { class: 'both' }, code, notes);
-    requestAnimationFrame(() => {
-      const top0 = code.getBoundingClientRect().top;
-      let lastBottom = 0;
-      const placed = [];
-      for (const se of s.sentences) {
-        const l = se.lines[0];
-        const row = l ? code.querySelector(`.code-line[data-line="${l}"]`) : null;
-        let y = row ? row.getBoundingClientRect().top - top0 : lastBottom;
-        y = Math.max(y, lastBottom);
-        const n = h('div', { class: 'both-note', 'data-sid': se.id, style: { top: y + 'px' } }, ...sentenceBody(se));
+    const total = S.model.lines.length;
+    const ctx = 2;
+    const hl = [...opts.highlight].sort((x, y) => x - y);
+    const first = Math.max(1, (hl[0] || 1) - ctx);
+    const last = Math.min(total, (hl[hl.length - 1] || 1) + ctx);
+    // Group sentences that end on the same code piece; order them by their last line.
+    const withLines = s.sentences.filter((se) => se.lines.length).sort((x, y) => Math.max(...x.lines) - Math.max(...y.lines));
+    const groups = [];
+    for (const se of withLines) {
+      const end = Math.min(last, Math.max(...se.lines));
+      const g = groups[groups.length - 1];
+      if (g && end <= g.end) g.items.push(se);
+      else groups.push({ end, items: [se] });
+    }
+    const wrap = h('div', { class: 'stack' });
+    let from = first;
+    groups.forEach((g, i) => {
+      const to = i === groups.length - 1 ? Math.max(g.end, Math.min(last, g.end + 1)) : g.end;
+      if (to >= from) wrap.append(codeBlock({ ...opts, range: [from, to] }));
+      const notes = h('div', { class: 'stack-notes' });
+      for (const se of g.items) {
+        const n = h('p', { class: 'stack-note', 'data-sid': se.id }, ...sentenceBody(se));
         n.addEventListener('mouseenter', () => { n.classList.add('hot'); hoverLines(se.lines); });
         n.addEventListener('mouseleave', () => { n.classList.remove('hot'); hoverLine(null); });
         notes.append(n);
-        placed.push(n);
-        lastBottom = y + n.offsetHeight + 8;
       }
-      notes.style.height = Math.max(lastBottom, code.offsetHeight) + 'px';
+      wrap.append(notes);
+      from = Math.max(from, to + 1);
     });
+    if (from <= last) wrap.append(codeBlock({ ...opts, range: [from, last] }));
+    const loose = s.sentences.filter((se) => !se.lines.length);
+    if (loose.length) wrap.append(h('div', { class: 'stack-notes' }, ...loose.map((se) => h('p', { class: 'stack-note' }, ...sentenceBody(se)))));
     return wrap;
   }
 

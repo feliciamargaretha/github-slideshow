@@ -15,7 +15,8 @@ export function codeBlock(opts) {
   const { model, highlight = new Set(), flagged = new Set(), panel = 'structure', context = 2 } = opts;
   const total = model.lines.length;
   const show = new Set();
-  if (opts.all || !highlight.size) for (let i = 1; i <= total; i++) show.add(i);
+  if (opts.range) for (let i = Math.max(1, opts.range[0]); i <= Math.min(total, opts.range[1]); i++) show.add(i);
+  else if (opts.all || !highlight.size) for (let i = 1; i <= total; i++) show.add(i);
   else for (const l of highlight) for (let k = l - context; k <= l + context; k++) if (k >= 1 && k <= total) show.add(k);
   const shown = [...show].sort((a, b) => a - b);
   const wrap = h('div', { class: `code c-${panel === 'overview' ? 'overview' : panel}`, role: 'group', 'aria-label': 'Code' });

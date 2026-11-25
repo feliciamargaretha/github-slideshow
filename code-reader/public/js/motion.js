@@ -71,7 +71,8 @@ export function findCssMotions(rules, keyframes, { jsClassTriggers = [] } = {}) 
         const stateSel = splitSelectors(sr.selector).find((s) => stateOf(s)) || splitSelectors(sr.selector)[0];
         const st = stateOf(stateSel).split(',')[0];
         const jsClass = !st ? jsClassTriggers.find((c) => sr.selector.includes('.' + c)) : null;
-        const trig = st ? triggerSelector(stateSel) : baseSelector(stateSel).replace('.' + jsClass, '');
+        const cls = jsClass && classSplit(baseSelector(stateSel), jsClass);
+        const trig = st ? triggerSelector(stateSel) : cls.host;
         const main = tParts.find((p) => p.prop === 'all' || changes.some((c) => c.prop === p.prop)) || tParts[0];
         motions.push({
           id: `m-${rule.id}-${sr.id}`,
@@ -79,7 +80,7 @@ export function findCssMotions(rules, keyframes, { jsClassTriggers = [] } = {}) 
           trigger: st
             ? { kind: st === 'hover' ? 'hover' : 'state', text: `On ${STATE_WORD[st] || st} of ${trig}`, selector: trig, state: st }
             : { kind: 'class', text: `When the class .${jsClass} is added`, selector: trig, className: jsClass },
-          targetSelector: baseSelector(stateSel),
+          targetSelector: cls ? cls.target : baseSelector(stateSel),
           changes,
           duration: main.duration,
           delay: main.delay,
@@ -152,6 +153,19 @@ export function findCssMotions(rules, keyframes, { jsClassTriggers = [] } = {}) 
     }
   }
   return motions;
+}
+
+/** ".search.hot .icon" with class "hot" -> host ".search" (gets the class), target ".search .icon". */
+function classSplit(sel, cls) {
+  const re = new RegExp(`\\.${cls}(?![\\w-])`);
+  const at = sel.search(re);
+  const target = sel.replace(re, '').replace(/\s+/g, ' ').trim() || '*';
+  if (at < 0) return { host: target, target };
+  const rest = sel.slice(at);
+  const end = rest.search(/[\s>+~]/);
+  const compound = end < 0 ? sel : sel.slice(0, at + end);
+  const host = compound.replace(re, '').trim();
+  return { host: host && !/[\s>+~]$/.test(host) ? host : target, target };
 }
 
 function sameTarget(stateSel, baseSel, jsClasses) {
@@ -341,8 +355,11 @@ export function findJsMotions(code, base, lineAt) {
 
   // classList toggles in listeners: these trigger CSS transitions
   const classTriggers = [];
-  for (const m of code.matchAll(/classList\.(add|toggle|remove)\(\s*(['"`])([\w-]+)\2/g)) {
-    classTriggers.push({ className: m[3], trigger: triggerFor(m.index), line: lineAt(base + m.index) });
+  for (const m of code.matchAll(/(document\.querySelector(?:All)?\(\s*['"`][^'"`]+['"`]\s*\)|document\.getElementById\(\s*['"`][^'"`]+['"`]\s*\)|[\w$.]+)\.classList\.(add|toggle|remove)\(\s*(['"`])([\w-]+)\3/g)) {
+    const owner = m[1].replace(/\.$/, '');
+    const q = /querySelector(?:All)?\(\s*['"`]([^'"`]+)/.exec(owner);
+    const id = /getElementById\(\s*['"`]([^'"`]+)/.exec(owner);
+    classTriggers.push({ className: m[4], trigger: triggerFor(m.index), line: lineAt(base + m.index), selector: q ? q[1] : id ? '#' + id[1] : vars[owner] || null });
   }
   // requestAnimationFrame / setInterval loops
   const loops = [];

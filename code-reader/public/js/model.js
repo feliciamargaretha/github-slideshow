@@ -64,7 +64,9 @@ export function buildModel(source, dialect) {
   for (const m of cssMotions) {
     if (m.trigger.kind === 'class') {
       const ct = classTriggers.find((c) => c.className === m.trigger.className);
-      if (ct && ct.trigger.kind !== 'load') m.trigger = { ...ct.trigger, className: m.trigger.className, viaClass: true };
+      if (ct?.selector && (!m.trigger.selector || m.trigger.selector === '*')) m.trigger.selector = ct.selector;
+      m.trigger.classHost = ct?.selector || m.trigger.selector;
+      if (ct && ct.trigger.kind !== 'load') m.trigger = { ...ct.trigger, className: m.trigger.className, classHost: m.trigger.classHost, viaClass: true };
     }
   }
   model.motions.unshift(...cssMotions.filter((m) => !m.orphan || !cssMotions.some((o) => !o.orphan && o.ruleIds[0] === m.ruleIds[0])));

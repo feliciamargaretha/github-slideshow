@@ -271,7 +271,7 @@ function bridgeMain() {
           if (!m.keepForced) setTimeout(() => setForced(m.trigger, false), total / rate + 700);
         });
       } else if (m.kind === 'css-transition' && m.className) {
-        const els = targetsOf(m.target);
+        const els = targetsOf(m.classHost || m.trigger || m.target);
         instantly(() => els.forEach((el) => el.classList.remove(m.className)));
         requestAnimationFrame(() => {
           els.forEach((el) => el.classList.add(m.className));
@@ -301,7 +301,7 @@ function bridgeMain() {
           instantly(() => setForced(m.trigger, false));
           setForced(m.trigger, true);
         } else if (m.className) {
-          const els = targetsOf(m.target);
+          const els = targetsOf(m.classHost || m.trigger || m.target);
           instantly(() => els.forEach((el) => el.classList.remove(m.className)));
           els.forEach((el) => el.classList.add(m.className));
         }

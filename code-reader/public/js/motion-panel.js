@@ -190,7 +190,7 @@ export function mountMotionPanel(app, { host, preview, getModel, getTweaks, onTw
 
   function cssCommand(m, extra = {}) {
     return {
-      type: 'motion', kind: m.kind, trigger: m.trigger.selector, triggerKind: m.trigger.kind, className: m.trigger.className,
+      type: 'motion', kind: m.kind, trigger: m.trigger.selector, triggerKind: m.trigger.kind, className: m.trigger.className, classHost: m.trigger.classHost,
       target: m.targetSelector, duration: durationOf(m), delay: delayOf(m), keepForced: M.forceOn, ...extra,
     };
   }

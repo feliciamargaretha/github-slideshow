@@ -36,7 +36,7 @@ export function mountWorkspace(app) {
   frameWrap.append(frameEmpty);
   const resetBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: true, onclick: () => resetTweaks() }, icon('reset'), 'Reset');
   tooltip(resetBtn, 'Return every value you changed');
-  const previewHead = h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Preview'), h('span', { class: 't-caption ink-3', id: 'preview-hint' }, 'Click any part to see its code')), resetBtn);
+  const previewHead = h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Preview'), h('span', { class: 't-caption ink-3', id: 'preview-hint' }, 'The outline marks what this step is about. Click any part to see its code.')), resetBtn);
   const motionHost = h('div', { class: 'motion-panel', 'aria-label': 'Motion' });
   const previewCol = h('section', { class: 'col preview-col', 'aria-label': 'Preview' }, previewHead, h('div', { class: 'stage' }, frameWrap), motionHost);
 
@@ -104,7 +104,7 @@ export function mountWorkspace(app) {
       document.getElementById('preview-hint').textContent = '';
       return;
     }
-    document.getElementById('preview-hint').textContent = 'Click any part to see its code';
+    document.getElementById('preview-hint').textContent = 'The outline marks what this step is about. Click any part to see its code.';
     const src = Object.keys(S.tweaks).length ? applyTweaks(S.model, S.tweaks) : S.model.source;
     const parsedForPreview = src === S.model.source ? S.model : buildModel(src, S.model.dialect);
     if (entering && !reducedMotion()) {
@@ -476,6 +476,7 @@ export function mountWorkspace(app) {
     const s = step();
     if (!s) return;
     const issueEls = s.issues.flatMap((i) => i.elementIds || (i.ruleId ? ruleTargets(S.model, S.model.ruleById.get(i.ruleId) || { parts: [] , decls: [], selector: '' }, S.match) : []));
+    if (s.overview) { preview.send({ type: 'outline', ids: [] }); return; }
     if (issueEls.length) preview.send({ type: 'outline', ids: [...new Set(issueEls)], color: COLOR.issue, dashed: true });
     else preview.send({ type: 'outline', ids: s.targets || [], color: COLOR[panelOfStep(s)] });
   }

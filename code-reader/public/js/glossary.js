@@ -58,11 +58,25 @@ export const GLOSSARY = {
     demo: 'gap',
   },
   alignment: {
-    title: 'Alignment',
-    match: /\b(?:line the items up|lines up the text|centers? the items)\b/i,
-    text: 'How the items of a flex or grid box sit along the row (justify-content) and across it (align-items): at the start, centered, at the end, or spread out.',
-    example: '.row { display: flex; justify-content: center; align-items: center; }',
+    title: 'place-items',
+    match: /(?!)/,
+    text: 'A shortcut that sets align-items and justify-items together, so the content lines up both ways at once. place-items: center puts it in the exact middle.',
+    example: '.box { display: grid; place-items: center; }',
     demo: 'alignment',
+  },
+  'justify-content': {
+    title: 'justify-content',
+    match: /(?!)/,
+    text: 'Places the items along the main direction of a flex or grid box: for a row, left to right. Start packs them at the left, center puts them in the middle, end at the right, and space-between pushes the first and last to the edges.',
+    example: '.row { display: flex; justify-content: space-between; }',
+    demo: 'justify',
+  },
+  'align-items': {
+    title: 'align-items',
+    match: /(?!)/,
+    text: 'Lines the items up across the main direction: for a row, top to bottom. Start lines them up along the top, center through the middle, end along the bottom, and stretch makes them all the same height.',
+    example: '.row { display: flex; align-items: center; }',
+    demo: 'align',
   },
   position: {
     title: 'Positioning',
@@ -353,7 +367,7 @@ const DEMOS = {
 const CODE_CONCEPT = {
   display: 'display', 'inline-flex': 'inline-flex', 'inline-grid': 'grid', flex: 'flexbox', grid: 'grid',
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
-  'justify-content': 'alignment', 'align-items': 'alignment', 'place-items': 'alignment', position: 'position', absolute: 'position',
+  'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-items', 'place-items': 'alignment', position: 'position', absolute: 'position',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
   'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
@@ -380,6 +394,15 @@ export function codeWithConcepts(code, used, prompt) {
 
 const T = (label, w, h, cls) => ({ label, w, h, cls });
 Object.assign(DEMOS, {
+  align: () => ({
+    boxes: [{ h: 18 }, { h: 34 }, { h: 26 }], height: 44, every: 1500,
+    extras: [h('div', { class: 'demo-outline', style: { width: '110px', height: '44px' } })],
+    frames: [
+      { pos: [[4, 4], [34, 4], [64, 4]], caption: 'align-items: start: lined up along the top' },
+      { pos: [[4, 13], [34, 5], [64, 9]], caption: 'align-items: center: lined up through the middle' },
+      { pos: [[4, 22], [34, 6], [64, 14]], caption: 'align-items: end: lined up along the bottom' },
+    ],
+  }),
   display: () => {
     const line = h('div', { class: 'demo-outline', style: { width: '200px', height: '22px' } });
     return {
@@ -546,7 +569,7 @@ Object.assign(DEMOS, {
 });
 
 const TERM_DEMO = {
-  gap: 'gap', padding: 'padding', margin: 'margin', 'justify-content': 'justify', 'align-items': 'alignment',
+  gap: 'gap', padding: 'padding', margin: 'margin', 'justify-content': 'justify', 'align-items': 'align',
   'flex-direction': 'direction', flexbox: 'flexbox', 'grid-template-columns': 'columns', 'border-radius': 'radius',
   'box-shadow': 'shadow', 'max-width': 'maxwidth', 'line-height': 'lineheight', 'letter-spacing': 'letterspacing',
   'font-weight': 'weight', 'ease-out': 'easing', 'ease-in-out': 'easing', transition: 'transition', translateY: 'lift',

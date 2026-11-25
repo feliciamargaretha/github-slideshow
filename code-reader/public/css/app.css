@@ -528,3 +528,7 @@ textarea:focus-visible, input[type="text"]:focus-visible, input:not([type]):focu
 /* Shape it: the result sits straight on the grey stage, centered, with no inner white box */
 .build .frame-wrap { background: transparent; border: 0; border-radius: 0; }
 .preview-iframe.see-through { background: transparent; }
+/* Shape it: white all the way; a soft fade marks where the result ends and the prompts begin */
+.build .stage { background: var(--surface); padding: 0; }
+.build-preview::after { height: 48px; margin-top: 0; background: linear-gradient(to bottom, rgba(10, 10, 10, 0), rgba(10, 10, 10, 0.045) 50%, rgba(10, 10, 10, 0)); }
+.build-preview::after { margin-left: calc(var(--space-4) * -1); margin-right: calc(var(--space-4) * -1); }

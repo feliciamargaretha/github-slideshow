@@ -77,3 +77,8 @@ export async function reviewSeries({ prompts }) {
     combined: 'Test mode: one prompt that names the size, spacing, color and motion up front.',
   };
 }
+
+export async function ask({ turns }) {
+  const q = turns[turns.length - 1]?.content || '';
+  return { answer: `Test mode: you asked "${q.slice(0, 80)}". The \`display: flex\` rule on line 12 puts the items in a row.` };
+}

@@ -61,9 +61,12 @@ export function mountWorkspace(app) {
   const backBtn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => back() }, icon('arrowLeft'), 'Back');
   const nextBtn = h('button', { class: 'btn btn-primary', type: 'button', onclick: () => next() }, 'Next', icon('arrowRight'));
   const counter = h('span', { class: 't-body counter' });
-  const footer = h('div', { class: 'footer-bar' }, backBtn, counter, h('div', { class: 'nav' }, nextBtn));
+  const askBtn = h('button', { class: 'btn btn-secondary', type: 'button', onclick: () => openChat(null) }, 'Ask');
+  tooltip(askBtn, 'Ask a question about this code');
+  const footer = h('div', { class: 'footer-bar' }, backBtn, counter, h('div', { class: 'nav' }, askBtn, nextBtn));
   const drawer = h('aside', { class: 'drawer', 'aria-label': 'Edit source', 'aria-hidden': 'true' });
-  const walkCol = h('section', { class: 'col walk-col', 'aria-label': 'Walkthrough' }, tabrow, progress, stepArea, footer, drawer);
+  const chatDrawer = h('aside', { class: 'drawer chat-drawer', 'aria-label': 'Ask', 'aria-hidden': 'true' });
+  const walkCol = h('section', { class: 'col walk-col', 'aria-label': 'Walkthrough' }, tabrow, progress, stepArea, footer, drawer, chatDrawer);
   const divider = h('div', { class: 'divider', role: 'separator', 'aria-orientation': 'vertical', 'aria-label': 'Resize columns', tabindex: '0' });
   const grid = h('div', { class: 'workspace', style: { height: '100%' } }, previewCol, divider, walkCol);
   root.append(grid);
@@ -75,7 +78,7 @@ export function mountWorkspace(app) {
     analysis: (m) => onAnalysis(m),
     time: (m) => motion.onTime(m),
     key: (m) => {
-      if (m.key === 'Escape') { if (!closePopover()) api_escape(); return; }
+      if (m.key === 'Escape') { if (!closePopover() && !closeChat()) api_escape(); return; }
       api_key({ key: m.key, preventDefault() {} });
     },
   });
@@ -313,7 +316,7 @@ export function mountWorkspace(app) {
   function englishList(s) {
     const box = h('div', { class: 'explain' });
     for (const se of s.sentences) {
-      const p = h('p', { class: 'sentence', 'data-sid': se.id }, ...sentenceBody(se));
+      const p = h('p', { class: 'sentence', 'data-sid': se.id }, ...sentenceBody(se), askLink(s, se));
       if (se.lines.length) {
         const cap = h('span', { class: 'lines-cap', tabindex: '0' }, linesLabel(se.lines));
         const on = () => { p.classList.add('hot'); hoverLines(se.lines); };
@@ -363,7 +366,7 @@ export function mountWorkspace(app) {
       if (to >= from) wrap.append(codeBlock({ ...opts, range: [from, to] }));
       const notes = h('div', { class: 'stack-notes' });
       for (const se of g.items) {
-        const n = h('p', { class: 'stack-note', 'data-sid': se.id }, ...sentenceBody(se));
+        const n = h('p', { class: 'stack-note', 'data-sid': se.id }, ...sentenceBody(se), askLink(s, se));
         n.addEventListener('mouseenter', () => { n.classList.add('hot'); hoverLines(se.lines); });
         n.addEventListener('mouseleave', () => { n.classList.remove('hot'); hoverLine(null); });
         notes.append(n);
@@ -446,8 +449,102 @@ export function mountWorkspace(app) {
     tooltip(down, 'This explanation is wrong or unclear');
     return h('div', { class: 'step-footer' },
       h('span', { class: 'tag' }, ai ? 'AI written' : 'Rule'),
+      h('button', { class: 'btn btn-text', type: 'button', onclick: () => openChat({ step: s }) }, 'Ask about this step'),
       h('span', { class: 'spacer' }),
       mk('got', 'Got it'), mk('lost', 'Lost'), down);
+  }
+
+  // ---- Ask: chat about the code, a step, or one explanation ------------------------------
+  const chat = { turns: [], ctx: null, busy: false, ctl: null };
+
+  function askLink(s, se) {
+    if (se.status !== 'ready') return null;
+    return h('button', { class: 'ask-link', type: 'button', 'aria-label': 'Ask about this explanation', onclick: (e) => { e.stopPropagation(); openChat({ step: s, sentence: se }); } }, 'Ask');
+  }
+
+  const ctxLabel = (ctx) => (!ctx ? 'The whole component' : ctx.sentence ? `“${ctx.sentence.text.replace(/`/g, '').slice(0, 90)}${ctx.sentence.text.length > 90 ? '…' : ''}”` : `Step ${ctx.step.index + 1}: ${ctx.step.title}`);
+
+  function openChat(ctx) {
+    closeDrawer();
+    chat.ctx = ctx;
+    renderChat();
+    chatDrawer.classList.add('open');
+    chatDrawer.setAttribute('aria-hidden', 'false');
+    setTimeout(() => chatDrawer.querySelector('textarea')?.focus({ preventScroll: true }), 60);
+  }
+  function closeChat() {
+    if (!chatDrawer.classList.contains('open')) return false;
+    chat.ctl?.abort();
+    chatDrawer.classList.remove('open');
+    chatDrawer.setAttribute('aria-hidden', 'true');
+    return true;
+  }
+
+  function renderChat() {
+    const hadFocus = chatDrawer.contains(document.activeElement) && document.activeElement.tagName === 'TEXTAREA';
+    const log = h('div', { class: 'chat-log', 'aria-live': 'polite' });
+    if (!chat.turns.length) {
+      log.append(h('div', { class: 'chat-empty ink-2' }, h('p', {}, 'Ask anything about this code, in your own words.'),
+        h('ul', {}, h('li', {}, 'Why does the card move up on hover?'), h('li', {}, 'What is the difference between padding and margin here?'), h('li', {}, 'How would I make the button rounder?'))));
+    }
+    for (const t of chat.turns) {
+      if (t.role === 'user') log.append(h('div', { class: 'chat-turn you' }, t.ctx ? h('span', { class: 't-caption ink-3' }, `About ${ctxLabel(t.ctx)}`) : null, h('p', {}, t.text)));
+      else {
+        usedConcepts = new Set();
+        const body = t.text ? t.text.split(/\n{2,}/).map((para) => h('p', {}, ...richText({ text: para, chips: [] }))) : [h('span', { class: 'placeholder-line', 'aria-label': 'Thinking' })];
+        log.append(h('div', { class: 'chat-turn claude' }, ...body, t.error ? h('p', { class: 'ink-2' }, t.error) : null, t.done && !t.error ? h('span', { class: 't-caption ink-3' }, 'Written by AI') : null));
+      }
+    }
+    const box = h('textarea', { rows: '2', class: 'build-input', placeholder: 'Type your question', 'aria-label': 'Your question' });
+    const send = h('button', { class: 'btn btn-primary', type: 'button', disabled: chat.busy ? true : null, onclick: () => ask(box.value) }, 'Send');
+    box.addEventListener('input', () => { chat.draft = box.value; });
+    box.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(box.value); } if (e.key === 'Escape') closeChat(); });
+    const chip = h('div', { class: 'chat-ctx' }, h('span', { class: 't-caption ink-3' }, 'Asking about'), h('span', { class: 'chat-ctx-text' }, ctxLabel(chat.ctx)),
+      chat.ctx ? h('button', { class: 'btn-text t-caption', type: 'button', style: { height: '24px' }, onclick: () => { chat.ctx = null; renderChat(); } }, 'Ask in general') : null);
+    chatDrawer.replaceChildren(
+      h('div', { class: 'drawer-head' }, h('span', { class: 't-strong' }, 'Ask'),
+        h('div', { style: { display: 'flex', gap: '4px' } },
+          chat.turns.length ? h('button', { class: 'btn btn-text', type: 'button', onclick: () => { chat.turns = []; renderChat(); } }, 'Clear') : null,
+          h('button', { class: 'btn-icon', type: 'button', 'aria-label': 'Close', onclick: () => closeChat() }, icon('close')))),
+      log,
+      h('div', { class: 'chat-foot' }, chip, h('div', { class: 'build-bar', style: { padding: 0 } }, box, send),
+        app.state.ai !== 'ok' ? h('p', { class: 't-caption ink-2', style: { margin: 0 } }, 'Asking needs Claude, which is not available right now.') : null));
+    log.scrollTop = log.scrollHeight;
+    if (chat.draft) box.value = chat.draft;
+    if (hadFocus) box.focus({ preventScroll: true });
+  }
+
+  function contextText(ctx) {
+    if (!ctx) return `The learner is on step ${S.cur + 1} of ${S.steps.length}: "${step()?.title}".`;
+    const s = ctx.step;
+    const lines = (ctx.sentence?.lines.length ? ctx.sentence.lines : s.lines).slice(0, 40);
+    const said = ctx.sentence ? ctx.sentence.text : s.sentences.map((x) => x.text).join(' ');
+    return `The question is about step ${s.index + 1}, "${s.title}" (${PANEL_LABEL[s.panel] || 'Overview'}).\nWhat the app told the learner: ${said}\nThe lines it is about: ${lines.join(', ')}.`;
+  }
+
+  async function ask(text) {
+    text = String(text || '').trim();
+    if (!text || chat.busy) return;
+    chat.busy = true;
+    chat.draft = '';
+    chat.turns.push({ role: 'user', text, ctx: chat.ctx });
+    const reply = { role: 'claude', text: '', done: false };
+    chat.turns.push(reply);
+    renderChat();
+    chat.ctl = new AbortController();
+    const history = chat.turns.slice(0, -1).map((t) => ({ role: t.role === 'user' ? 'user' : 'assistant', content: t.role === 'user' ? (t.ctx ? `[About ${ctxLabel(t.ctx)}] ` : '') + t.text : t.text || '(no answer)' }));
+    const r = await api.ask({ code: S.model.source, context: contextText(chat.ctx), turns: history }, {
+      signal: chat.ctl.signal,
+      onText: (t) => { reply.text = t; renderChat(); },
+    });
+    chat.busy = false;
+    reply.done = true;
+    if (r.ok) reply.text = r.data.answer || reply.text;
+    else {
+      if (r.status === 503) { app.state.ai = r.error === 'paused' ? 'paused' : 'not_configured'; renderBanner(); }
+      reply.error = r.error === 'cancelled' ? 'Stopped.' : r.status === 429 ? 'You have asked a lot just now. Try again in a little while.' : r.status === 503 ? 'Claude is not available right now.' : 'That did not work. Ask again.';
+    }
+    renderChat();
   }
 
   // ---- Linking: code to preview --------------------------------------------------
@@ -695,7 +792,7 @@ export function mountWorkspace(app) {
     );
     drawer.classList.add('open');
     drawer.setAttribute('aria-hidden', 'false');
-    setTimeout(() => drawerEditor.focus(), 50);
+    setTimeout(() => drawerEditor.textarea.focus({ preventScroll: true }), 50);
   }
   function closeDrawer(applied) {
     if (!drawer.classList.contains('open')) return false;
@@ -751,7 +848,7 @@ export function mountWorkspace(app) {
     load,
     reset() { S.loaded = false; S.model = null; preview.clear(); motion.load(null); stepArea.replaceChildren(); closeDrawer(true); },
     openDrawer,
-    escape() { if (closeDrawer()) return; closeElement(); },
+    escape() { if (closeChat()) return; if (closeDrawer()) return; closeElement(); },
     back: () => { go('workspace'); },
     key: (e) => keyHandler(e),
     get state() { return S; },

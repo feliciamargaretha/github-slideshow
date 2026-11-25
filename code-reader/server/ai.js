@@ -166,6 +166,21 @@ export async function reviewSeries({ prompts, code }) {
   });
 }
 
+/** Answer a learner's question about the code, a step, or one explanation. */
+export async function ask({ code, context, turns }) {
+  const schema = obj({ answer: { type: 'string' } });
+  const convo = turns.map((t) => `${t.role === 'user' ? 'Learner' : 'You'}: ${t.content}`).join('\n\n');
+  return call({
+    system:
+      `You are a patient tutor inside a code-reading app. ${READER.replace('One sentence per item, under 30 words.', 'Answer in 2 to 5 short sentences unless asked for more.')} ${DATA_RULE} ` +
+      'Point to line numbers when it helps. Answer only about this code and UI design; if asked something unrelated, say so briefly. ' +
+      'If the question asks how to change something, show the exact CSS or HTML change in backticks.',
+    user: `<code>\n${number(code)}\n</code>\n\n${context}\n\nConversation so far (the last learner message is the question to answer):\n<prompt>\n${convo}\n</prompt>`,
+    schema,
+    effort: 'low',
+  });
+}
+
 /** Prompt practice comparison: works only from the two versions of code and the prompt. */
 export async function compare({ original, yours, prompt }) {
   const schema = obj({

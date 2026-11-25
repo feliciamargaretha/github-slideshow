@@ -93,6 +93,14 @@ const ROUTES = {
     clean: (b) => ({ prompts: (Array.isArray(b.prompts) ? b.prompts : []).slice(0, 20).map((p) => str(p, 2000)), code: str(b.code, config.maxChars) }),
     run: ai.reviewSeries,
   },
+  ask: {
+    kind: 'ask',
+    clean: (b) => ({
+      code: str(b.code, config.maxChars), context: str(b.context, 4000),
+      turns: (Array.isArray(b.turns) ? b.turns : []).slice(-12).map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: str(t.content, 3000) })),
+    }),
+    run: ai.ask,
+  },
   compare: {
     kind: 'compare',
     clean: (b) => ({ original: str(b.original, config.maxChars), yours: str(b.yours, config.maxChars), prompt: str(b.prompt, 2000) }),

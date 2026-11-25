@@ -26,6 +26,7 @@ export const api = {
   compare: (original, yours, prompt) => post('compare', { original, yours, prompt }),
   revise: (code, instruction, history) => post('revise', { code, instruction, history }),
   review: (prompts, code) => post('review', { prompts, code }),
+  ask: (payload) => post('ask', payload),
   feedback: (payload) => post('feedback', payload),
 };
 

@@ -18,7 +18,7 @@ const CSP = [
 ].join('; ');
 
 // Centers the component on a see-through page. It comes before the user's own CSS, so their body styles still win.
-const CENTER = '<style>html{height:100%;background:transparent}body{min-height:100%;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:transparent}</style>';
+const CENTER = '<style>html{height:100%;background:transparent}body{min-height:100%;margin:0;display:flex;flex-direction:column;align-items:safe center;justify-content:safe center;background:transparent}</style>';
 
 /** Prepare the user's code (already instrumented with data-cr ids) for the frame. */
 export function buildSrcdoc(instrumented, { center = false } = {}) {

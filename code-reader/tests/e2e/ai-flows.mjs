@@ -6,6 +6,7 @@ let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(require('node:child_process').execSync('npm root -g').toString().trim() + '/playwright')); }
 const BASE = process.env.BASE || 'http://localhost:5174';
 const SHOTS = process.env.SHOTS;
+import fs0 from 'node:fs';
 const results = [];
 const check = (name, ok, detail = '') => { results.push(ok); console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? '  — ' + detail : ''}`); };
 const browser = await chromium.launch();
@@ -53,6 +54,27 @@ await page.click('.paste-actions .btn-primary');
 await page.waitForTimeout(1200);
 const filled = await page.evaluate(() => window.__codeReader.workspace.state.steps.flatMap((s) => s.sentences).filter((x) => x.source === 'ai').map((x) => [x.status, x.text]));
 check('AI rows fill in place and are labelled', filled.length > 0 && filled.every(([st]) => st === 'ready'), JSON.stringify(filled));
+
+// Ask: chat about a step or one explanation
+await page.goto(BASE);
+await page.locator('.paste-editor textarea').fill(fs0.readFileSync(new URL('../../samples/pricing-cards.html', import.meta.url), 'utf8'));
+await page.click('.paste-actions .btn-primary');
+await page.waitForSelector('#step-title');
+await page.click('.progress li:nth-child(8) .seg-btn');
+await page.hover('.stack-note >> nth=0');
+await page.click('.stack-note >> nth=0 >> .ask-link');
+await page.waitForSelector('.chat-drawer.open');
+check('Ask: opening from an explanation shows what it is about', /Asking about/.test(await page.locator('.chat-ctx').innerText()) && !/whole component/.test(await page.locator('.chat-ctx').innerText()));
+await page.locator('.chat-drawer textarea').fill('why are the cards side by side?');
+await page.keyboard.press('Enter');
+await page.waitForSelector('.chat-turn.claude .ink-3');
+check('Ask: the answer shows in the chat', /Test mode: you asked/.test(await page.locator('.chat-log').innerText()));
+await page.click('.chat-ctx button');
+check('Ask: can switch to asking in general', /whole component/.test(await page.locator('.chat-ctx').innerText()));
+await page.keyboard.press('Escape');
+await page.click('.footer-bar button:has-text("Ask")');
+check('Ask: the footer Ask button opens the chat with the history kept', await page.locator('.chat-turn').count() === 2);
+if (SHOTS) await page.screenshot({ path: SHOTS + '/ask.png' });
 
 // R7: prompt practice, prompt first
 await page.goto(BASE);

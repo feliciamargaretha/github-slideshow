@@ -72,7 +72,7 @@ export function mountBuild(app) {
     B.current = i;
     const code = B.versions[i];
     const d = detectDialect(code);
-    if (DIALECTS[d].preview) preview.render(buildModel(code, d).instrumented, { title: `Version ${i + 1}` });
+    if (DIALECTS[d].preview) preview.render(buildModel(code, d).instrumented, { title: `Version ${i + 1}`, center: true });
     versionCap.textContent = `Version ${i + 1} of ${B.versions.length}`;
     renderLog();
   }

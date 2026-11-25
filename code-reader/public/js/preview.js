@@ -17,8 +17,11 @@ const CSP = [
   "base-uri 'none'",
 ].join('; ');
 
+// Centers the component on a see-through page. It comes before the user's own CSS, so their body styles still win.
+const CENTER = '<style>html{height:100%;background:transparent}body{min-height:100%;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:transparent}</style>';
+
 /** Prepare the user's code (already instrumented with data-cr ids) for the frame. */
-export function buildSrcdoc(instrumented) {
+export function buildSrcdoc(instrumented, { center = false } = {}) {
   let styleIndex = 0;
   let code = instrumented
     // number style blocks so live tweaks can replace them, and add force-hover twins
@@ -28,7 +31,7 @@ export function buildSrcdoc(instrumented) {
     // drop <base> and meta refresh, which could redirect the frame
     .replace(/<base\b[^>]*>/gi, '')
     .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?refresh[^>]*>/gi, '');
-  const head = `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${CSP}"><meta name="viewport" content="width=device-width,initial-scale=1"><script>${BRIDGE_SOURCE}<\/script>`;
+  const head = `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${CSP}"><meta name="viewport" content="width=device-width,initial-scale=1"><script>${BRIDGE_SOURCE}<\/script>${center ? CENTER : ''}`;
   if (/<head\b[^>]*>/i.test(code)) return code.replace(/<head\b[^>]*>/i, (m) => m + head);
   if (/<html\b[^>]*>/i.test(code)) return code.replace(/<html\b[^>]*>/i, (m) => m + '<head>' + head + '</head>');
   return `<!doctype html><html><head>${head}</head><body>${code.replace(/<!doctype[^>]*>/i, '')}</body></html>`;
@@ -57,7 +60,7 @@ export class Preview {
     });
   }
 
-  render(instrumented, { title = 'Preview of your component' } = {}) {
+  render(instrumented, { title = 'Preview of your component', center = false } = {}) {
     this.ready = false;
     this.queue = [];
     const f = document.createElement('iframe');
@@ -65,7 +68,8 @@ export class Preview {
     f.setAttribute('sandbox', 'allow-scripts allow-forms');
     f.setAttribute('referrerpolicy', 'no-referrer');
     f.setAttribute('title', title);
-    f.srcdoc = buildSrcdoc(instrumented);
+    f.srcdoc = buildSrcdoc(instrumented, { center });
+    if (center) f.classList.add('see-through');
     if (this.frame) this.frame.replaceWith(f); else this.host.appendChild(f);
     this.frame = f;
   }

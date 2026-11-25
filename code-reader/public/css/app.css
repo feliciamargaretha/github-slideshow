@@ -525,3 +525,6 @@ textarea:focus-visible, input[type="text"]:focus-visible, input:not([type]):focu
 .build .stage { border-radius: var(--radius-m) var(--radius-m) 0 0; }
 .build-preview::after { content: ''; flex: none; height: 40px; margin-top: calc(var(--space-3) * -1); background: linear-gradient(var(--surface-2), var(--surface)); }
 .build-chat-head { padding-top: var(--space-2); }
+/* Shape it: the result sits straight on the grey stage, centered, with no inner white box */
+.build .frame-wrap { background: transparent; border: 0; border-radius: 0; }
+.preview-iframe.see-through { background: transparent; }

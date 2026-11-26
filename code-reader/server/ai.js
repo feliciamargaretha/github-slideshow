@@ -181,6 +181,26 @@ export async function ask({ code, context, turns }) {
   });
 }
 
+/** Check one part of a prompt (layout, style or motion) against the code. */
+export async function checkPart({ code, part, text }) {
+  const schema = obj({
+    covered: { type: 'array', items: { type: 'string' } },
+    missed: { type: 'array', items: { type: 'string' } },
+    terms: { type: 'array', items: obj({ casual: { type: 'string' }, precise: { type: 'string' } }) },
+    sharper: { type: 'string' },
+  });
+  return call({
+    system:
+      `You coach a designer who is learning to prompt an AI for UI code, one part at a time. ${READER} ${DATA_RULE} ` +
+      'Judge only the part named; ignore anything the other parts would cover. Work only from the code.',
+    user: `<code>\n${number(code)}\n</code>\n\nThe learner wrote the ${part} part of a prompt that should rebuild this component:\n<prompt>\n${text}\n</prompt>\n\n` +
+      `List up to 4 things about the ${part} the prompt already covers, and up to 4 important ${part} details in the code it does not mention (short phrases, values in backticks). ` +
+      'List up to 4 casual phrases from the prompt with the precise term that says it better. Then rewrite only this part so it would get the code right, using precise terms and real values.',
+    schema,
+    effort: 'low',
+  });
+}
+
 /** Prompt practice comparison: works only from the two versions of code and the prompt. */
 export async function compare({ original, yours, prompt }) {
   const schema = obj({

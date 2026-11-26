@@ -582,3 +582,16 @@ html, body { overflow: clip; }
 .seg-btn.current:hover::before { background: var(--ink); }
 .progress { gap: 16px; }
 .seg-group { gap: 2px; }
+
+/* Prompt practice by part, inside the walkthrough */
+.checkpoint .cp-box { width: 100%; min-height: 120px; resize: vertical; border: 1px solid var(--line-strong); border-radius: var(--radius-m); padding: var(--space-3); line-height: 24px; max-width: 720px; }
+.checkpoint .cp-box:focus { border-color: var(--line-focus); outline: none; }
+.cp-earlier { display: grid; gap: var(--space-1); max-width: 720px; }
+.cp-earlier p { margin: 0; color: var(--ink-2); white-space: pre-wrap; }
+.cp-feedback { display: grid; gap: var(--space-4); max-width: 720px; }
+.cp-list { display: grid; gap: var(--space-1); }
+.cp-list ul { margin: 0; padding-left: 20px; display: grid; gap: 2px; }
+.cp-li { flex: 0 0 28px; }
+.seg-btn.practice::before { background: repeating-linear-gradient(90deg, var(--ink-3) 0 2px, transparent 2px 4px); }
+.seg-btn.practice.written::before, .seg-btn.practice.past::before { background: var(--ink-3); }
+.seg-btn.practice.current::before { background: var(--ink); }

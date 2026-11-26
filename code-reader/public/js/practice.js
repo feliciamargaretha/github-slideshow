@@ -32,9 +32,10 @@ export function mountPractice(app) {
     const ctx = P.ctx;
     const promptFirst = !!ctx.prompt;
     const series = (ctx.history || []).length > 1;
-    const label = series ? 'Rewrite your first prompt so it gets this result in one try' : promptFirst ? 'Rewrite this prompt' : 'Write the prompt that would build this code';
+    const written = (ctx.parts || []).filter((p) => p.text.trim());
+    const label = written.length ? 'Your parts, put together. Edit them into one prompt, then generate.' : series ? 'Rewrite your first prompt so it gets this result in one try' : promptFirst ? 'Rewrite this prompt' : 'Write the prompt that would build this code';
     promptBox = h('textarea', { class: 'prompt', id: 'practice-prompt', 'aria-label': label });
-    promptBox.value = P.draft ?? ctx.prompt ?? '';
+    promptBox.value = P.draft ?? (written.length ? written.map((p) => p.text.trim()).join('\n\n') : ctx.prompt ?? '');
     promptBox.addEventListener('input', () => { P.draft = promptBox.value; genBtn.disabled = !canGenerate(); });
 
     const chips = h('div', { class: 'chips' });
@@ -61,6 +62,8 @@ export function mountPractice(app) {
     else if (DIALECTS[ctx.dialect]?.preview === false) inlineMsg.replaceChildren(message('No preview for this code.', 'You can still write a prompt; the original side shows no preview.', null));
 
     const rail = h('aside', { class: 'practice-rail', 'aria-label': 'Hints' },
+      written.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, 'Your parts'),
+        ...(ctx.parts || []).map((p) => h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, p.label), h('p', { class: p.text.trim() ? '' : 'ink-3' }, p.text.trim() || 'Not written yet')))) : null,
       series ? seriesPanel(ctx) : null,
       h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, 'What makes a sharp UI prompt'),
       h('ul', { class: 'hint-list' },

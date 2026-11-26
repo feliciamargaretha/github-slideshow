@@ -101,6 +101,11 @@ const ROUTES = {
     }),
     run: ai.ask,
   },
+  check: {
+    kind: 'check',
+    clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40), text: str(b.text, 2000) }),
+    run: ai.checkPart,
+  },
   compare: {
     kind: 'compare',
     clean: (b) => ({ original: str(b.original, config.maxChars), yours: str(b.yours, config.maxChars), prompt: str(b.prompt, 2000) }),

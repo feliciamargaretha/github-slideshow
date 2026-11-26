@@ -27,6 +27,7 @@ export const api = {
   revise: (code, instruction, history) => post('revise', { code, instruction, history }),
   review: (prompts, code) => post('review', { prompts, code }),
   ask: (payload) => post('ask', payload),
+  checkPart: (payload) => post('check', payload),
   feedback: (payload) => post('feedback', payload),
 };
 

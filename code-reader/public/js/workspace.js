@@ -14,7 +14,7 @@ import { api } from './api.js';
 import { DIALECTS, detectDialect } from './detect.js';
 import { linesLabel, escapeHtml, hash } from './util.js';
 import { withConcepts, termDemo, codeWithConcepts } from './glossary.js';
-import { renderBanner, go, startReading } from './app.js';
+import { renderBanner, go, startReading, message } from './app.js';
 
 const COLOR = { structure: '#2563EB', layout: '#15803D', style: '#7C3AED', motion: '#C2410C', overview: '#0A0A0A', issue: '#B91C1C' };
 const SPACING = /^(padding|margin|gap|row-gap|column-gap)/;
@@ -89,6 +89,8 @@ export function mountWorkspace(app) {
   // ---- Loading ----------------------------------------------------------------
   function load({ source, dialect, prompt, origin, history, entering }) {
     S.history = history || (prompt ? [prompt] : []);
+    S.cp = null;
+    S.cpFeedback = {};
     S.model = buildModel(source, dialect);
     S.match = makeMatcher(S.model);
     S.steps = buildSteps(S.model, S.match);
@@ -100,6 +102,7 @@ export function mountWorkspace(app) {
     S.computed = null;
     S.loaded = true;
     S.starts = lineStarts(source);
+    S.parts = store.get('parts.' + hash(source), {});
     S.issues = staticIssues(S.model, S.match, { supports: (p, v) => { try { return CSS.supports(p, v); } catch { return true; } } });
     attachIssues(S.steps, S.issues);
     assignTermChips(S.steps, TERMS, known);
@@ -262,9 +265,9 @@ export function mountWorkspace(app) {
         for (const i of g.steps) {
           const st = S.steps[i];
           const btn = h('button', {
-            class: `seg-btn ${i < S.cur ? 'past' : ''} ${i === S.cur ? 'current' : ''}`, type: 'button',
+            class: `seg-btn ${i < S.cur || (S.cp && i === S.cur) ? 'past' : ''} ${i === S.cur && !S.cp ? 'current' : ''}`, type: 'button',
             'aria-label': `Step ${i + 1}: ${st.title}${st.issues.length ? ', has an issue' : ''}`,
-            'aria-current': i === S.cur && S.element === null ? 'step' : null,
+            'aria-current': i === S.cur && S.element === null && !S.cp ? 'step' : null,
             onclick: () => goTo(i),
           }, st.issues.length ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
           tooltip(btn, st.title);
@@ -281,15 +284,28 @@ export function mountWorkspace(app) {
         tooltip(btn, `${PANEL_LABEL[g.panel]}, ${g.steps.length} step${g.steps.length === 1 ? '' : 's'}`);
         progress.append(h('li', { class: 'seg-li' }, btn));
       }
+      const cpKey = cpAt(last);
+      if (cpKey) {
+        const cp = CHECKPOINTS.find((c) => c.key === cpKey);
+        const b = h('button', {
+          class: `seg-btn practice ${S.cp === cpKey ? 'current' : last < S.cur || (S.cp && cpIndex(S.cp) > last) ? 'past' : ''} ${S.parts[cpKey]?.trim() ? 'written' : ''}`,
+          type: 'button', 'aria-label': `${cp.title}${S.parts[cpKey]?.trim() ? ', written' : ''}`,
+          'aria-current': S.cp === cpKey ? 'step' : null, onclick: () => openCp(cpKey),
+        });
+        tooltip(b, cp.title);
+        progress.append(h('li', { class: 'cp-li' }, b));
+      }
     }
-    const prac = h('button', { class: 'seg-btn practice', type: 'button', 'aria-label': 'Practice the prompt', onclick: () => openPractice() });
-    tooltip(prac, 'Practice the prompt');
+    const prac = h('button', { class: 'seg-btn practice final', type: 'button', 'aria-label': 'Put your prompt together', onclick: () => openPractice() });
+    tooltip(prac, 'Put your prompt together');
     progress.append(h('li', { style: { flex: '0 0 48px' } }, prac));
     // Footer
     backBtn.disabled = S.cur === 0 && S.element === null;
-    counter.textContent = S.element !== null ? 'Element view' : `Step ${S.cur + 1} of ${S.steps.length}`;
-    const last = S.cur === S.steps.length - 1;
-    nextBtn.replaceChildren(last ? 'Practice the prompt' : 'Next', icon('arrowRight'));
+    const cpNow = S.cp && CHECKPOINTS.find((c) => c.key === S.cp);
+    counter.textContent = S.element !== null ? 'Element view' : cpNow ? `Prompt practice: ${cpNow.short}` : `Step ${S.cur + 1} of ${S.steps.length}`;
+    const atEnd = S.cp ? cpIndex(S.cp) === S.steps.length - 1 : S.cur === S.steps.length - 1 && !cpAt(S.cur);
+    nextBtn.replaceChildren(atEnd ? 'Put it together' : !S.cp && cpAt(S.cur) ? 'Prompt this part' : 'Next', icon('arrowRight'));
+    if (S.cp) backBtn.disabled = false;
   }
 
   // One concept label per concept on each screen of the walkthrough.
@@ -297,6 +313,7 @@ export function mountWorkspace(app) {
   function renderStep(dir = 'fade') {
     usedConcepts = new Set();
     if (S.element !== null) return renderElement();
+    if (S.cp) return renderCheckpoint(dir);
     const s = step();
     if (!s) { stepArea.replaceChildren(); return; }
     const keepScroll = dir === 'none' ? stepArea.scrollTop : 0;
@@ -710,6 +727,7 @@ export function mountWorkspace(app) {
   function goTo(i, dir) {
     if (i < 0 || i >= S.steps.length) return;
     const d = dir || (i > S.cur ? 'next' : i < S.cur ? 'back' : 'fade');
+    S.cp = null;
     S.cur = i;
     S.element = null;
     closePopover();
@@ -720,12 +738,122 @@ export function mountWorkspace(app) {
   }
   function next() {
     if (S.element !== null) { closeElement(); return; }
+    if (S.cp) {
+      const after = cpIndex(S.cp);
+      if (after >= S.steps.length - 1) { openPractice(); return; }
+      goTo(after + 1, 'next');
+      return;
+    }
+    if (cpAt(S.cur)) { openCp(cpAt(S.cur)); return; }
     if (S.cur === S.steps.length - 1) { openPractice(); return; }
     goTo(S.cur + 1, 'next');
   }
   function back() {
     if (S.element !== null) { closeElement(); return; }
+    if (S.cp) { goTo(cpIndex(S.cp), 'back'); return; }
+    if (S.cur > 0 && cpAt(S.cur - 1)) { openCp(cpAt(S.cur - 1), 'back'); return; }
     goTo(S.cur - 1, 'back');
+  }
+
+  // ---- Prompt practice by part: after Structure and Layout, after Style, after Motion ----------
+  const CHECKPOINTS = [
+    { key: 'layout', short: 'structure and layout', title: 'Prompt the structure and layout', groups: ['structure', 'layout'],
+      ask: 'Describe what this component is made of and how it is arranged, as if you were asking an AI to build it: its parts, whether they sit in a row, a column or a grid, their sizes and the spacing. Leave colors and motion for later.',
+      placeholder: 'For example: a pricing section with three cards in a row, 24px apart. Each card is 240px wide with 24px padding: a heading, a price and a full-width button.' },
+    { key: 'style', short: 'style', title: 'Prompt the style', groups: ['style'],
+      ask: 'Now describe how it looks: colors, type (font, size, weight), borders, corner radius and shadows.',
+      placeholder: 'For example: white cards with a 1px light grey border and 8px rounded corners on a light grey page. Headings 18px semibold, prices 32px bold, blue buttons with white text.' },
+    { key: 'motion', short: 'motion', title: 'Prompt the motion', groups: ['motion'],
+      ask: 'Finally, describe what moves: what starts it (hover, click, page load), what changes, how long it takes and the easing.',
+      placeholder: 'For example: on hover, the card lifts 6px and its shadow grows, over 240ms with ease-out.' },
+  ];
+  const groupOf = (st) => (st.overview ? 'structure' : st.panel);
+  /** Index of the step after which a checkpoint opens. */
+  function cpIndex(key) {
+    const cp = CHECKPOINTS.find((c) => c.key === key);
+    let idx = -1;
+    S.steps.forEach((st, i) => { if (cp.groups.includes(groupOf(st))) idx = i; });
+    return idx;
+  }
+  function cpAt(i) {
+    for (const c of CHECKPOINTS) if (cpIndex(c.key) === i && i >= 0) return c.key;
+    return null;
+  }
+  function openCp(key, dir = 'next') {
+    S.cp = key;
+    S.cur = cpIndex(key);
+    S.element = null;
+    closePopover();
+    renderChrome();
+    renderStep(dir);
+    announce(CHECKPOINTS.find((c) => c.key === key).title);
+  }
+  const partsKey = () => 'parts.' + hash(S.model.source);
+  function saveParts() { store.set(partsKey(), S.parts); }
+
+  function renderCheckpoint(dir) {
+    const cp = CHECKPOINTS.find((c) => c.key === S.cp);
+    const card = h('article', { class: `step checkpoint ${dir === 'next' ? 'enter-next' : dir === 'back' ? 'enter-back' : dir === 'none' ? '' : 'fade'}`, 'aria-labelledby': 'step-title' });
+    card.append(h('div', { class: 'meta t-caption' }, h('span', { class: 'tag' }, 'Prompt practice'),
+      ...cp.groups.map((g) => h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon(g), PANEL_LABEL[g]))));
+    card.append(h('h2', { class: 't-title', id: 'step-title' }, cp.title));
+    card.append(h('p', { class: 'explain', style: { margin: 0 } }, cp.ask));
+    // Earlier parts, so the prompt builds up
+    const earlier = CHECKPOINTS.slice(0, CHECKPOINTS.indexOf(cp)).filter((c) => S.parts[c.key]?.trim());
+    if (earlier.length) card.append(h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, 'Your prompt so far'), ...earlier.map((c) => h('p', {}, S.parts[c.key]))));
+    // Terms met in this part
+    const terms = [];
+    for (const st of S.steps) if (cp.groups.includes(groupOf(st))) for (const se of st.sentences) for (const m of se.text.matchAll(/`([^`]+)`/g)) {
+      const k = termKey(m[1], TERMS);
+      if (k && !terms.includes(k)) terms.push(k);
+    }
+    const box = h('textarea', { class: 'cp-box', id: 'cp-box', rows: '4', placeholder: cp.placeholder, 'aria-label': cp.title });
+    box.value = S.parts[cp.key] || '';
+    box.addEventListener('input', () => { S.parts[cp.key] = box.value; saveParts(); checkBtn.disabled = !box.value.trim(); renderChrome(); box.focus({ preventScroll: true }); });
+    box.addEventListener('keydown', (e) => e.stopPropagation());
+    card.append(box);
+    if (terms.length) card.append(h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Words from these steps. Click one to add it.'),
+      h('div', { class: 'chips' }, ...terms.map((k) => h('button', { class: 'tag', type: 'button', title: `“${TERMS[k].casual}”`, onclick: () => {
+        const s0 = box.selectionStart ?? box.value.length;
+        const pad = box.value && !/\s$/.test(box.value.slice(0, s0)) ? ' ' : '';
+        box.setRangeText(pad + TERMS[k].precise.replace(/ plus a duration$/, ''), s0, box.selectionEnd ?? s0, 'end');
+        box.dispatchEvent(new Event('input'));
+      } }, TERMS[k].precise)))));
+    const feedback = h('div', { class: 'cp-feedback', 'aria-live': 'polite' });
+    const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !box.value.trim() ? true : null, onclick: () => checkPart(cp, box.value, feedback, checkBtn) }, 'Check my part');
+    card.append(h('div', { class: 'gen-row' }, checkBtn, h('span', { class: 't-caption ink-3' }, 'Claude compares your words with the code. Next keeps going either way.')), feedback);
+    if (S.cpFeedback?.[cp.key]) showFeedback(S.cpFeedback[cp.key], feedback, box);
+    stepArea.replaceChildren(card);
+    stepArea.scrollTop = 0;
+    preview.send({ type: 'outline', ids: [] });
+  }
+
+  async function checkPart(cp, text, out, btn) {
+    btn.disabled = true;
+    btn.replaceChildren(icon('spinner'), 'Checking');
+    out.replaceChildren(...[0, 1, 2].map(() => h('span', { class: 'placeholder-line', 'aria-hidden': 'true' })));
+    const r = await api.checkPart({ code: S.model.source, part: cp.short, text });
+    btn.disabled = false;
+    btn.replaceChildren('Check my part');
+    if (!r.ok) {
+      if (r.status === 503) { app.state.ai = r.error === 'paused' ? 'paused' : 'not_configured'; renderBanner(); }
+      out.replaceChildren(message(r.status === 503 ? 'Claude is not available right now.' : 'That did not work.', 'Your part is saved. You can keep going and check it later.', null));
+      return;
+    }
+    (S.cpFeedback ||= {})[cp.key] = r.data;
+    showFeedback(r.data, out, out.parentElement.querySelector('#cp-box'));
+  }
+
+  function showFeedback(d, out, box) {
+    usedConcepts = new Set();
+    const list = (title, items) => (items?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, title), h('ul', {}, ...items.map((x) => h('li', {}, ...richText({ text: x, chips: [] }))))) : null);
+    const use = d.sharper ? h('button', { class: 'btn btn-text', type: 'button', onclick: () => { box.value = d.sharper; box.dispatchEvent(new Event('input')); } }, 'Use this version') : null;
+    out.replaceChildren(
+      list('You covered', d.covered),
+      list('Missing from the code', d.missed),
+      d.terms?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, 'Say it more precisely'), ...d.terms.map((t) => h('div', { class: 'pair-row' }, h('span', {}, `“${t.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, t.precise)))) : null,
+      d.sharper ? h('div', { class: 'sharper' }, h('span', { class: 't-strong' }, 'A sharper version of this part'), h('p', {}, d.sharper), h('div', {}, use)) : null,
+      h('span', { class: 't-caption ink-3' }, 'Written by AI from the code'));
   }
   function jumpPanel(p) {
     const i = S.steps.findIndex((s) => s.panel === p);
@@ -865,7 +993,8 @@ export function mountWorkspace(app) {
       const k = termKey(m[1], TERMS);
       if (k && !seen.has(k)) { seen.add(k); terms.push(k); }
     }
-    app.practice.open({ source: S.model.source, prompt: S.prompt, history: S.history, origin: S.origin, terms, known, lost: Object.keys(signals).filter((c) => signals[c] === 'lost'), dialect: S.model.dialect });
+    const parts = CHECKPOINTS.filter((c) => cpIndex(c.key) >= 0).map((c) => ({ key: c.key, label: c.short, text: S.parts[c.key] || '' }));
+    app.practice.open({ source: S.model.source, prompt: S.prompt, history: S.history, parts, origin: S.origin, terms, known, lost: Object.keys(signals).filter((c) => signals[c] === 'lost'), dialect: S.model.dialect });
     go('practice');
   }
 

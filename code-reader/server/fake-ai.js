@@ -82,3 +82,12 @@ export async function ask({ turns }) {
   const q = turns[turns.length - 1]?.content || '';
   return { answer: `Test mode: you asked "${q.slice(0, 80)}". The \`display: flex\` rule on line 12 puts the items in a row.` };
 }
+
+export async function checkPart({ part, text }) {
+  return {
+    covered: [`Test mode: you described the ${part}`],
+    missed: ['Test mode: the exact spacing, `gap: 24px`'],
+    terms: [{ casual: 'space between', precise: 'gap' }],
+    sharper: `Test mode: ${text.trim()} Use a 24px gap.`,
+  };
+}

@@ -1,102 +1,98 @@
 <style>
   body { margin: 0; min-height: 100vh; background: #f4f4f5; font-family: system-ui, sans-serif; color: #0a0a0a; }
   svg.i { width: 18px; height: 18px; flex: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
-  .tab {
-    position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 1;
-    display: grid; place-items: center; width: 40px; height: 48px; padding: 0;
-    border: 1px solid #d4d4d8; border-left: 0; border-radius: 0 8px 8px 0; background: #fff; color: #0a0a0a; cursor: pointer;
-  }
-  .tab:focus-visible, .toggle:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 2px; }
-  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 280px; z-index: 2; pointer-events: none; visibility: hidden; }
-  .sidebar.open { pointer-events: auto; }
-  .shape { position: absolute; left: 0; top: 0; height: 100%; width: calc(100% + 120px); overflow: visible; filter: drop-shadow(8px 0 24px rgba(0, 0, 0, .12)); }
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 64px; z-index: 2; }
+  .shape { position: absolute; left: 0; top: 0; height: 100%; width: 400px; overflow: visible; pointer-events: none; filter: drop-shadow(8px 0 24px rgba(0, 0, 0, .1)); }
   .shape path { fill: #fff; }
-  .inner { position: relative; height: 100%; box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 4px; opacity: 0; font-size: 14px; }
-  .head { display: flex; align-items: center; gap: 10px; padding: 4px 4px 12px; }
-  .logo { width: 28px; height: 28px; border-radius: 6px; background: #0a0a0a; color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 13px; }
-  .head strong { flex: 1; font-size: 15px; }
-  .toggle { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 6px; background: none; color: #52525b; cursor: pointer; }
+  .clip { position: absolute; left: 0; top: 0; bottom: 0; width: 64px; overflow: hidden; }
+  .inner { width: 280px; height: 100%; box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+  .t { white-space: nowrap; opacity: 0; }
+  .head { display: flex; align-items: center; gap: 10px; height: 40px; margin-bottom: 8px; }
+  .toggle { width: 40px; height: 40px; display: grid; place-items: center; flex: none; padding: 0; border: 0; border-radius: 8px; background: none; color: #52525b; cursor: pointer; }
   .toggle:hover { background: #f4f4f5; color: #0a0a0a; }
-  .search { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 8px 10px; border: 1px solid #e4e4e7; border-radius: 8px; color: #71717a; }
-  .search kbd { margin-left: auto; font: 12px system-ui, sans-serif; color: #a1a1aa; }
-  .label { padding: 16px 10px 6px; font-size: 12px; color: #a1a1aa; }
-  .item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; color: #3f3f46; text-decoration: none; }
+  .toggle:focus-visible, .item:focus-visible { outline: 2px solid #0a0a0a; outline-offset: -2px; }
+  .logo { width: 28px; height: 28px; flex: none; border-radius: 6px; background: #0a0a0a; color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 13px; }
+  .head strong { font-size: 15px; }
+  .item { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 11px; box-sizing: border-box; overflow: hidden; width: max(40px, calc(var(--w, 64px) - 24px)); border-radius: 8px; color: #3f3f46; text-decoration: none; }
   .item:hover { background: #f4f4f5; color: #0a0a0a; }
   .item.active { background: #f4f4f5; color: #0a0a0a; font-weight: 500; }
   .count { margin-left: auto; font-size: 12px; color: #a1a1aa; }
-  .dot { width: 8px; height: 8px; margin: 0 5px; border-radius: 2px; background: #a1a1aa; }
-  .user { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px; border-top: 1px solid #f4f4f5; }
-  .avatar { width: 28px; height: 28px; border-radius: 50%; background: #e4e4e7; display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+  .dot { width: 8px; height: 8px; margin: 0 5px; flex: none; border-radius: 2px; background: #a1a1aa; }
+  .label { height: 28px; padding: 12px 11px 0; font-size: 12px; color: #a1a1aa; }
+  .user { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 6px; }
+  .avatar { width: 28px; height: 28px; flex: none; border-radius: 50%; background: #e4e4e7; display: grid; place-items: center; font-size: 11px; font-weight: 600; }
   .user small { display: block; color: #71717a; }
 </style>
 
-<!-- The same "sidebar" icon opens and closes it -->
 <svg width="0" height="0" style="position:absolute"><symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M9 4v16" /></symbol></svg>
 
-<button class="tab" type="button" aria-label="Open sidebar" aria-expanded="false" aria-controls="sidebar"><svg class="i"><use href="#i-sidebar" /></svg></button>
-
-<aside class="sidebar" id="sidebar" aria-label="Sidebar">
+<aside class="sidebar" aria-label="Sidebar">
   <svg class="shape" aria-hidden="true"><path /></svg>
-  <nav class="inner">
-    <div class="head">
-      <span class="logo">A</span><strong>Acme</strong>
-      <button class="toggle" type="button" aria-label="Close sidebar"><svg class="i"><use href="#i-sidebar" /></svg></button>
-    </div>
-    <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>Search<kbd>⌘K</kbd></div>
-    <a class="item active" href="#"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" /></svg>Home</a>
-    <a class="item" href="#"><svg class="i" viewBox="0 0 24 24"><path d="M4 13l3-8h10l3 8v6H4zM4 13h5l1 2h4l1-2h5" /></svg>Inbox<span class="count">12</span></a>
-    <a class="item" href="#"><svg class="i" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7" /></svg>Analytics</a>
-    <a class="item" href="#"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4a3 3 0 0 1 0 6M21 20c0-2.5-1.5-4.6-3.6-5.5" /></svg>Team</a>
-    <span class="label">Projects</span>
-    <a class="item" href="#"><span class="dot"></span>Website redesign</a>
-    <a class="item" href="#"><span class="dot"></span>Mobile app</a>
-    <a class="item" href="#"><span class="dot"></span>Brand refresh</a>
-    <a class="item" href="#"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z" /></svg>Settings</a>
-    <div class="user"><span class="avatar">JD</span><span>Jamie Doe<small>jamie@acme.co</small></span></div>
-  </nav>
+  <div class="clip">
+    <nav class="inner">
+      <div class="head">
+        <button class="toggle" type="button" aria-label="Expand sidebar" aria-expanded="false"><svg class="i"><use href="#i-sidebar" /></svg></button>
+        <span class="logo t">A</span><strong class="t">Acme</strong>
+      </div>
+      <a class="item" href="#" title="Search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg><span class="t">Search</span></a>
+      <a class="item active" href="#" title="Home"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" /></svg><span class="t">Home</span></a>
+      <a class="item" href="#" title="Inbox"><svg class="i" viewBox="0 0 24 24"><path d="M4 13l3-8h10l3 8v6H4zM4 13h5l1 2h4l1-2h5" /></svg><span class="t">Inbox</span><span class="count t">12</span></a>
+      <a class="item" href="#" title="Analytics"><svg class="i" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7" /></svg><span class="t">Analytics</span></a>
+      <a class="item" href="#" title="Team"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4a3 3 0 0 1 0 6M21 20c0-2.5-1.5-4.6-3.6-5.5" /></svg><span class="t">Team</span></a>
+      <span class="label t">Projects</span>
+      <a class="item" href="#" title="Website redesign"><span class="dot"></span><span class="t">Website redesign</span></a>
+      <a class="item" href="#" title="Mobile app"><span class="dot"></span><span class="t">Mobile app</span></a>
+      <a class="item" href="#" title="Settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z" /></svg><span class="t">Settings</span></a>
+      <div class="user"><span class="avatar">JD</span><span class="t">Jamie Doe<small>jamie@acme.co</small></span></div>
+    </nav>
+  </div>
 </aside>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script>
-  const tab = document.querySelector('.tab');
   const bar = document.querySelector('.sidebar');
+  const clip = bar.querySelector('.clip');
   const path = bar.querySelector('.shape path');
-  const inner = bar.querySelector('.inner');
-  const W = 280;                       // open width
-  const s = { w: 0, bulge: 0 };        // current width, and how far the right edge curves out (px)
+  const toggle = bar.querySelector('.toggle');
+  const texts = bar.querySelectorAll('.t');
+  const MIN = 64, MAX = 280;            // icon-only width, full width
+  const s = { w: MIN, bulge: 0 };       // current width, and how far the right edge curves out (px)
+  let expanded = false, tl;
 
   // The right edge is one smooth curve from top to bottom; bulge 0 makes it straight.
   function draw() {
     const h = bar.clientHeight;
     path.setAttribute('d', `M0 0 H${s.w} Q${s.w + s.bulge} ${h / 2} ${s.w} ${h} H0 Z`);
+    clip.style.width = s.w + 'px';
+    clip.style.setProperty('--w', s.w + 'px');   // items follow the width, so highlights stay inside
   }
   draw();
   window.addEventListener('resize', draw);
 
-  let tl;
-  function open() {
+  function expand() {
     tl?.kill();
-    bar.classList.add('open');
-    tab.setAttribute('aria-expanded', 'true');
-    gsap.set(bar, { visibility: 'visible' });
     tl = gsap.timeline({ onUpdate: draw })
-      .to(s, { w: W, duration: 0.55, ease: 'power3.out' }, 0)
+      .to(s, { w: MAX, duration: 0.55, ease: 'power3.out' }, 0)
       .to(s, { bulge: 56, duration: 0.3, ease: 'power2.out' }, 0)            // the edge bows out as it travels
       .to(s, { bulge: 0, duration: 0.7, ease: 'elastic.out(1, 0.35)' }, 0.3)  // then settles straight with a small bounce
-      .to(inner, { opacity: 1, duration: 0.25 }, 0.35);
+      .to(texts, { opacity: 1, duration: 0.25, stagger: 0.015 }, 0.25);
   }
-  function close() {
+  function collapse() {
     tl?.kill();
-    bar.classList.remove('open');
-    tab.setAttribute('aria-expanded', 'false');
-    tl = gsap.timeline({ onUpdate: draw, onComplete: () => gsap.set(bar, { visibility: 'hidden' }) })
-      .to(inner, { opacity: 0, duration: 0.15 }, 0)
-      .to(s, { bulge: -36, duration: 0.2, ease: 'power2.out' }, 0)           // the edge trails behind as it closes
-      .to(s, { w: 0, bulge: 0, duration: 0.4, ease: 'power3.in' }, 0.1);
+    tl = gsap.timeline({ onUpdate: draw })
+      .to(texts, { opacity: 0, duration: 0.12 }, 0)
+      .to(s, { bulge: -32, duration: 0.2, ease: 'power2.out' }, 0)           // the edge trails behind as it closes
+      .to(s, { w: MIN, duration: 0.45, ease: 'power3.inOut' }, 0.05)
+      .to(s, { bulge: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' }, 0.35); // and settles straight at icon width
   }
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) gsap.globalTimeline.timeScale(20);
-  tab.addEventListener('click', () => (bar.classList.contains('open') ? close() : open()));
-  bar.querySelector('.toggle').addEventListener('click', close);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && bar.classList.contains('open')) close(); });
+  function set(open) {
+    expanded = open;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Collapse sidebar' : 'Expand sidebar');
+    open ? expand() : collapse();
+  }
+  toggle.addEventListener('click', () => set(!expanded));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && expanded) set(false); });
 </script>

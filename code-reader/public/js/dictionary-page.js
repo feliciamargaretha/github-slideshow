@@ -42,6 +42,7 @@ export const DETAILS = {
   'outline-offset': { design: 'Gap between a layer and its focus ring', about: 'An outline is a ring drawn around a layer, most often the focus ring that shows keyboard users where they are. outline-offset is the space between the layer and that ring, like an outside stroke pushed a few pixels away. A small gap (2 to 4px) keeps the ring from blending into the button.', related: ['radius', 'padding', 'margin'] },
   'white-space': { design: 'Text wrapping (auto width vs. fixed width text)', about: 'How a text layer behaves when it runs out of room. Normal wraps onto the next line, like a fixed-width text box. nowrap keeps it on one line, like an auto-width text layer that just keeps growing. pre keeps every line break exactly as typed.', related: ['nowrap', 'fit-content', 'flex-shrink'] },
   nowrap: { design: 'Auto width text, one line', about: 'The text stays on a single line and never wraps, like an auto-width text layer in Figma. If the box is too narrow, the text spills out, so it is often paired with an ellipsis (…) to cut it off neatly. Handy for labels, buttons and menu items that should never break onto two lines.', related: ['white-space', 'fit-content', 'flex-shrink'] },
+  overflow: { design: 'Clip content', about: 'What a frame does with content that is bigger than it. visible lets it spill outside, like Clip content turned off in Figma. hidden cuts it off at the frame edge, like Clip content turned on; it also keeps images inside rounded corners. auto (or scroll) clips it but adds a scrollbar so people can still reach it.', related: ['radius', 'white-space', 'fit-content', 'position'] },
   'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
@@ -287,6 +288,14 @@ const INSPECT = {
       { caption: 'With an ellipsis, the extra text is cut off neatly inside the box.', frame: F(120, 30, 160, 76), items: [I(132, 42, 136, 22, 'Website redes…')], marks: [{ t: 'chip', x: 120, y: 116, text: 'text-overflow: ellipsis' }] },
     ],
   }),
+  overflow: () => ({
+    height: 150,
+    frames: [
+      { caption: 'overflow: visible: the content is wider than the frame and spills outside.', frame: F(120, 30, 160, 84), items: [I(132, 42, 220, 60, 'Content')], marks: [{ t: 'chip', x: 120, y: 122, text: 'overflow: visible' }] },
+      { caption: 'overflow: hidden: the part outside the frame is cut off (Clip content).', frame: F(120, 30, 160, 84), items: [I(132, 42, 148, 60, 'Content')], marks: [{ t: 'ghost', x: 280, y: 42, w: 72, h: 60, dashed: true }, { t: 'chip', x: 120, y: 122, text: 'overflow: hidden' }] },
+      { caption: 'overflow: auto: still clipped, with a scrollbar to reach the rest.', frame: F(120, 30, 160, 84), items: [I(132, 42, 148, 60, 'Content')], marks: [{ t: 'line', x: 126, y: 108, w: 90, h: 3 }, { t: 'chip', x: 120, y: 122, text: 'overflow: auto' }] },
+    ],
+  }),
   'aspect-ratio': () => ({
     height: 200,
     frames: [
@@ -447,7 +456,7 @@ export const TREE = [
       N('grid', 'value', [N('alignment', 'setting')]),
     ]),
   ] },
-  { cat: 'Size and spacing', nodes: [N('padding'), N('margin'), N('box-sizing'), N('fit-content'), N('aspect-ratio')] },
+  { cat: 'Size and spacing', nodes: [N('padding'), N('margin'), N('box-sizing'), N('fit-content'), N('aspect-ratio'), N('overflow')] },
   { cat: 'Position', nodes: [
     N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
   ] },

@@ -82,6 +82,12 @@ export const GLOSSARY = {
     text: 'A value of white-space: the text stays on one line and never wraps, even when the box is too narrow. Often paired with an ellipsis (…) for text that is too long.',
     example: '.label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
   },
+  overflow: {
+    title: 'overflow',
+    match: /\boverflow\b(?![-\w])/i,
+    text: 'Decides what happens to content that does not fit in its box: visible lets it spill out, hidden cuts it off at the edge, auto adds a scrollbar only when needed.',
+    example: '.card { overflow: hidden; } /* the image is clipped to the rounded corners */',
+  },
   'aspect-ratio': {
     title: 'aspect-ratio',
     match: /\baspect[- ]ratio\b/i,
@@ -490,7 +496,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-self', stretch: 'stretch', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', overflow: 'overflow', 'overflow-x': 'overflow', 'overflow-y': 'overflow', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

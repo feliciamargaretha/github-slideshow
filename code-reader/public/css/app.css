@@ -884,3 +884,6 @@ html, body { overflow: clip; }
 
 .ins-svg .fillshape { fill: var(--surface-3); stroke: var(--ink-3); stroke-width: 1; }
 .ins-svg .handle { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+
+.ins-svg .c2 { stroke: var(--ink); stroke-width: 2; }
+.ins-svg .gl { font: 11px var(--font); fill: var(--ink-3); stroke: none; }

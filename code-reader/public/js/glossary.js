@@ -100,6 +100,12 @@ export const GLOSSARY = {
     text: 'Not a CSS word: a name this code made up for how far the right edge of the sidebar curves out, in pixels. 0 is a straight edge; 56 bows the middle of the edge out by 56px. GSAP animates it like any other number.',
     example: "gsap.to(s, { bulge: 56 }) // the edge bows out\npath: M0 0 H280 Q336 300 280 600 H0 Z",
   },
+  elastic: {
+    title: 'elastic.out',
+    match: /\belastic\b/i,
+    text: 'A GSAP easing that overshoots the end, springs back and wobbles a few times before settling, like a rubber band. The two numbers tune it: elastic.out(1, 0.35) means normal strength, quick wobbles.',
+    example: "gsap.to(s, { bulge: 0, ease: 'elastic.out(1, 0.35)' })",
+  },
   'aspect-ratio': {
     title: 'aspect-ratio',
     match: /\baspect[- ]ratio\b/i,
@@ -508,7 +514,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-self', stretch: 'stretch', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', bulge: 'bulge', 'margin-top': 'margin', 'margin-left': 'margin', 'margin-right': 'margin', 'margin-bottom': 'margin', overflow: 'overflow', 'overflow-x': 'overflow', 'overflow-y': 'overflow', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', elastic: 'elastic', bulge: 'bulge', 'margin-top': 'margin', 'margin-left': 'margin', 'margin-right': 'margin', 'margin-bottom': 'margin', overflow: 'overflow', 'overflow-x': 'overflow', 'overflow-y': 'overflow', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

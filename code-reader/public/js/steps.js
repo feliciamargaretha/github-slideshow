@@ -6,8 +6,8 @@ import { ruleTargets } from './model.js';
 import { humanizeName, plural, cap, range } from './util.js';
 import { easing } from './motion.js';
 
-export const PANELS = ['structure', 'layout', 'style', 'motion'];
-export const PANEL_LABEL = { structure: 'Structure', layout: 'Layout', style: 'Style', motion: 'Motion' };
+export const PANELS = ['structure', 'layout', 'style', 'interaction', 'motion'];
+export const PANEL_LABEL = { structure: 'Structure', layout: 'Layout', style: 'Style', interaction: 'Interaction', motion: 'Motion' };
 
 let seq = 0;
 import { explainLine, splitPieces, pieceTitle } from './js-explain.js';
@@ -215,7 +215,7 @@ export function buildSteps(model, match = () => []) {
         else ss.push(sentence(t, [ln.n]));
       }
       if (!ss.length) ss.push(sentence('These lines close the piece of code above.', p.lines.map((l) => l.n)));
-      steps.push({ panel: 'motion', concept: 'javascript', rank: 47, title: pieceTitle(p), sentences: ss, lines: p.lines.map((l) => l.n), targets: [...targets] });
+      steps.push({ panel: 'interaction', concept: 'javascript', rank: 47, title: pieceTitle(p), sentences: ss, lines: p.lines.map((l) => l.n), targets: [...targets] });
     }
   }
 
@@ -264,7 +264,7 @@ function overviewStep(model, steps) {
   return {
     id: 'overview', panel: 'overview', concept: 'overview', rank: 0, overview: true,
     title: 'What this code builds',
-    sentences: [sentence(`This is ${what}${layout}${motion}. The steps start with the HTML, then layout, style and motion.`, [])],
+    sentences: [sentence(`This is ${what}${layout}${motion}. The steps start with the HTML, then ${(() => { const ps = ['layout', 'style', 'interaction', 'motion'].filter((p) => steps.some((x) => x.panel === p)); return ps.length > 1 ? ps.slice(0, -1).join(', ') + ' and ' + ps[ps.length - 1] : ps[0] || 'layout'; })()}.`, [])],
     lines: [], targets: root ? [root.id] : [], issues: [],
   };
 }

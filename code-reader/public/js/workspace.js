@@ -18,7 +18,7 @@ import { renderBanner, go, startReading, message } from './app.js';
 import { recordReading, recordProgress, recordCheck } from './history.js';
 
 // Step outlines are monochrome; only issues keep a red dashed outline.
-const COLOR = { structure: '#0A0A0A', layout: '#0A0A0A', style: '#0A0A0A', motion: '#0A0A0A', overview: '#0A0A0A', issue: '#B91C1C' };
+const COLOR = { structure: '#0A0A0A', layout: '#0A0A0A', style: '#0A0A0A', interaction: '#0A0A0A', motion: '#0A0A0A', overview: '#0A0A0A', issue: '#B91C1C' };
 const SPACING = /^(padding|margin|gap|row-gap|column-gap)/;
 const SIZE = /^(width|height|min-width|max-width|min-height|max-height|aspect-ratio)$/;
 const COLORISH = /color|background|fill|stroke|border$/;
@@ -235,7 +235,7 @@ export function mountWorkspace(app) {
     const cur = step();
     let active = null;
     PANELS.forEach((p, i) => {
-      if (p === 'motion' && !counts.motion) return;
+      if ((p === 'motion' || p === 'interaction') && !counts[p]) return;
       if (!counts[p]) return;
       const hasIssue = S.steps.some((s) => s.panel === p && s.issues.length);
       const t = h('button', {
@@ -799,6 +799,9 @@ export function mountWorkspace(app) {
     { key: 'style', short: 'style', title: 'Prompt the style', groups: ['style'],
       ask: 'Describe how it looks, as if you were asking an AI to build it.',
       placeholder: 'For example: white cards with a 1px light grey border and 8px rounded corners on a light grey page. Headings 18px semibold, prices 32px bold, blue buttons with white text.' },
+    { key: 'interaction', short: 'interaction', title: 'Prompt the interaction', groups: ['interaction'],
+      ask: 'Describe what the visitor can do and what happens, as if you were asking an AI to build it.',
+      placeholder: 'For example: clicking the sidebar icon expands the sidebar to full width; clicking it again or pressing Escape collapses it back to icons only.' },
     { key: 'motion', short: 'motion', title: 'Prompt the motion', groups: ['motion'],
       ask: 'Describe what moves and how, as if you were asking an AI to build it.',
       placeholder: 'For example: on hover, the card lifts 6px and its shadow grows, over 240ms with ease-out.' },
@@ -832,6 +835,7 @@ export function mountWorkspace(app) {
   const TEMPLATES = {
     layout: 'This is a [what the component is]. It contains [the parts inside it]. The parts sit in a [row / column / grid] with [space] between them. Each [part] is [width] wide with [space] of inner spacing.',
     style: 'The background is [color] and the text is [color]. Headings are [size] and [weight]. The [element] has a [border] border, [radius] rounded corners and a [soft / strong / no] shadow.',
+    interaction: 'When the visitor [clicks / presses a key / hovers] on the [element], the [element] [what happens, for example opens]. [another trigger, for example pressing Escape] [what it does].',
     motion: 'When the user [hovers / clicks / loads the page], the [element] [what changes, for example lifts 4px]. It takes [duration] with [ease-out / ease-in-out] easing.',
   };
   // Easy: fill in the blanks of a template (one dot). Normal: write it your own way (two dots).
@@ -871,7 +875,7 @@ export function mountWorkspace(app) {
     const r = await api.template({ code: S.model.source, part: cp.short });
     const t = r.ok && typeof r.data.template === 'string' ? r.data.template.trim() : '';
     // A style or layout template must not ask about motion; fall back to the built-in one if it does.
-    const strays = cp.key !== 'motion' && /\b(hover|transition|animat\w*|duration|easing|ease-\w+|\d+\s?ms)\b/i.test(t);
+    const strays = cp.key === 'motion' ? false : cp.key === 'interaction' ? /\b(transition|duration|easing|ease-\w+|\d+\s?ms)\b/i.test(t) : /\b(hover|transition|animat\w*|duration|easing|ease-\w+|\d+\s?ms)\b/i.test(t);
     if (t && !strays && (t.match(/\[[^\]]*\]/g) || []).length >= 2) {
       S.templates[cp.key] = t;
       S.blanks[cp.key] = [];
@@ -1357,7 +1361,7 @@ export function mountWorkspace(app) {
       if (!S.loaded) return;
       if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
-      else if (/^[1-4]$/.test(e.key)) jumpPanel(PANELS[Number(e.key) - 1]);
+      else if (/^[1-5]$/.test(e.key)) jumpPanel(PANELS[Number(e.key) - 1]);
       else if (e.key === 'r' || e.key === 'R') motion.replay();
       else if (e.key === 'e' || e.key === 'E') { e.preventDefault(); openDrawer(); }
     }

@@ -8,6 +8,7 @@ const MAX = 40;
 const PARTS = [
   { key: 'layout', label: 'Structure and layout' },
   { key: 'style', label: 'Style' },
+  { key: 'interaction', label: 'Interaction' },
   { key: 'motion', label: 'Motion' },
 ];
 

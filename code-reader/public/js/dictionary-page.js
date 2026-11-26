@@ -511,7 +511,6 @@ export const TREE = [
   { cat: 'Building blocks', nodes: [
     N('element', null, [N('parent', 'part'), N('children', 'part'), N('before', 'part'), N('after', 'part')]),
     N('selector', null, [N('class', 'part')]),
-    N('querySelector'), N('addEventListener'),
   ] },
   { cat: 'Layout', nodes: [
     N('display', null, [
@@ -525,6 +524,7 @@ export const TREE = [
     N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
   ] },
   { cat: 'Style', nodes: [N('radius'), N('white-space', null, [N('nowrap', 'value')]), N('stroke-linecap'), N('stroke-linejoin'), N('outline-offset'), N('pointer-events')] },
+  { cat: 'Interaction', nodes: [N('querySelector'), N('addEventListener')] },
   { cat: 'Motion', nodes: [N('bulge'), N('stagger'), N('transition', null, [N('easing', 'setting', [N('elastic', 'value')])]), N('keyframes'), N('transform')] },
 ];
 const FAMILY = {};

@@ -58,6 +58,8 @@ const PANEL_SVG = {
   layout: '<rect x="5.5" y="1" width="5" height="4"/><rect x="5.5" y="6" width="5" height="4"/><rect x="5.5" y="11" width="5" height="4"/>',
   // an outlined square behind a filled, rounded one: border, fill and radius, the things style sets
   style: '<rect x="1.75" y="1.75" width="8.5" height="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="6" width="9" height="9" rx="2.5"/>',
+  // a square with a pointer tapping it: something the visitor does
+  interaction: '<rect x="1.75" y="1.75" width="8.5" height="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 7.5 15 10.5 11.6 11.6 10.5 15z"/>',
   // a square with a motion trail; it moves on hover
   motion: '<rect class="pi-t2" x="1" y="6" width="4" height="4" opacity=".2"/><rect class="pi-t1" x="4.5" y="5.5" width="5" height="5" opacity=".45"/><rect class="pi-head" x="9" y="5" width="6" height="6"/>',
 };

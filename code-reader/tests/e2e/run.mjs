@@ -49,7 +49,7 @@ for (const s of samples) {
   const owned = new Set(st.steps.flatMap((x) => x.lines));
   const missing = st.lines.map((t, i) => (t.trim() && !owned.has(i + 1) ? i + 1 : null)).filter(Boolean);
   check(`R14 ${s}: every line belongs to a step`, missing.length === 0, missing.length ? `missing ${missing.join(',')}` : `${st.steps.length} steps`);
-  const order = st.steps.filter((x) => x.panel !== 'overview').map((x) => ['structure', 'layout', 'style', 'motion'].indexOf(x.panel));
+  const order = st.steps.filter((x) => x.panel !== 'overview').map((x) => ['structure', 'layout', 'style', 'interaction', 'motion'].indexOf(x.panel));
   check(`R14 ${s}: panels run simplest first`, order.every((v, i) => i === 0 || v >= order[i - 1]));
   const flags = st.steps.flatMap((x) => x.issues);
   if (flags.length) flaggedWorking++;

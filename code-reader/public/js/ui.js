@@ -35,6 +35,8 @@ const PATHS = {
   mark: 'M2 2h12v12H2zM5 6l-2 2 2 2M11 6l2 2-2 2M9 5l-2 6',
   spinner: '<path d="M8 2a6 6 0 0 1 6 6"/>',
   pointer: 'M4 2l8 6-4 1 2 4-1.5.8-2-4L4 12z',
+  pause: 'M6 4v8M10 4v8',
+  play: 'M5 3.5l7 4.5-7 4.5z',
 };
 
 export function icon(name, { size = 16, cls = '' } = {}) {

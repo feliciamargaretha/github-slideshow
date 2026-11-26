@@ -339,8 +339,19 @@ export function inspector(key) {
   };
   show();
   if (!reducedMotion()) {
+    let paused = false;
+    const btn = h('button', { class: 'ins-pause', type: 'button', 'aria-label': 'Pause animation', title: 'Pause' }, icon('pause'));
+    btn.addEventListener('click', () => {
+      paused = !paused;
+      btn.replaceChildren(icon(paused ? 'play' : 'pause'));
+      btn.setAttribute('aria-label', paused ? 'Play animation' : 'Pause animation');
+      btn.title = paused ? 'Play' : 'Pause';
+      wrap.classList.toggle('paused', paused);
+    });
+    wrap.append(btn);
     const timer = setInterval(() => {
       if (!wrap.isConnected) { clearInterval(timer); return; }
+      if (paused) return;
       i = (i + 1) % spec.frames.length;
       show();
     }, spec.every || 2200);

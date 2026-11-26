@@ -778,3 +778,9 @@ html, body { overflow: clip; }
 .dict-crumb-link:hover { color: var(--ink); text-decoration: underline; }
 .dict-family { display: grid; gap: var(--space-4); }
 .dict-fam .dict-h { margin-bottom: var(--space-2); }
+
+/* Inspector pause button, bottom-right corner */
+.ins { position: relative; }
+.ins-pause { position: absolute; right: var(--space-2); bottom: var(--space-2); width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: var(--radius-s); background: none; color: var(--ink-2); cursor: pointer; }
+.ins-pause:hover { color: var(--ink); background: var(--surface-2); }
+.ins-pause:focus-visible { outline: 2px solid var(--line-focus); outline-offset: 2px; }

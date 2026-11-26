@@ -855,10 +855,10 @@ html, body { overflow: clip; }
 .pd-verdict.better { background: var(--ink); color: var(--surface); border-color: var(--ink); }
 .pd-verdict.worse { border-style: dashed; }
 
-/* Side margins: 40px on practice and prompt pages */
-.practice-page { max-width: none; margin: 0; padding-left: 40px; padding-right: 40px; }
-.practice-result { padding-left: 40px; padding-right: 40px; }
-.workspace.cp-mode .walk-col .step.checkpoint { padding-left: 40px; padding-right: 40px; }
+/* Side margins: 52px on practice and prompt pages */
+.practice-page { max-width: none; margin: 0; padding-left: 52px; padding-right: 52px; }
+.practice-result { padding-left: 52px; padding-right: 52px; }
+.workspace.cp-mode .walk-col .step.checkpoint { padding-left: 52px; padding-right: 52px; }
 
 /* Original prompt with marked words that could be clearer */
 .checkpoint .cp-box.cp-orig { min-height: 320px; white-space: pre-wrap; line-height: 26px; }

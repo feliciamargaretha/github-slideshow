@@ -28,6 +28,7 @@ export const api = {
   review: (prompts, code) => post('review', { prompts, code }),
   ask: (payload) => post('ask', payload),
   checkPart: (payload) => post('check', payload),
+  template: (payload) => post('template', payload),
   feedback: (payload) => post('feedback', payload),
 };
 

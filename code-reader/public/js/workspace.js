@@ -815,7 +815,8 @@ export function mountWorkspace(app) {
     return span;
   };
   // The template split into fixed text and blanks: ["This is a ", {blank: "what the component is"}, ...]
-  const templateParts = (key) => TEMPLATES[key].split(/(\[[^\]]*\])/).filter(Boolean).map((p) => (p.startsWith('[') ? { blank: p.slice(1, -1) } : p));
+  const tplOf = (key) => S.templates?.[key] || TEMPLATES[key];
+  const templateParts = (key) => tplOf(key).split(/(\[[^\]]*\])/).filter(Boolean).map((p) => (p.startsWith('[') ? { blank: p.slice(1, -1) } : p));
   /** The part as text, from whichever mode is in use. Empty blanks stay as [label]. */
   function partText(key) {
     const mode = store.get('promptMode', 'easy');
@@ -832,11 +833,26 @@ export function mountWorkspace(app) {
     store.set(partsKey() + '.blanks', S.blanks);
   }
 
+  /** Ask Claude for a template written for this component, so every detail (icon size, padding...) has a blank. */
+  async function loadTemplate(cp) {
+    (S.tplTried ||= {})[cp.key] = true;
+    const r = await api.template({ code: S.model.source, part: cp.short });
+    const t = r.ok && typeof r.data.template === 'string' ? r.data.template.trim() : '';
+    if (t && (t.match(/\[[^\]]*\]/g) || []).length >= 2) {
+      S.templates[cp.key] = t;
+      S.blanks[cp.key] = [];
+      store.set(partsKey() + '.templates', S.templates);
+      syncPart(cp.key);
+    }
+    if (S.cp === cp.key) renderStep('none');
+  }
+
   function renderCheckpoint(dir) {
     const cp = CHECKPOINTS.find((c) => c.key === S.cp);
     grid.classList.add('cp-mode');
     S.free ||= store.get(partsKey() + '.free', {});
     S.blanks ||= store.get(partsKey() + '.blanks', {});
+    S.templates ||= store.get(partsKey() + '.templates', {});
     if (S.free[cp.key] === undefined && S.parts[cp.key] && !S.blanks[cp.key]) S.free[cp.key] = S.parts[cp.key];
     const mode = store.get('promptMode', 'easy');
     const card = h('article', { class: `step checkpoint ${dir === 'next' ? 'enter-next' : dir === 'back' ? 'enter-back' : dir === 'none' ? '' : 'fade'}`, 'aria-labelledby': 'step-title' });
@@ -863,7 +879,14 @@ export function mountWorkspace(app) {
     let lastBlank = null;
     let field;
     const onChange = () => { syncPart(cp.key); checkBtn.disabled = !S.parts[cp.key].trim(); renderChrome(); };
-    if (mode === 'easy') {
+    const waiting = mode === 'easy' && !S.templates[cp.key] && app.state.ai === 'ok' && !S.tplTried?.[cp.key];
+    if (waiting) {
+      loadTemplate(cp);
+      field = h('div', { class: 'cp-box fill', id: 'cp-box', 'aria-busy': 'true' }, h('span', { class: 'ink-3' }, 'Writing a template for this component…'), ...[0, 1].map(() => h('span', { class: 'placeholder-line', 'aria-hidden': 'true' })));
+    } else if (S.tplTried?.[cp.key] && !S.templates[cp.key] && mode === 'easy' && !field) {
+      field = null;
+    }
+    if (field) { /* loading */ } else if (mode === 'easy') {
       // Only the blanks can be edited; the template text around them is fixed.
       const vals = (S.blanks[cp.key] ||= []);
       let k = 0;
@@ -909,12 +932,9 @@ export function mountWorkspace(app) {
         }
       } }, TERMS[k2].precise)))));
     const feedback = h('div', { class: 'cp-feedback', 'aria-live': 'polite' });
-    const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !(S.parts[cp.key] || '').trim() ? true : null, onclick: () => {
-      if (/\[[^\]]*\]/.test(S.parts[cp.key] || '')) { feedback.replaceChildren(message('Some blanks are still empty.', 'Fill in every blank, then check again.', null)); return; }
-      checkPart(cp, S.parts[cp.key], feedback, checkBtn);
-    } }, 'Check my part');
+    const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !(S.parts[cp.key] || '').trim() || waiting ? true : null, onclick: () => checkPart(cp, S.parts[cp.key], feedback, checkBtn) }, 'Check my part');
     right.append(h('div', { class: 'gen-row' }, checkBtn), feedback);
-    if (S.cpFeedback?.[cp.key]) showFeedback(S.cpFeedback[cp.key], feedback, mode === 'normal' ? field : null);
+    if (S.cpFeedback?.[cp.key]) showFeedback(S.cpFeedback[cp.key], feedback);
 
     card.append(h('div', { class: 'cp-cols' }, left, right));
     stepArea.replaceChildren(card);
@@ -935,8 +955,9 @@ export function mountWorkspace(app) {
     btn.replaceChildren(icon('spinner'), 'Checking');
     out.replaceChildren(...[0, 1, 2].map(() => h('span', { class: 'placeholder-line', 'aria-hidden': 'true' })));
     const easy = store.get('promptMode', 'easy') === 'easy';
-    const r = await api.checkPart({ code: S.model.source, part: cp.short, text, template: easy ? TEMPLATES[cp.key] : '' });
-    if (r.ok) r.data.mode = easy ? 'easy' : 'normal';
+    const template = tplOf(cp.key);
+    const answers = (S.blanks[cp.key] || []).map((v) => (v || '').trim());
+    const r = await api.checkPart(easy ? { code: S.model.source, part: cp.short, template, answers } : { code: S.model.source, part: cp.short, text });
     btn.disabled = false;
     btn.replaceChildren('Check my part');
     if (!r.ok) {
@@ -944,40 +965,84 @@ export function mountWorkspace(app) {
       out.replaceChildren(message(r.status === 503 ? 'Claude is not available right now.' : 'That did not work.', 'Your part is saved. You can keep going and check it later.', null));
       return;
     }
-    (S.cpFeedback ||= {})[cp.key] = r.data;
-    showFeedback(r.data, out, out.parentElement.querySelector('#cp-box'));
+    // One shape for both modes: the accurate version as segments, each detail marked right, wrong or missing.
+    let segments;
+    if (easy) {
+      const graded = r.data.blanks || [];
+      let k = 0;
+      segments = templateParts(cp.key).map((p) => {
+        if (typeof p === 'string') return { text: p, status: 'fixed' };
+        const i = k++;
+        const g = graded[i] || {};
+        const yours = answers[i] || '';
+        return { text: g.correct || p.blank, status: !yours ? 'missing' : g.status === 'right' ? 'right' : 'wrong', yours, why: g.why || '', hint: p.blank, index: i };
+      });
+    } else {
+      segments = (r.data.segments || []).map((x) => ({ ...x, status: ['right', 'wrong', 'missing'].includes(x.status) ? x.status : 'fixed' }));
+    }
+    (S.cpFeedback ||= {})[cp.key] = { mode: easy ? 'easy' : 'normal', segments, terms: r.data.terms || [], mine: easy ? answers : text };
+    showFeedback(S.cpFeedback[cp.key], out);
   }
 
-  /** The suggestion shown in the same template as Easy: fixed text grey, suggested values in the blanks. */
-  function filledTemplate(d) {
-    if (d.mode !== 'easy' || !d.blanks?.length || !S.cp) return null;
-    let k = 0;
-    return h('p', { class: 'cp-box fill static' }, ...templateParts(S.cp).map((p) => (typeof p === 'string' ? h('span', { class: 'fixed' }, p) : h('span', { class: 'blank done' }, d.blanks[k++] || p.blank))));
+  const STATUS_WORD = { right: 'You got this right', wrong: 'Yours is different', missing: 'You left this out' };
+  function markIcon(status) {
+    const span = h('span', { class: 'mark-icon', 'aria-hidden': 'true' });
+    span.innerHTML = status === 'right'
+      ? '<svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 6.5l2.25 2.25L9.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>'
+      : status === 'wrong'
+        ? '<svg viewBox="0 0 12 12" width="12" height="12"><path d="M3 3l6 6M9 3l-6 6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>'
+        : '<svg viewBox="0 0 12 12" width="12" height="12"><circle cx="6" cy="6" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 1.6"/></svg>';
+    return span;
   }
 
-  function showFeedback(d, out, box) {
+  /** The accurate version on top; each detail marked; click one for the why and your answer. */
+  function showFeedback(d, out) {
     usedConcepts = new Set();
-    const list = (title, items) => (items?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, title), h('ul', {}, ...items.map((x) => h('li', {}, ...richText({ text: x, chips: [] }))))) : null);
-    const use = d.sharper ? h('button', { class: 'btn btn-text', type: 'button', onclick: () => {
+    if (!d.segments) { out.replaceChildren(); return; }
+    const details = d.segments.filter((x) => x.status !== 'fixed');
+    const right = details.filter((x) => x.status === 'right').length;
+    const answer = (segs, mine) => h('p', { class: `cp-answer ${mine ? 'mine' : ''}` }, ...segs.map((x) => {
+      if (x.status === 'fixed') return h('span', { class: 'fixed' }, x.text);
+      if (mine) return h('span', { class: `ans mine ${x.status}` }, x.status === 'missing' ? `(${x.hint || 'left out'})` : x.yours || x.text);
+      const b = h('button', { class: `ans ${x.status}`, type: 'button', 'aria-label': `${x.text}. ${STATUS_WORD[x.status]}. Show why` }, markIcon(x.status), x.text);
+      b.addEventListener('click', () => popover(b, h('div', { class: 'ans-pop' },
+        h('div', { class: 'concept-head' }, h('span', { class: 't-strong' }, STATUS_WORD[x.status]), markIcon(x.status)),
+        h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, 'Most accurate'), h('span', { class: 't-strong' }, x.text)),
+        x.status !== 'right' ? h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, 'Yours'), h('span', { class: x.status === 'missing' ? 'ink-3' : '' }, x.status === 'missing' ? 'Not mentioned' : x.yours)) : null,
+        x.why ? h('p', { style: { margin: 0 } }, ...richText({ text: x.why, chips: [] })) : null), { focus: false }));
+      return b;
+    }));
+    // Your answer, laid out the same way (Easy) or as you wrote it (Normal)
+    const mineView = d.mode === 'easy' ? answer(d.segments, true) : h('p', { class: 'cp-answer mine' }, d.mine || '');
+    const compare = h('div', { class: 'cp-compare', hidden: true },
+      h('div', { class: 'cp-compare-col' }, h('span', { class: 't-caption ink-3' }, 'Your answer'), mineView),
+      h('div', { class: 'cp-compare-col' }, h('span', { class: 't-caption ink-3' }, 'Most accurate'), answer(d.segments, false)));
+    const toggle = h('button', { class: 'btn btn-secondary', type: 'button', 'aria-expanded': 'false', onclick: () => {
+      compare.hidden = !compare.hidden;
+      toggle.setAttribute('aria-expanded', String(!compare.hidden));
+      toggle.lastChild.textContent = compare.hidden ? 'Compare with my answer' : 'Hide comparison';
+    } }, h('span', {}, 'Compare with my answer'));
+    const use = h('button', { class: 'btn btn-text', type: 'button', onclick: () => {
       const key = S.cp;
-      if (d.mode === 'easy' && d.blanks?.length) {
-        // Easy: the suggestion is the same template, so it fills your blanks
-        S.blanks[key] = [...d.blanks];
+      if (d.mode === 'easy') {
+        S.blanks[key] = d.segments.filter((x) => x.status !== 'fixed').map((x) => x.text);
         store.set('promptMode', 'easy');
       } else {
-        S.free[key] = d.sharper;
+        S.free[key] = d.segments.map((x) => x.text).join('');
         store.set('promptMode', 'normal');
       }
       syncPart(key);
       renderChrome();
       renderStep('none');
-    } }, 'Use this version') : null;
+    } }, 'Use this version');
     out.replaceChildren(
-      list('You covered', d.covered),
-      list('Missing from the code', d.missed),
+      h('div', { class: 'cp-result' },
+        h('div', { class: 'cp-result-head' }, h('span', { class: 't-strong' }, 'Most accurate version'), h('span', { class: 't-caption ink-2' }, `${right} of ${details.length} right`)),
+        answer(d.segments, false),
+        h('div', { class: 'cp-legend t-caption ink-2' }, h('span', {}, markIcon('right'), 'right'), h('span', {}, markIcon('wrong'), 'different from yours'), h('span', {}, markIcon('missing'), 'you left it out'), h('span', { class: 'ink-3' }, 'Click a value to see why.')),
+        h('div', { class: 'gen-row' }, toggle, use),
+        compare),
       d.terms?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, 'Say it more precisely'), ...d.terms.map((t) => h('div', { class: 'pair-row' }, h('span', {}, `“${t.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, t.precise)))) : null,
-      d.sharper ? h('div', { class: 'sharper' }, h('span', { class: 't-strong' }, 'A sharper version of this part'),
-        filledTemplate(d) || h('p', {}, d.sharper), h('div', {}, use)) : null,
       h('span', { class: 't-caption ink-3' }, 'Written by AI from the code'));
   }
   function jumpPanel(p) {

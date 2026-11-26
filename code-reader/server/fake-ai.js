@@ -83,15 +83,28 @@ export async function ask({ turns }) {
   return { answer: `Test mode: you asked "${q.slice(0, 80)}". The \`display: flex\` rule on line 12 puts the items in a row.` };
 }
 
-export async function checkPart({ part, text, template }) {
-  const n = template ? (template.match(/\[[^\]]*\]/g) || []).length : 0;
-  const blanks = Array.from({ length: n }, (_, k) => `value ${k + 1}`);
-  let k = 0;
+export async function makeTemplate({ part }) {
+  return { template: `Test mode ${part}: a [what it is] with [icon size] icons and [padding] of padding, [gap] apart.` };
+}
+
+export async function checkPart({ text, template, answers }) {
+  if (template) {
+    const n = (template.match(/\[[^\]]*\]/g) || []).length;
+    return {
+      blanks: Array.from({ length: n }, (_, k) => ({ correct: `value ${k + 1}`, status: !answers?.[k] ? 'missing' : k === 0 ? 'right' : 'wrong', why: `Test mode: line ${k + 3} sets value ${k + 1}.` })),
+      terms: [{ casual: 'space between', precise: 'gap' }],
+    };
+  }
   return {
-    covered: [`Test mode: you described the ${part}`],
-    missed: ['Test mode: the exact spacing, `gap: 24px`'],
+    segments: [
+      { text: 'A ', status: 'fixed', yours: '', why: '' },
+      { text: 'white card', status: 'right', yours: '', why: 'Test mode: line 13 sets the background.' },
+      { text: ' with ', status: 'fixed', yours: '', why: '' },
+      { text: '24px padding', status: 'wrong', yours: text.slice(0, 20), why: 'Test mode: line 12 sets padding: 24px.' },
+      { text: ' and ', status: 'fixed', yours: '', why: '' },
+      { text: '12px rounded corners', status: 'missing', yours: '', why: 'Test mode: line 14 sets border-radius: 12px.' },
+      { text: '.', status: 'fixed', yours: '', why: '' },
+    ],
     terms: [{ casual: 'space between', precise: 'gap' }],
-    sharper: template ? template.replace(/\[[^\]]*\]/g, () => blanks[k++]) : `Test mode: ${text.trim()} Use a 24px gap.`,
-    blanks,
   };
 }

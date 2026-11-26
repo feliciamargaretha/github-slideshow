@@ -692,3 +692,24 @@ html, body { overflow: clip; }
 .workspace.cp-mode .walk-col .step.checkpoint { padding-left: calc(var(--space-5) + 24px); }
 .cp-box.fill.static { min-height: 0; margin: 0; border: 0; padding: 0; cursor: default; line-height: 30px; }
 .cp-box.fill .blank.done { font-style: normal; font-weight: 500; }
+
+/* Check result: the most accurate version first, each detail marked */
+.cp-result { display: grid; gap: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-m); padding: var(--space-3) var(--space-4); }
+.cp-result-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.cp-answer { margin: 0; line-height: 32px; }
+.cp-answer .fixed { color: var(--ink-2); }
+.ans { display: inline-flex; align-items: center; gap: 4px; font: inherit; line-height: 24px; padding: 0 6px; margin: 0 1px; border-radius: var(--radius-s); cursor: pointer; border: 1px solid transparent; }
+.ans.right { background: var(--surface-3); color: var(--ink); }
+.ans.wrong { background: var(--surface); color: var(--ink); border-color: var(--ink); font-weight: 500; }
+.ans.missing { background: var(--surface); color: var(--ink); border: 1px dashed var(--ink-3); font-weight: 500; }
+.ans:hover { border-color: var(--ink); }
+.ans.mine { cursor: default; }
+.ans.mine.wrong { text-decoration: line-through; text-decoration-color: var(--ink-3); font-weight: 400; color: var(--ink-2); border-color: var(--line-strong); }
+.ans.mine.missing { color: var(--ink-3); font-style: italic; font-weight: 400; }
+.mark-icon { display: inline-flex; }
+.cp-legend { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.cp-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.cp-compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); border-top: 1px solid var(--line); padding-top: var(--space-3); }
+.cp-compare-col { display: grid; gap: var(--space-1); align-content: start; }
+.ans-pop { display: grid; gap: var(--space-2); width: 288px; }
+.ans-row { display: grid; gap: 2px; }

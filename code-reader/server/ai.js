@@ -182,25 +182,52 @@ export async function ask({ code, context, turns }) {
 }
 
 /** Check one part of a prompt (layout, style or motion) against the code. */
-export async function checkPart({ code, part, text, template }) {
-  const schema = obj({
-    covered: { type: 'array', items: { type: 'string' } },
-    missed: { type: 'array', items: { type: 'string' } },
-    terms: { type: 'array', items: obj({ casual: { type: 'string' }, precise: { type: 'string' } }) },
-    sharper: { type: 'string' },
-    blanks: { type: 'array', items: { type: 'string' } },
-  });
-  const tpl = template
-    ? `The learner filled in this template, so the sharper version must keep it word for word and only change what goes in each [blank]:\n<prompt>\n${template}\n</prompt>\n` +
-      'Return "blanks" with one value per [blank], in order, chosen so the filled template describes the code exactly. Keep each value short (a few words, real values from the code), and make "sharper" exactly the template with those values filled in.'
-    : 'Rewrite only this part so it would get the code right, using precise terms and real values, and return an empty "blanks" list.';
+const STATUS = { type: 'string', enum: ['right', 'wrong', 'missing'] };
+
+/** A fill-in-the-blank template for one part, written for this exact component. */
+export async function makeTemplate({ code, part }) {
+  const schema = obj({ template: { type: 'string' } });
   return call({
     system:
-      `You coach a designer who is learning to prompt an AI for UI code, one part at a time. ${READER} ${DATA_RULE} ` +
-      'Judge only the part named; ignore anything the other parts would cover. Work only from the code.',
+      `You write fill-in-the-blank exercises that teach a designer to prompt an AI for UI code. ${DATA_RULE} ` +
+      'Write in plain English for someone who knows basic HTML.',
+    user: `<code>\n${number(code)}\n</code>\n\nWrite a template for the ${part} part of a prompt that would rebuild exactly this component. ` +
+      `Fixed words are plain text. Every specific value or choice the learner must supply is a blank written as [short hint], for example [icon size] or [padding]. ` +
+      `Cover every ${part} detail in the code that someone would need to say to get it right, including sizes of icons, padding, gaps, widths, alignment, colors, type, radius, shadows, timing and easing, whichever belong to the ${part}. ` +
+      'Never put an answer in the fixed text. Use 2 to 5 sentences and 5 to 14 blanks. Return only the template.',
+    schema,
+    effort: 'low',
+  });
+}
+
+/** Check one part against the code. Easy: grade each blank. Normal: the accurate version, marked piece by piece. */
+export async function checkPart({ code, part, text, template, answers }) {
+  if (template) {
+    const schema = obj({
+      blanks: { type: 'array', items: obj({ correct: { type: 'string' }, status: STATUS, why: { type: 'string' } }) },
+      terms: { type: 'array', items: obj({ casual: { type: 'string' }, precise: { type: 'string' } }) },
+    });
+    const list = (template.match(/\[[^\]]*\]/g) || []).map((b, k) => `${k + 1}. ${b} -> learner wrote: ${JSON.stringify((answers || [])[k] || '')}`).join('\n');
+    return call({
+      system: `You grade a fill-in-the-blank prompt exercise for a designer learning to prompt an AI for UI code. ${READER} ${DATA_RULE} Work only from the code.`,
+      user: `<code>\n${number(code)}\n</code>\n\nThe ${part} template:\n<prompt>\n${template}\n</prompt>\n\nThe blanks, in order, with what the learner wrote:\n<prompt>\n${list}\n</prompt>\n\n` +
+        'For every blank, in the same order, give: the correct value from the code (short, a few words, real values), status "right" if the learner\'s value means the same thing, "wrong" if it differs, or "missing" if they left it empty, and one plain sentence on why that value is correct, pointing to the line. ' +
+        'Also list up to 4 casual words the learner used with the precise term that says it better.',
+      schema,
+      effort: 'low',
+    });
+  }
+  const schema = obj({
+    segments: { type: 'array', items: obj({ text: { type: 'string' }, status: { type: 'string', enum: ['fixed', 'right', 'wrong', 'missing'] }, yours: { type: 'string' }, why: { type: 'string' } }) },
+    terms: { type: 'array', items: obj({ casual: { type: 'string' }, precise: { type: 'string' } }) },
+  });
+  return call({
+    system: `You coach a designer who is learning to prompt an AI for UI code, one part at a time. ${READER} ${DATA_RULE} Judge only the part named. Work only from the code.`,
     user: `<code>\n${number(code)}\n</code>\n\nThe learner wrote the ${part} part of a prompt that should rebuild this component:\n<prompt>\n${text}\n</prompt>\n\n` +
-      `List up to 4 things about the ${part} the prompt already covers, and up to 4 important ${part} details in the code it does not mention (short phrases, values in backticks). ` +
-      `List up to 4 casual phrases from the prompt with the precise term that says it better. ${tpl}`,
+      `Write the most accurate version of this ${part} part, as 2 to 5 plain sentences with precise terms and real values, split into segments in reading order. ` +
+      'Connecting words are segments with status "fixed". Every detail is its own segment: status "right" when the learner already said it correctly, "wrong" when they said it differently (put their words in "yours"), "missing" when they did not mention it. ' +
+      'For every detail give one plain sentence in "why" explaining the correct value and the line it comes from. Leave "yours" and "why" empty for fixed segments. ' +
+      'Also list up to 4 casual words the learner used with the precise term that says it better.',
     schema,
     effort: 'low',
   });

@@ -70,8 +70,8 @@ check('Parts: the layout practice opens in the walkthrough', /Prompt the structu
 await page.click('.level:has-text("Normal")');
 await page.locator('#cp-box').fill('a white card in the middle of the page with 24px padding');
 await page.click('.checkpoint button:has-text("Check my part")');
-await page.waitForSelector('.cp-feedback .sharper');
-check('Parts: checking shows covered, missing and a sharper version', /You covered/.test(await page.locator('.cp-feedback').innerText()) && /Missing from the code/.test(await page.locator('.cp-feedback').innerText()));
+await page.waitForSelector('.cp-result');
+check('Parts: Normal shows the accurate version with right, different and missing details', await page.locator('.cp-result > .cp-answer .ans.right').count() === 1 && await page.locator('.cp-result > .cp-answer .ans.wrong').count() === 1 && await page.locator('.cp-result > .cp-answer .ans.missing').count() === 1);
 check('Parts: the result is hidden and opens as a sheet', await (async () => {
   await page.waitForTimeout(400);
   const hidden = await page.locator('.preview-col').evaluate((e) => getComputedStyle(e).visibility === 'hidden');
@@ -81,15 +81,23 @@ check('Parts: the result is hidden and opens as a sheet', await (async () => {
   return hidden && shown;
 })());
 await page.click('.level:has-text("Easy")');
+await page.waitForSelector('#cp-box .blank');
+check('Parts: Easy uses a template written for this component', /Test mode structure and layout/.test(await page.locator('#cp-box').innerText()));
 check('Parts: Easy shows a template where only the blanks can be edited', await page.locator('#cp-box .blank').count() >= 4 && await page.locator('#cp-box .fixed').count() >= 4);
 await page.locator('#cp-box .blank >> nth=0').fill('card');
-check('Parts: a filled blank goes into the part', /This is a card\./.test(await page.evaluate(() => window.__codeReader.workspace.state.parts.layout)));
+check('Parts: a filled blank goes into the part', /a card with/.test(await page.evaluate(() => window.__codeReader.workspace.state.parts.layout)));
 for (let b = 0; b < await page.locator('#cp-box .blank').count(); b++) await page.locator(`#cp-box .blank >> nth=${b}`).fill('x');
 await page.click('.checkpoint button:has-text("Check my part")');
-await page.waitForSelector('.cp-feedback .sharper .blank.done');
-check('Parts: in Easy, the sharper version uses the same template', /This is a value 1\./.test(await page.locator('.cp-feedback .sharper').innerText()));
+await page.waitForSelector('.cp-result');
+check('Parts: the most accurate version comes first, in the same template', /a\s*value 1\s*with\s*value 2/.test(await page.locator('.cp-result .cp-answer').first().innerText()), await page.locator('.cp-result .cp-answer').first().innerText());
+check('Parts: each detail is marked right or different', await page.locator('.cp-result > .cp-answer .ans.right').count() === 1 && await page.locator('.cp-result > .cp-answer .ans.wrong').count() === 3);
+await page.click('.cp-result > .cp-answer .ans.wrong >> nth=0');
+check('Parts: clicking a value shows why and your answer', /Yours/.test(await page.locator('.ans-pop').innerText()) && /Test mode: line/.test(await page.locator('.ans-pop').innerText()));
+await page.keyboard.press('Escape');
+await page.click('.cp-result button:has-text("Compare with my answer")');
+check('Parts: compare shows your answer next to the accurate one', await page.locator('.cp-compare:not([hidden]) .cp-answer.mine').count() === 1);
 await page.click('.cp-feedback button:has-text("Use this version")');
-check('Parts: Use this version fills your blanks and stays in Easy', /This is a value 1\./.test(await page.evaluate(() => window.__codeReader.workspace.state.parts.layout)) && await page.locator('#cp-box .blank').count() > 0);
+check('Parts: Use this version fills your blanks and stays in Easy', /a value 1 with value 2/.test(await page.evaluate(() => window.__codeReader.workspace.state.parts.layout)) && await page.locator('#cp-box .blank').count() > 0);
 await page.click('.level:has-text("Normal")');
 await page.locator('#cp-box').fill('a white card in the middle of the page with 24px padding');
 await page.click('.footer-bar .nav .btn-primary');

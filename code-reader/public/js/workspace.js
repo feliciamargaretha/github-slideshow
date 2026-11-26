@@ -881,6 +881,55 @@ export function mountWorkspace(app) {
     if (S.cp === cp.key) renderStep('none');
   }
 
+  /** Colors used in the component, as hex, with where each one is used. */
+  function componentColors() {
+    const ctx = document.createElement('canvas').getContext('2d');
+    const toHex = (c) => { ctx.fillStyle = '#000'; ctx.fillStyle = c; const v = ctx.fillStyle; return /^#/.test(v) ? v.toUpperCase() : v; };
+    const found = new Map();
+    for (const rule of S.model.rules || []) for (const d of rule.decls || []) {
+      if (/^--/.test(d.prop) && !/^#|rgb|hsl/.test(d.value)) continue;
+      for (const m of String(d.value).matchAll(/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|\b(?:white|black|transparent)\b/g)) {
+        if (m[0] === 'transparent') continue;
+        const hex = toHex(m[0]);
+        if (!found.has(hex)) found.set(hex, []);
+        const uses = found.get(hex);
+        if (uses.length < 3) uses.push(`${d.prop} on ${rule.selector}`);
+      }
+    }
+    return [...found.entries()].map(([hex, uses]) => ({ hex, uses }));
+  }
+  function previewPanel() {
+    const fw = h('div', { class: 'frame-wrap' });
+    const pv = new Preview(fw, {});
+    if (DIALECTS[S.model.dialect]?.preview) setTimeout(() => pv.render(S.model.instrumented, { title: 'Preview of the component', center: true }), 0);
+    else fw.append(h('div', { class: 'frame-empty' }, 'No preview for this code.'));
+    const swatch = (hex, uses) => {
+      const label = () => [h('span', { class: 'sw-chip', style: { background: hex } }), h('span', { class: 'sw-hex' }, hex)];
+      const b = h('button', { class: 'sw', type: 'button', title: uses?.length ? `Used for ${uses.join(', ')}. Click to copy.` : 'Click to copy' }, ...label());
+      b.addEventListener('click', () => copyHex(b, hex, label));
+      return b;
+    };
+    const copyHex = async (b, hex, label) => {
+      try { await navigator.clipboard.writeText(hex); } catch { /* ignore */ }
+      b.replaceChildren(icon('check'), h('span', { class: 'sw-hex' }, 'Copied'));
+      setTimeout(() => b.replaceChildren(...label()), 1200);
+    };
+    const colors = componentColors();
+    const picked = h('div', { class: 'sw-row' });
+    const pick = 'EyeDropper' in window ? h('button', { class: 'btn btn-secondary', type: 'button', onclick: async () => {
+      try { const r = await new window.EyeDropper().open(); picked.prepend(swatch(r.sRGBHex.toUpperCase(), null)); } catch { /* cancelled */ }
+    } }, icon('pointer'), 'Pick a color from the preview') : null;
+    return [
+      h('span', { class: 'cp-h' }, 'Preview'),
+      h('p', { class: 'ink-2', style: { margin: 0 } }, 'You started from code, so there is no original prompt. Here is the component instead: click, hover and type in it like the real thing.'),
+      h('div', { class: 'cp-preview' }, fw),
+      h('div', { class: 'sw-head' }, h('span', { class: 'cp-h' }, 'Colors in this component'), pick),
+      colors.length ? h('div', { class: 'sw-row' }, ...colors.map((c) => swatch(c.hex, c.uses))) : h('p', { class: 'ink-3', style: { margin: 0 } }, 'No colors are written in this code.'),
+      picked,
+      h('p', { class: 't-caption ink-3', style: { margin: 0 } }, 'Click a color to copy its hex code, then paste it into your part.'),
+    ];
+  }
+
   function renderCheckpoint(dir) {
     const cp = CHECKPOINTS.find((c) => c.key === S.cp);
     grid.classList.add('cp-mode');
@@ -897,55 +946,58 @@ export function mountWorkspace(app) {
     // Left: the original prompt, read only
     const left = h('section', { class: 'cp-col cp-before', 'aria-label': 'Your original prompt' });
     const originals = (S.history && S.history.length ? S.history : S.prompt ? [S.prompt] : []).filter(Boolean);
-    left.append(h('label', { class: 'cp-h', for: 'cp-original' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'));
-    // The original prompts, read only. Words that could be clearer for this part are marked; click one for a suggestion.
-    const origText = originals.length > 1 ? originals.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : originals[0] || '';
-    const orig = h('div', { class: 'cp-box cp-readonly cp-orig', id: 'cp-original', role: 'textbox', 'aria-readonly': 'true', 'aria-multiline': 'true', 'aria-label': 'Your original prompt' });
-    const tipsNote = h('div', { class: 'cp-tips', 'aria-live': 'polite' });
-    left.append(orig, tipsNote);
-    const tipsKey = partsKey() + '.tips.' + cp.key;
-    const paintTips = (tips) => {
-      if (!origText) { orig.replaceChildren(h('span', { class: 'ink-3' }, 'You pasted this code without a prompt, so you are writing it from scratch.')); return; }
-      const lower = origText.toLowerCase();
-      const spans = [];
-      for (const t of tips || []) {
-        const q = (t.quote || '').trim();
-        if (!q) continue;
-        const at = lower.indexOf(q.toLowerCase());
-        if (at < 0 || spans.some((x) => at < x.end && at + q.length > x.start)) continue;
-        spans.push({ start: at, end: at + q.length, tip: t });
+    // Started from code or a sample, with no prompt: show the component itself, with its colors.
+    if (!originals.length) { left.setAttribute('aria-label', 'Preview'); left.append(...previewPanel()); } else {
+      left.append(h('label', { class: 'cp-h', for: 'cp-original' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'));
+      // The original prompts, read only. Words that could be clearer for this part are marked; click one for a suggestion.
+      const origText = originals.length > 1 ? originals.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : originals[0] || '';
+      const orig = h('div', { class: 'cp-box cp-readonly cp-orig', id: 'cp-original', role: 'textbox', 'aria-readonly': 'true', 'aria-multiline': 'true', 'aria-label': 'Your original prompt' });
+      const tipsNote = h('div', { class: 'cp-tips', 'aria-live': 'polite' });
+      left.append(orig, tipsNote);
+      const tipsKey = partsKey() + '.tips.' + cp.key;
+      const paintTips = (tips) => {
+        if (!origText) { orig.replaceChildren(h('span', { class: 'ink-3' }, 'You pasted this code without a prompt, so you are writing it from scratch.')); return; }
+        const lower = origText.toLowerCase();
+        const spans = [];
+        for (const t of tips || []) {
+          const q = (t.quote || '').trim();
+          if (!q) continue;
+          const at = lower.indexOf(q.toLowerCase());
+          if (at < 0 || spans.some((x) => at < x.end && at + q.length > x.start)) continue;
+          spans.push({ start: at, end: at + q.length, tip: t });
+        }
+        spans.sort((a, b) => a.start - b.start);
+        const out = [];
+        let pos = 0;
+        for (const sp of spans) {
+          if (sp.start > pos) out.push(origText.slice(pos, sp.start));
+          const b = h('button', { class: 'tip-mark', type: 'button', 'aria-label': `${origText.slice(sp.start, sp.end)}: could be clearer. Show suggestion` }, origText.slice(sp.start, sp.end));
+          b.addEventListener('click', () => popover(b, tipCard(sp.tip), { focus: false }));
+          out.push(b);
+          pos = sp.end;
+        }
+        out.push(origText.slice(pos));
+        orig.replaceChildren(...out);
+        const missing = (tips || []).filter((t) => !(t.quote || '').trim() && t.suggestion);
+        tipsNote.replaceChildren(
+          spans.length ? h('p', { class: 't-caption ink-2' }, 'Marked words could be clearer. Click one to see a suggestion.') : null,
+          missing.length ? h('div', { class: 'cp-missing' }, h('span', { class: 't-caption ink-3' }, 'Not in your prompt yet'),
+            ...missing.map((t) => { const b = h('button', { class: 'tip-mark missing', type: 'button' }, icon('plus'), t.suggestion); b.addEventListener('click', () => popover(b, tipCard(t), { focus: false })); return b; })) : null);
+      };
+      const tipCard = (t) => h('div', { class: 'ans-pop' },
+        t.quote ? h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, 'You wrote'), h('span', {}, t.quote)) : null,
+        h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, t.quote ? 'Clearer' : 'Add'), h('span', { class: 't-strong' }, t.suggestion)),
+        t.why ? h('p', { style: { margin: 0 } }, t.why) : null);
+      const cachedTips = store.get(tipsKey, null);
+      paintTips(cachedTips);
+      if (!cachedTips && origText && app.state.ai === 'ok') {
+        tipsNote.replaceChildren(h('p', { class: 't-caption ink-3' }, 'Looking for words that could be clearer…'));
+        api.tips({ code: S.model.source, part: cp.short, prompts: origText }).then((r) => {
+          const tips = r.ok && Array.isArray(r.data.tips) ? r.data.tips : [];
+          if (r.ok) store.set(tipsKey, tips);
+          if (orig.isConnected) paintTips(tips);
+        });
       }
-      spans.sort((a, b) => a.start - b.start);
-      const out = [];
-      let pos = 0;
-      for (const sp of spans) {
-        if (sp.start > pos) out.push(origText.slice(pos, sp.start));
-        const b = h('button', { class: 'tip-mark', type: 'button', 'aria-label': `${origText.slice(sp.start, sp.end)}: could be clearer. Show suggestion` }, origText.slice(sp.start, sp.end));
-        b.addEventListener('click', () => popover(b, tipCard(sp.tip), { focus: false }));
-        out.push(b);
-        pos = sp.end;
-      }
-      out.push(origText.slice(pos));
-      orig.replaceChildren(...out);
-      const missing = (tips || []).filter((t) => !(t.quote || '').trim() && t.suggestion);
-      tipsNote.replaceChildren(
-        spans.length ? h('p', { class: 't-caption ink-2' }, 'Marked words could be clearer. Click one to see a suggestion.') : null,
-        missing.length ? h('div', { class: 'cp-missing' }, h('span', { class: 't-caption ink-3' }, 'Not in your prompt yet'),
-          ...missing.map((t) => { const b = h('button', { class: 'tip-mark missing', type: 'button' }, icon('plus'), t.suggestion); b.addEventListener('click', () => popover(b, tipCard(t), { focus: false })); return b; })) : null);
-    };
-    const tipCard = (t) => h('div', { class: 'ans-pop' },
-      t.quote ? h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, 'You wrote'), h('span', {}, t.quote)) : null,
-      h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, t.quote ? 'Clearer' : 'Add'), h('span', { class: 't-strong' }, t.suggestion)),
-      t.why ? h('p', { style: { margin: 0 } }, t.why) : null);
-    const cachedTips = store.get(tipsKey, null);
-    paintTips(cachedTips);
-    if (!cachedTips && origText && app.state.ai === 'ok') {
-      tipsNote.replaceChildren(h('p', { class: 't-caption ink-3' }, 'Looking for words that could be clearer…'));
-      api.tips({ code: S.model.source, part: cp.short, prompts: origText }).then((r) => {
-        const tips = r.ok && Array.isArray(r.data.tips) ? r.data.tips : [];
-        if (r.ok) store.set(tipsKey, tips);
-        if (orig.isConnected) paintTips(tips);
-      });
     }
     const earlier = CHECKPOINTS.slice(0, CHECKPOINTS.indexOf(cp)).filter((c) => S.parts[c.key]?.trim());
 

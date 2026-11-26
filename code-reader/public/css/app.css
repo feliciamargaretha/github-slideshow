@@ -595,3 +595,23 @@ html, body { overflow: clip; }
 .seg-btn.practice::before { background: repeating-linear-gradient(90deg, var(--ink-3) 0 2px, transparent 2px 4px); }
 .seg-btn.practice.written::before, .seg-btn.practice.past::before { background: var(--ink-3); }
 .seg-btn.practice.current::before { background: var(--ink); }
+
+/* Progress, two kinds of segment:
+   - steps of the panel you are in: thin solid bars
+   - a whole other panel: its icon and an outlined bar (filled grey once done) */
+.seg-btn.group { display: flex; align-items: center; gap: 6px; padding: 0; height: 24px; color: var(--ink-3); }
+.seg-btn.group::before { display: none; }
+.seg-btn.group .panel-icon, .seg-btn.group .panel-icon svg { width: 12px; height: 12px; }
+.group-bar { flex: 1; height: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-s); background: var(--surface); transition: background-color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); }
+.seg-btn.group.past .group-bar { background: var(--line-strong); border-color: var(--line-strong); }
+.seg-btn.group:hover { color: var(--ink); }
+.seg-btn.group:hover .group-bar { border-color: var(--ink-3); }
+.seg-btn.group .issue-dot { top: 0; left: auto; right: 0; margin: 0; }
+/* Prompt practice points: a bubble icon instead of a dotted line */
+.cp-li { flex: 0 0 20px; display: flex; justify-content: center; }
+.seg-btn.practice { width: 20px; height: 24px; padding: 0; display: grid; place-items: center; color: var(--line-strong); }
+.seg-btn.practice::before { display: none; }
+.seg-btn.practice.written, .seg-btn.practice.past { color: var(--ink-3); }
+.seg-btn.practice.current { color: var(--ink); }
+.seg-btn.practice:hover { color: var(--ink-2); }
+.prompt-icon, .prompt-icon svg { display: block; width: 16px; height: 16px; }

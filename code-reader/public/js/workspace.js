@@ -1,6 +1,6 @@
 // Screen 2: Workspace. The preview on the left shows the part of the UI the step
 // on the right is about. Pointing at either side lights up the other.
-import { h, icon, segmented, popover, closePopover, store, announce, tooltip, reducedMotion, panelIcon } from './ui.js';
+import { h, icon, segmented, popover, closePopover, store, announce, tooltip, reducedMotion, panelIcon, promptIcon } from './ui.js';
 import { buildModel, makeMatcher, ruleTargets, cascadeFor, applyTweaks } from './model.js';
 import { buildSteps, PANELS, PANEL_LABEL, pendingAiItems, assignTermChips, termKey } from './steps.js';
 import { staticIssues, runtimeIssues, attachIssues } from './issues.js';
@@ -280,7 +280,7 @@ export function mountWorkspace(app) {
           class: `seg-btn group ${done ? 'past' : ''}`, type: 'button',
           'aria-label': `${PANEL_LABEL[g.panel]}: ${g.steps.length} steps${done ? ', done' : ''}${hasIssue ? ', has an issue' : ''}`,
           onclick: () => goTo(first),
-        }, hasIssue ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
+        }, panelIcon(g.panel), h('span', { class: 'group-bar' }), hasIssue ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
         tooltip(btn, `${PANEL_LABEL[g.panel]}, ${g.steps.length} step${g.steps.length === 1 ? '' : 's'}`);
         progress.append(h('li', { class: 'seg-li' }, btn));
       }
@@ -291,14 +291,14 @@ export function mountWorkspace(app) {
           class: `seg-btn practice ${S.cp === cpKey ? 'current' : last < S.cur || (S.cp && cpIndex(S.cp) > last) ? 'past' : ''} ${S.parts[cpKey]?.trim() ? 'written' : ''}`,
           type: 'button', 'aria-label': `${cp.title}${S.parts[cpKey]?.trim() ? ', written' : ''}`,
           'aria-current': S.cp === cpKey ? 'step' : null, onclick: () => openCp(cpKey),
-        });
+        }, promptIcon());
         tooltip(b, cp.title);
         progress.append(h('li', { class: 'cp-li' }, b));
       }
     }
-    const prac = h('button', { class: 'seg-btn practice final', type: 'button', 'aria-label': 'Put your prompt together', onclick: () => openPractice() });
+    const prac = h('button', { class: 'seg-btn practice final', type: 'button', 'aria-label': 'Put your prompt together', onclick: () => openPractice() }, promptIcon());
     tooltip(prac, 'Put your prompt together');
-    progress.append(h('li', { style: { flex: '0 0 48px' } }, prac));
+    progress.append(h('li', { class: 'cp-li' }, prac));
     // Footer
     backBtn.disabled = S.cur === 0 && S.element === null;
     const cpNow = S.cp && CHECKPOINTS.find((c) => c.key === S.cp);

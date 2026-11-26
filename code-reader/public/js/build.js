@@ -12,7 +12,8 @@ const clean = (code) => code.replace(/^```\w*\n?|```\s*$/g, '').trim() + '\n';
 export function mountBuild(app) {
   const root = document.querySelector('[data-screen="build"]');
   const B = { turns: [], versions: [], current: -1, busy: false };
-  let preview, log, box, sendBtn, doneBtn, frameWrap, versionCap;
+  let preview, log, box, sendBtn, doneBtn, frameWrap, versionCap, emptyNote;
+  const showEmpty = (on) => { if (emptyNote) emptyNote.hidden = !on; };
 
   function open({ prompt, code }) {
     B.turns = [{ role: 'you', text: prompt }, { role: 'result', version: 0 }];
@@ -26,7 +27,10 @@ export function mountBuild(app) {
 
   function render() {
     frameWrap = h('div', { class: 'frame-wrap' });
-    preview = new Preview(frameWrap, { size: (m) => { B.contentH = m.h; fitPreview(); } });
+    preview = new Preview(frameWrap, { size: (m) => { B.contentH = m.h; fitPreview(); showEmpty(m.h === 0); } });
+    emptyNote = h('div', { class: 'frame-empty build-empty', hidden: true }, h('div', { class: 't-strong' }, 'Nothing shows in this version.'),
+      h('div', { class: 'ink-2' }, 'Claude wrote code, but nothing visible came out of it. Ask for the change again, or press “Show this version” on an earlier one.'));
+    frameWrap.append(emptyNote);
     versionCap = h('span', { class: 't-caption ink-2' });
     const left = h('section', { class: 'build-preview', 'aria-label': 'Result' },
       h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Result'), versionCap),
@@ -113,6 +117,7 @@ export function mountBuild(app) {
 
   function showVersion(i) {
     B.current = i;
+    showEmpty(false);
     const code = B.versions[i];
     const d = detectDialect(code);
     if (DIALECTS[d].preview) preview.render(buildModel(code, d).instrumented, { title: `Version ${i + 1}`, center: true });

@@ -841,7 +841,7 @@ export function mountWorkspace(app) {
     if (t && (t.match(/\[[^\]]*\]/g) || []).length >= 2) {
       S.templates[cp.key] = t;
       S.blanks[cp.key] = [];
-      store.set(partsKey() + '.templates', S.templates);
+      store.set(partsKey() + '.templates2', S.templates);
       syncPart(cp.key);
     }
     if (S.cp === cp.key) renderStep('none');
@@ -852,7 +852,7 @@ export function mountWorkspace(app) {
     grid.classList.add('cp-mode');
     S.free ||= store.get(partsKey() + '.free', {});
     S.blanks ||= store.get(partsKey() + '.blanks', {});
-    S.templates ||= store.get(partsKey() + '.templates', {});
+    S.templates ||= store.get(partsKey() + '.templates2', {});
     if (S.free[cp.key] === undefined && S.parts[cp.key] && !S.blanks[cp.key]) S.free[cp.key] = S.parts[cp.key];
     const mode = store.get('promptMode', 'easy');
     const card = h('article', { class: `step checkpoint ${dir === 'next' ? 'enter-next' : dir === 'back' ? 'enter-back' : dir === 'none' ? '' : 'fade'}`, 'aria-labelledby': 'step-title' });
@@ -874,7 +874,7 @@ export function mountWorkspace(app) {
     const right = h('section', { class: 'cp-col cp-now', 'aria-label': cp.title });
     right.append(h('h3', { class: 'cp-h' }, `Your ${cp.short} part`), h('p', { class: 'cp-ask' }, cp.ask));
     right.append(h('div', { class: 'levels', role: 'radiogroup', 'aria-label': 'Level' },
-      ...MODES.map((m) => h('button', { class: 'level', type: 'button', role: 'radio', 'aria-checked': String(mode === m.key), onclick: () => { store.set('promptMode', m.key); syncPart(cp.key); renderChrome(); renderStep('none'); } },
+      ...MODES.map((m) => h('button', { class: 'level', type: 'button', role: 'radio', 'aria-checked': String(mode === m.key), onclick: () => { store.set('promptMode', m.key); (S.cpEdit ||= {})[cp.key] = true; syncPart(cp.key); renderChrome(); renderStep('none'); } },
         levelIcon(m.dots), h('span', { class: 'level-text' }, h('span', { class: 't-strong' }, m.name), h('span', { class: 't-caption ink-2' }, m.hint))))));
     let lastBlank = null;
     let field;
@@ -907,6 +907,15 @@ export function mountWorkspace(app) {
       field.addEventListener('input', () => { S.free[cp.key] = field.value; onChange(); });
       field.addEventListener('keydown', (e) => e.stopPropagation());
     }
+    const result = S.cpFeedback?.[cp.key] && !S.cpEdit?.[cp.key] ? S.cpFeedback[cp.key] : null;
+    if (result) {
+      right.append(resultCard(result, cp));
+      card.append(h('div', { class: 'cp-cols' }, left, right));
+      stepArea.replaceChildren(card);
+      stepArea.scrollTop = 0;
+      preview.send({ type: 'outline', ids: [] });
+      return;
+    }
     right.append(field);
     // Words met in these steps, as pills
     const terms = [];
@@ -934,7 +943,6 @@ export function mountWorkspace(app) {
     const feedback = h('div', { class: 'cp-feedback', 'aria-live': 'polite' });
     const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !(S.parts[cp.key] || '').trim() || waiting ? true : null, onclick: () => checkPart(cp, S.parts[cp.key], feedback, checkBtn) }, 'Check my part');
     right.append(h('div', { class: 'gen-row' }, checkBtn), feedback);
-    if (S.cpFeedback?.[cp.key]) showFeedback(S.cpFeedback[cp.key], feedback);
 
     card.append(h('div', { class: 'cp-cols' }, left, right));
     stepArea.replaceChildren(card);
@@ -981,7 +989,8 @@ export function mountWorkspace(app) {
       segments = (r.data.segments || []).map((x) => ({ ...x, status: ['right', 'wrong', 'missing'].includes(x.status) ? x.status : 'fixed' }));
     }
     (S.cpFeedback ||= {})[cp.key] = { mode: easy ? 'easy' : 'normal', segments, terms: r.data.terms || [], mine: easy ? answers : text };
-    showFeedback(S.cpFeedback[cp.key], out);
+    (S.cpEdit ||= {})[cp.key] = false;
+    renderStep('none');
   }
 
   const STATUS_WORD = { right: 'You got this right', wrong: 'Yours is different', missing: 'You left this out' };
@@ -995,10 +1004,12 @@ export function mountWorkspace(app) {
     return span;
   }
 
-  /** The accurate version on top; each detail marked; click one for the why and your answer. */
-  function showFeedback(d, out) {
+  /**
+   * The accurate version sits in front of your answer, in the same box. Hold the button to see your answer instead.
+   * Each value is marked; click one for the reason and what you wrote.
+   */
+  function resultCard(d, cp) {
     usedConcepts = new Set();
-    if (!d.segments) { out.replaceChildren(); return; }
     const details = d.segments.filter((x) => x.status !== 'fixed');
     const right = details.filter((x) => x.status === 'right').length;
     const answer = (segs, mine) => h('p', { class: `cp-answer ${mine ? 'mine' : ''}` }, ...segs.map((x) => {
@@ -1012,39 +1023,44 @@ export function mountWorkspace(app) {
         x.why ? h('p', { style: { margin: 0 } }, ...richText({ text: x.why, chips: [] })) : null), { focus: false }));
       return b;
     }));
-    // Your answer, laid out the same way (Easy) or as you wrote it (Normal)
-    const mineView = d.mode === 'easy' ? answer(d.segments, true) : h('p', { class: 'cp-answer mine' }, d.mine || '');
-    const compare = h('div', { class: 'cp-compare', hidden: true },
-      h('div', { class: 'cp-compare-col' }, h('span', { class: 't-caption ink-3' }, 'Your answer'), mineView),
-      h('div', { class: 'cp-compare-col' }, h('span', { class: 't-caption ink-3' }, 'Most accurate'), answer(d.segments, false)));
-    const toggle = h('button', { class: 'btn btn-secondary', type: 'button', 'aria-expanded': 'false', onclick: () => {
-      compare.hidden = !compare.hidden;
-      toggle.setAttribute('aria-expanded', String(!compare.hidden));
-      toggle.lastChild.textContent = compare.hidden ? 'Compare with my answer' : 'Hide comparison';
-    } }, h('span', {}, 'Compare with my answer'));
+    const accurate = answer(d.segments, false);
+    const mine = d.mode === 'easy' ? answer(d.segments, true) : h('p', { class: 'cp-answer mine' }, d.mine || '');
+    mine.hidden = true;
+    const label = h('span', { class: 't-strong' }, 'Most accurate version');
+    const count = h('span', { class: 't-caption ink-2' }, `${right} of ${details.length} right`);
+    // Press and hold to see your own answer in the same place
+    const hold = h('button', { class: 'btn btn-secondary hold', type: 'button', 'aria-pressed': 'false' }, 'Hold to see my answer');
+    const show = (on) => {
+      mine.hidden = !on; accurate.hidden = on;
+      label.textContent = on ? 'Your answer' : 'Most accurate version';
+      count.hidden = on;
+      hold.setAttribute('aria-pressed', String(on));
+      box.classList.toggle('showing-mine', on);
+    };
+    hold.addEventListener('pointerdown', (e) => { hold.setPointerCapture(e.pointerId); show(true); });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => hold.addEventListener(ev, () => show(false)));
+    hold.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); show(true); } });
+    hold.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') show(false); });
+    hold.addEventListener('blur', () => show(false));
+    const edit = h('button', { class: 'btn btn-text', type: 'button', onclick: () => { (S.cpEdit ||= {})[cp.key] = true; renderStep('none'); } }, 'Edit my answer');
     const use = h('button', { class: 'btn btn-text', type: 'button', onclick: () => {
-      const key = S.cp;
-      if (d.mode === 'easy') {
-        S.blanks[key] = d.segments.filter((x) => x.status !== 'fixed').map((x) => x.text);
-        store.set('promptMode', 'easy');
-      } else {
-        S.free[key] = d.segments.map((x) => x.text).join('');
-        store.set('promptMode', 'normal');
-      }
-      syncPart(key);
+      if (d.mode === 'easy') { S.blanks[cp.key] = d.segments.filter((x) => x.status !== 'fixed').map((x) => x.text); store.set('promptMode', 'easy'); }
+      else { S.free[cp.key] = d.segments.map((x) => x.text).join(''); store.set('promptMode', 'normal'); }
+      syncPart(cp.key);
+      S.cpEdit[cp.key] = true;
       renderChrome();
       renderStep('none');
     } }, 'Use this version');
-    out.replaceChildren(
-      h('div', { class: 'cp-result' },
-        h('div', { class: 'cp-result-head' }, h('span', { class: 't-strong' }, 'Most accurate version'), h('span', { class: 't-caption ink-2' }, `${right} of ${details.length} right`)),
-        answer(d.segments, false),
-        h('div', { class: 'cp-legend t-caption ink-2' }, h('span', {}, markIcon('right'), 'right'), h('span', {}, markIcon('wrong'), 'different from yours'), h('span', {}, markIcon('missing'), 'you left it out'), h('span', { class: 'ink-3' }, 'Click a value to see why.')),
-        h('div', { class: 'gen-row' }, toggle, use),
-        compare),
+    const box = h('div', { class: 'cp-box cp-result' },
+      h('div', { class: 'cp-result-head' }, label, count),
+      accurate, mine,
+      h('div', { class: 'cp-legend t-caption ink-2' }, h('span', {}, markIcon('right'), 'right'), h('span', {}, markIcon('wrong'), 'different from yours'), h('span', {}, markIcon('missing'), 'you left it out'), h('span', { class: 'ink-3' }, 'Click a value to see why.')));
+    return h('div', { class: 'cp-result-wrap' }, box,
+      h('div', { class: 'gen-row' }, hold, edit, use),
       d.terms?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, 'Say it more precisely'), ...d.terms.map((t) => h('div', { class: 'pair-row' }, h('span', {}, `“${t.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, t.precise)))) : null,
       h('span', { class: 't-caption ink-3' }, 'Written by AI from the code'));
   }
+
   function jumpPanel(p) {
     const i = S.steps.findIndex((s) => s.panel === p);
     if (i >= 0) goTo(i);

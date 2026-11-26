@@ -193,8 +193,8 @@ export async function makeTemplate({ code, part }) {
       'Write in plain English for someone who knows basic HTML.',
     user: `<code>\n${number(code)}\n</code>\n\nWrite a template for the ${part} part of a prompt that would rebuild exactly this component. ` +
       `Fixed words are plain text. Every specific value or choice the learner must supply is a blank written as [short hint], for example [icon size] or [padding]. ` +
-      `Cover every ${part} detail in the code that someone would need to say to get it right, including sizes of icons, padding, gaps, widths, alignment, colors, type, radius, shadows, timing and easing, whichever belong to the ${part}. ` +
-      'Never put an answer in the fixed text. Use 2 to 5 sentences and 5 to 14 blanks. Return only the template.',
+      `Only ask for the ${part} details that matter: the ones a capable AI would not guess on its own or would likely get wrong, such as the layout pattern and the few sizes, spacings or values that define this component. Skip anything an AI does by default (resets, box-sizing, cursor, font smoothing, ordinary margins). ` +
+      'Never put an answer in the fixed text. Use 1 or 2 short sentences and 3 to 6 blanks. Return only the template.',
     schema,
     effort: 'low',
   });
@@ -224,7 +224,7 @@ export async function checkPart({ code, part, text, template, answers }) {
   return call({
     system: `You coach a designer who is learning to prompt an AI for UI code, one part at a time. ${READER} ${DATA_RULE} Judge only the part named. Work only from the code.`,
     user: `<code>\n${number(code)}\n</code>\n\nThe learner wrote the ${part} part of a prompt that should rebuild this component:\n<prompt>\n${text}\n</prompt>\n\n` +
-      `Write the most accurate version of this ${part} part, as 2 to 5 plain sentences with precise terms and real values, split into segments in reading order. ` +
+      `Write the shortest accurate version of this ${part} part: 1 or 2 plain sentences with only the details that matter, the ones a capable AI would not guess on its own (skip defaults like resets, box-sizing or cursor), with precise terms and real values. Split it into segments in reading order. ` +
       'Connecting words are segments with status "fixed". Every detail is its own segment: status "right" when the learner already said it correctly, "wrong" when they said it differently (put their words in "yours"), "missing" when they did not mention it. ' +
       'For every detail give one plain sentence in "why" explaining the correct value and the line it comes from. Leave "yours" and "why" empty for fixed segments. ' +
       'Also list up to 4 casual words the learner used with the precise term that says it better.',

@@ -713,3 +713,8 @@ html, body { overflow: clip; }
 .cp-compare-col { display: grid; gap: var(--space-1); align-content: start; }
 .ans-pop { display: grid; gap: var(--space-2); width: 288px; }
 .ans-row { display: grid; gap: 2px; }
+.cp-result-wrap { display: grid; gap: var(--space-3); }
+.cp-box.cp-result { min-height: 160px; }
+.cp-box.cp-result.showing-mine { background: var(--surface-2); }
+.btn.hold { user-select: none; -webkit-user-select: none; touch-action: none; }
+.btn.hold[aria-pressed='true'] { background: var(--ink); color: var(--surface); border-color: var(--ink); }

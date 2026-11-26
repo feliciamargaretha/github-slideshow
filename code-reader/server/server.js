@@ -107,7 +107,7 @@ const ROUTES = {
     run: ai.checkPart,
   },
   template: {
-    kind: 'template',
+    kind: 'template-v2',
     clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40) }),
     run: ai.makeTemplate,
   },

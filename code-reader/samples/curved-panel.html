@@ -1,0 +1,82 @@
+<style>
+  body { margin: 0; min-height: 100vh; background: #f4f4f5; font-family: system-ui, sans-serif; color: #0a0a0a; }
+  .panel-tab {
+    position: fixed; left: 0; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: 8px; writing-mode: vertical-rl;
+    padding: 16px 10px; border: 1px solid #d4d4d8; border-left: 0; border-radius: 0 8px 8px 0;
+    background: #fff; font: 500 14px/1 system-ui, sans-serif; cursor: pointer; z-index: 1;
+  }
+  .panel-tab:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 2px; }
+  .panel { position: fixed; left: 0; top: 0; bottom: 0; width: 360px; z-index: 2; pointer-events: none; visibility: hidden; }
+  .panel.open { pointer-events: auto; }
+  .panel-shape { position: absolute; left: 0; top: 0; height: 100%; width: calc(100% + 120px); overflow: visible; filter: drop-shadow(8px 0 24px rgba(0, 0, 0, .12)); }
+  .panel-shape path { fill: #fff; }
+  .panel-body { position: relative; height: 100%; box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 16px; opacity: 0; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; }
+  .panel-head h2 { margin: 0; font-size: 18px; }
+  .panel-close { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 6px; background: none; cursor: pointer; }
+  .panel-close:hover { background: #f4f4f5; }
+  .panel-close svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; fill: none; }
+  .panel-body a { color: inherit; text-decoration: none; padding: 10px 12px; border-radius: 6px; }
+  .panel-body a:hover { background: #f4f4f5; }
+</style>
+
+<button class="panel-tab" type="button" aria-expanded="false" aria-controls="panel">Open panel</button>
+
+<aside class="panel" id="panel" aria-label="Panel">
+  <svg class="panel-shape" aria-hidden="true"><path /></svg>
+  <div class="panel-body">
+    <div class="panel-head">
+      <h2>Panel</h2>
+      <button class="panel-close" type="button" aria-label="Close"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" /></svg></button>
+    </div>
+    <a href="#">Overview</a>
+    <a href="#">Reports</a>
+    <a href="#">Settings</a>
+  </div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+  const tab = document.querySelector('.panel-tab');
+  const panel = document.querySelector('.panel');
+  const path = panel.querySelector('.panel-shape path');
+  const body = panel.querySelector('.panel-body');
+  const W = 360;                       // open width
+  const s = { w: 0, bulge: 0 };        // current width, and how far the right edge curves out (px)
+
+  // The right edge is one smooth curve from top to bottom; bulge 0 makes it straight.
+  function draw() {
+    const h = panel.clientHeight;
+    path.setAttribute('d', `M0 0 H${s.w} Q${s.w + s.bulge} ${h / 2} ${s.w} ${h} H0 Z`);
+  }
+  draw();
+  window.addEventListener('resize', draw);
+
+  let tl;
+  function open() {
+    tl?.kill();
+    panel.classList.add('open');
+    tab.setAttribute('aria-expanded', 'true');
+    gsap.set(panel, { visibility: 'visible' });
+    tl = gsap.timeline({ onUpdate: draw })
+      .to(s, { w: W, duration: 0.55, ease: 'power3.out' }, 0)
+      .to(s, { bulge: 64, duration: 0.3, ease: 'power2.out' }, 0)        // the edge bows out as it travels
+      .to(s, { bulge: 0, duration: 0.7, ease: 'elastic.out(1, 0.35)' }, 0.3) // then settles straight with a small bounce
+      .to(body, { opacity: 1, duration: 0.25 }, 0.35);
+  }
+  function close() {
+    tl?.kill();
+    panel.classList.remove('open');
+    tab.setAttribute('aria-expanded', 'false');
+    tl = gsap.timeline({ onUpdate: draw, onComplete: () => gsap.set(panel, { visibility: 'hidden' }) })
+      .to(body, { opacity: 0, duration: 0.15 }, 0)
+      .to(s, { bulge: -40, duration: 0.2, ease: 'power2.out' }, 0)        // the edge trails behind as it closes
+      .to(s, { w: 0, bulge: 0, duration: 0.4, ease: 'power3.in' }, 0.1);
+  }
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { gsap.globalTimeline.timeScale(20); }
+  tab.addEventListener('click', () => (panel.classList.contains('open') ? close() : open()));
+  panel.querySelector('.panel-close').addEventListener('click', close);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
+</script>

@@ -48,21 +48,49 @@ export function mountBuild(app) {
       log,
       h('div', { class: 'build-bar' }, box, sendBtn),
       h('div', { class: 't-caption ink-3 build-hint' }, 'Enter sends. Shift Enter adds a line.'));
-    root.replaceChildren(h('div', { class: 'build' }, left, right));
+    // Drag bar between the result and the prompts: pull it down for a taller preview.
+    const grip = h('div', { class: 'build-grip', role: 'separator', 'aria-orientation': 'horizontal', 'aria-label': 'Resize the preview height', tabindex: '0' }, h('span', { 'aria-hidden': 'true' }));
+    grip.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      grip.setPointerCapture(e.pointerId);
+      const top = left.getBoundingClientRect().top;
+      left.classList.add('resizing');
+      const move = (ev) => setHeight(ev.clientY - top);
+      const up = () => { left.classList.remove('resizing'); grip.removeEventListener('pointermove', move); grip.removeEventListener('pointerup', up); store.set('buildHeight', B.manualH); };
+      grip.addEventListener('pointermove', move);
+      grip.addEventListener('pointerup', up);
+    });
+    grip.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      setHeight(left.getBoundingClientRect().height + (e.key === 'ArrowDown' ? 32 : -32));
+      store.set('buildHeight', B.manualH);
+    });
+    grip.addEventListener('dblclick', () => { B.manualH = null; store.set('buildHeight', null); fitPreview(); });
+    root.replaceChildren(h('div', { class: 'build' }, left, grip, right));
     B.left = left;
+    B.manualH = store.get('buildHeight', null);
     fitPreview();
     renderLog();
   }
 
   // The result takes the room the component needs: at least 45% of the screen, up to all of it
   // except a compact prompt area. A taller component scrolls inside the preview.
+  const limits = () => { const total = B.left?.parentElement?.clientHeight || 0; return { total, min: 160, max: total - 120 }; };
+  function setHeight(px) {
+    const { total, min, max } = limits();
+    if (!total) return;
+    B.manualH = Math.round(Math.max(min, Math.min(max, px)));
+    B.left.style.flex = `0 0 ${B.manualH}px`;
+  }
   function fitPreview() {
-    const left = B.left, page = left?.parentElement;
-    if (!page || !page.clientHeight) return;
-    const total = page.clientHeight;
+    const left = B.left;
+    const { total, max } = limits();
+    if (!left || !total) return;
+    if (B.manualH) { setHeight(B.manualH); return; }
     const head = left.querySelector('.preview-head')?.offsetHeight || 32;
     const want = (B.contentH || 0) + head + 96;
-    const px = Math.max(total * 0.45, Math.min(total - 240, want));
+    const px = Math.max(total * 0.5, Math.min(max - 80, want));
     left.style.flex = `0 0 ${Math.round(px)}px`;
   }
   window.addEventListener('resize', () => fitPreview());

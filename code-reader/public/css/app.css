@@ -868,3 +868,12 @@ html, body { overflow: clip; }
 .cp-tips p { margin: 0; }
 .cp-missing { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .tip-mark.missing { display: inline-flex; align-items: center; gap: 4px; text-decoration: none; border: 1px dashed var(--line-strong); padding: 2px 8px; font-size: 14px; }
+
+/* Shape it: full-width preview with a height drag bar */
+.build .build-preview { padding-left: 0; padding-right: 0; }
+.build .build-preview .preview-head { padding: 0 var(--space-4); }
+.build-preview.resizing { transition: none; user-select: none; }
+.build-grip { flex: 0 0 16px; display: grid; place-items: center; cursor: row-resize; touch-action: none; margin: -8px 0; position: relative; z-index: 2; }
+.build-grip span { width: 40px; height: 4px; border-radius: 2px; background: var(--line-strong); transition: background var(--dur-1) var(--ease), width var(--dur-1) var(--ease); }
+.build-grip:hover span, .build-grip:focus-visible span { background: var(--ink); width: 56px; }
+.build-grip:focus-visible { outline: none; }

@@ -40,6 +40,18 @@ export const GLOSSARY = {
     text: 'A shortcut for top, right, bottom and left in one line. inset: 0 on an absolute box stretches it to every edge of its relative parent, so it covers the parent exactly.',
     example: '.overlay { position: absolute; inset: 0; }',
   },
+  'align-self': {
+    title: 'align-self',
+    match: /\balign-self\b/i,
+    text: 'Lets one item inside a flex box line up differently from the others. The box says align-items for everyone; align-self overrides it for just this item.',
+    example: '.badge { align-self: flex-start; } /* this one sits at the top, the rest stay centered */',
+  },
+  stretch: {
+    title: 'stretch',
+    match: /(?!)/,
+    text: 'An alignment value: the items grow to fill the box across its direction, so in a row they all become as tall as the box. It is the default for align-items.',
+    example: '.row { display: flex; align-items: stretch; }',
+  },
   'aspect-ratio': {
     title: 'aspect-ratio',
     match: /\baspect[- ]ratio\b/i,
@@ -446,7 +458,7 @@ const DEMOS = {
 const CODE_CONCEPT = {
   display: 'display', 'inline-flex': 'inline-flex', 'inline-grid': 'grid', flex: 'flexbox', grid: 'grid',
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
-  'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-items', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
+  'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-self', stretch: 'stretch', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
   'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };

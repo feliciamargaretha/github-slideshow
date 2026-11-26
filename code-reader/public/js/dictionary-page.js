@@ -35,6 +35,8 @@ export const DETAILS = {
   'fit-content': { design: 'Hug contents', about: 'The layer is only as wide as its content, like setting a frame to hug contents. If the content is longer than the space, it stops at the edge and wraps instead of overflowing.', opposite: 'block', related: ['inline-block', 'inline-flex', 'display', 'padding'] },
   after: { design: 'An extra layer drawn by CSS', about: 'Adds a layer inside an element, after its content, without adding anything to the HTML. Think of a decoration layer that lives in the style, not in the layers panel: an underline, a hover overlay, a small dot. It only shows up when it has content, usually content: \'\'.', opposite: 'before', related: ['position', 'absolute', 'inset', 'pointer-events', 'element'] },
   before: { design: 'An extra layer drawn by CSS, at the start', about: 'The same as ::after, but the extra layer comes before the content, so it is drawn first. Good for a leading icon, a bullet or an opening quote.', opposite: 'after', related: ['position', 'absolute', 'element'] },
+  'align-self': { design: 'Alignment for one layer (auto layout)', about: 'The auto layout frame sets one alignment for all its layers. align-self lets a single layer break the rule, like one badge sitting at the top while the rest stay centered. In Figma you would need an extra frame or absolute position for this; in code it is one line on that layer.', related: ['align-items', 'stretch', 'flexbox', 'children'] },
+  stretch: { design: 'Fill container, across (auto layout)', about: 'The layers grow to fill the frame across its direction: in a row, every layer becomes as tall as the frame, like setting each one\'s height to fill container. It is what happens by default unless you pick another alignment.', opposite: 'fit-content', related: ['align-items', 'align-self', 'flex-grow'] },
   'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
@@ -228,6 +230,20 @@ const INSPECT = {
       { caption: '::before adds a layer at the start, before the label, here a small dot.', frame: null, items: [I(130, 44, 140, 40, 'Item'), I(146, 60, 8, 8, '')], z: [1, 2], r: [undefined, 4], marks: [{ t: 'outline', x: 142, y: 56, w: 16, h: 16 }, { t: 'chip', x: 130, y: 100, text: "::before { content: '' }" }] },
     ],
   }),
+  'align-self': () => ({
+    height: 170,
+    frames: [
+      { caption: 'align-items: center on the frame: every layer sits in the middle.', frame: F(40, 20, 320, 120), items: [I(52, 60, 88, 40, 'Icon'), I(156, 50, 88, 60, 'Label'), I(260, 60, 88, 40, 'Badge')], marks: [{ t: 'chip', x: 40, y: 148, text: 'align-items: center' }] },
+      { caption: 'align-self: flex-start on the badge: only that layer moves to the top.', frame: F(40, 20, 320, 120), items: [I(52, 60, 88, 40, 'Icon'), I(156, 50, 88, 60, 'Label'), I(260, 32, 88, 40, 'Badge')], marks: [{ t: 'outline', x: 260, y: 32, w: 88, h: 40 }, { t: 'chip', x: 260, y: 148, text: 'align-self: flex-start' }] },
+    ],
+  }),
+  stretch: () => ({
+    height: 170,
+    frames: [
+      { caption: 'align-items: flex-start: each layer hugs its own height.', frame: F(40, 20, 320, 120), items: [I(52, 32, 88, 40, 'Icon'), I(156, 32, 88, 64, 'Label'), I(260, 32, 88, 40, 'Badge')], marks: [{ t: 'chip', x: 40, y: 148, text: 'align-items: flex-start' }] },
+      { caption: 'stretch: every layer fills the frame from top to bottom.', frame: F(40, 20, 320, 120), items: [I(52, 32, 88, 96, 'Icon'), I(156, 32, 88, 96, 'Label'), I(260, 32, 88, 96, 'Badge')], marks: [{ t: 'arrow', x: 368, y: 32, len: 96, dir: 'down' }, { t: 'chip', x: 40, y: 148, text: 'align-items: stretch' }] },
+    ],
+  }),
   'aspect-ratio': () => ({
     height: 200,
     frames: [
@@ -382,7 +398,7 @@ export const TREE = [
   { cat: 'Layout', nodes: [
     N('display', null, [
       N('block', 'value'), N('inline', 'value'), N('inline-block', 'value'),
-      N('flexbox', 'value', [N('inline-flex', 'variant'), N('gap', 'setting'), N('justify-content', 'setting'), N('align-items', 'setting'), N('flex-grow', 'setting'), N('flex-shrink', 'setting')]),
+      N('flexbox', 'value', [N('inline-flex', 'variant'), N('gap', 'setting'), N('justify-content', 'setting'), N('align-items', 'setting', [N('stretch', 'value')]), N('align-self', 'setting'), N('flex-grow', 'setting'), N('flex-shrink', 'setting')]),
       N('grid', 'value', [N('alignment', 'setting')]),
     ]),
   ] },

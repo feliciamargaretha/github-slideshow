@@ -871,6 +871,11 @@ export function mountWorkspace(app) {
     const orig = h('textarea', { class: 'cp-box cp-readonly', id: 'cp-original', rows: '6', readonly: true, 'aria-readonly': 'true', placeholder: 'You pasted this code without a prompt, so you are writing it from scratch.' });
     orig.value = originals.length > 1 ? originals.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : originals[0] || '';
     left.append(orig);
+    // Grow to show every prompt in full, no inner scrolling.
+    const fit = () => { if (!orig.isConnected) return; orig.style.height = 'auto'; orig.style.height = orig.scrollHeight + 2 + 'px'; };
+    requestAnimationFrame(fit);
+    let fitW = 0;
+    new ResizeObserver(() => { if (left.clientWidth !== fitW) { fitW = left.clientWidth; fit(); } }).observe(left);
     const earlier = CHECKPOINTS.slice(0, CHECKPOINTS.indexOf(cp)).filter((c) => S.parts[c.key]?.trim());
     if (earlier.length) left.append(h('h3', { class: 'cp-h' }, 'Your new prompt so far'), ...earlier.map((c) => h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, c.short), h('p', {}, S.parts[c.key]))));
 

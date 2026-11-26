@@ -803,3 +803,6 @@ html, body { overflow: clip; }
 .hist-code summary::before { content: '›'; display: inline-block; width: 16px; transition: transform 150ms; }
 .hist-code[open] summary::before { transform: rotate(90deg); }
 .hist-code pre { max-height: 420px; overflow: auto; white-space: pre-wrap; }
+
+/* Original prompt: big, white, shows every prompt in full */
+.checkpoint .cp-box.cp-readonly { background: var(--surface); color: var(--ink); min-height: 320px; overflow: hidden; resize: none; }

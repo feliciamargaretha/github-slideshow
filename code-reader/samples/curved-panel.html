@@ -7,12 +7,13 @@
   .clip { position: absolute; left: 0; top: 0; bottom: 0; width: 64px; overflow: hidden; }
   .inner { width: 280px; height: 100%; box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
   .t { white-space: nowrap; opacity: 0; }
-  .head { display: flex; align-items: center; gap: 10px; height: 40px; margin-bottom: 8px; }
-  .toggle { width: 40px; height: 40px; display: grid; place-items: center; flex: none; padding: 0; border: 0; border-radius: 8px; background: none; color: #52525b; cursor: pointer; }
+  .head { position: relative; display: flex; align-items: center; gap: 10px; height: 40px; margin-bottom: 8px; padding-left: 6px; width: max(40px, calc(var(--w, 64px) - 24px)); box-sizing: border-box; }
+  /* The toggle rides the right edge: at icon width it sits in the rail, when open it sits at the far right. */
+  .toggle { position: absolute; right: 0; top: 0; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: none; color: #52525b; cursor: pointer; }
   .toggle:hover { background: #f4f4f5; color: #0a0a0a; }
   .toggle:focus-visible, .item:focus-visible { outline: 2px solid #0a0a0a; outline-offset: -2px; }
   .logo { width: 28px; height: 28px; flex: none; border-radius: 6px; background: #0a0a0a; color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 13px; }
-  .head strong { font-size: 15px; }
+  .head strong { flex: 1; min-width: 0; font-size: 15px; }
   .item { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 11px; box-sizing: border-box; overflow: hidden; width: max(40px, calc(var(--w, 64px) - 24px)); border-radius: 8px; color: #3f3f46; text-decoration: none; }
   .item:hover { background: #f4f4f5; color: #0a0a0a; }
   .item.active { background: #f4f4f5; color: #0a0a0a; font-weight: 500; }
@@ -31,8 +32,8 @@
   <div class="clip">
     <nav class="inner">
       <div class="head">
-        <button class="toggle" type="button" aria-label="Expand sidebar" aria-expanded="false"><svg class="i"><use href="#i-sidebar" /></svg></button>
         <span class="logo t">A</span><strong class="t">Acme</strong>
+        <button class="toggle" type="button" aria-label="Expand sidebar" aria-expanded="false"><svg class="i"><use href="#i-sidebar" /></svg></button>
       </div>
       <a class="item" href="#" title="Search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg><span class="t">Search</span></a>
       <a class="item active" href="#" title="Home"><svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" /></svg><span class="t">Home</span></a>

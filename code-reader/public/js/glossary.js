@@ -180,6 +180,10 @@ function learn(key) {
 const onLearn = [];
 export const onLearned = (f) => onLearn.push(f);
 export const learnedCount = () => learned().length;
+export const learnedKeys = () => learned();
+export const learnKey = (key) => learn(key);
+let dictionaryOpener = null;
+export const setDictionaryOpener = (fn) => { dictionaryOpener = fn; };
 
 /** Split plain text into strings and concept labels; `used` keeps one label per concept per step. */
 export function withConcepts(text, used) {
@@ -220,6 +224,7 @@ function conceptCard(key, prompt) {
     g.demo ? demo(g.demo) : null,
     h('p', {}, g.text),
     g.example ? h('pre', { class: 'concept-code' }, g.example) : null,
+    dictionaryOpener ? h('div', {}, h('button', { class: 'btn btn-text', type: 'button', onclick: () => { closePopover(); dictionaryOpener(key); } }, 'Open in dictionary', icon('arrowRight'))) : null,
     prompt ? h('div', { class: 'concept-prompt' }, h('span', { class: 't-caption ink-3' }, 'Worth knowing for prompts'),
       h('div', { class: 'pair-row' }, h('span', {}, `“${prompt.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, prompt.precise))) : null);
 }

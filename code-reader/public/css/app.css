@@ -718,3 +718,54 @@ html, body { overflow: clip; }
 .cp-box.cp-result.showing-mine { background: var(--surface-2); }
 .btn.hold { user-select: none; -webkit-user-select: none; touch-action: none; }
 .btn.hold[aria-pressed='true'] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+/* Dictionary page */
+.screen.dictionary { overflow: hidden; }
+.dict-page { display: grid; grid-template-columns: 280px minmax(0, 1fr); height: 100%; }
+.dict-nav { border-right: 1px solid var(--line); overflow: auto; padding: var(--space-3) var(--space-3) var(--space-5); display: grid; gap: var(--space-4); align-content: start; }
+.dict-nav-head { display: grid; gap: var(--space-2); }
+.dict-nav-head .btn-text { justify-self: start; }
+.dict-search { height: 40px; border: 1px solid var(--line-strong); border-radius: var(--radius-m); padding: 0 12px; }
+.dict-search:focus { border-color: var(--line-focus); outline: none; }
+.dict-nav-group { display: grid; gap: 2px; }
+.dict-nav-group > .t-caption { margin-bottom: var(--space-1); }
+.dict-nav-item { display: grid; text-align: left; padding: 6px 8px; border: 0; border-radius: var(--radius-s); background: none; }
+.dict-nav-item:hover { background: var(--surface-2); }
+.dict-nav-item.active { background: var(--surface-3); }
+.dict-nav-item.dim .dict-nav-term { color: var(--ink-2); }
+.dict-nav-term { font-weight: 500; }
+.dict-detail { overflow: auto; padding: var(--space-6) var(--space-6) var(--space-7); display: grid; gap: var(--space-5); align-content: start; max-width: 880px; }
+.dict-head { display: grid; gap: var(--space-2); }
+.dict-design { margin: 0; display: grid; gap: 2px; }
+.dict-h { margin: 0 0 var(--space-2); font-size: 16px; line-height: 24px; font-weight: 500; }
+.dict-about { margin: 0 0 var(--space-3); max-width: 640px; }
+.dict-related { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.dict-link { display: grid; text-align: left; gap: 2px; padding: var(--space-2) var(--space-3); border: 1px solid var(--line-strong); border-radius: var(--radius-m); background: var(--surface); min-width: 180px; }
+.dict-link:hover { border-color: var(--ink); }
+
+/* Spec-inspection animation */
+.ins { display: grid; gap: var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-m); padding: var(--space-4); background: var(--surface); }
+.ins-stage { position: relative; width: 400px; max-width: 100%; margin: 0 auto; }
+.ins-frame, .ins-item, .ins-mark { position: absolute; box-sizing: border-box; }
+.ins-frame { border: 1px solid var(--line-strong); background: var(--surface); transition: all 700ms var(--ease); }
+.ins-item { display: grid; place-items: center; font: 500 12px/1.2 var(--font); color: var(--ink-2); background: var(--surface-3); border: 1px solid var(--ink-3); border-radius: var(--radius-s); text-align: center; transition-property: left, top, width, height, opacity, border-radius; transition-duration: 700ms; transition-timing-function: var(--ease); overflow: hidden; }
+.ins-marks .ins-mark { animation: fadeIn 300ms var(--ease) 350ms both; }
+.ins-gap { background-image: radial-gradient(var(--ink) 1px, transparent 1.2px); background-size: 6px 6px; opacity: .55; }
+.ins-mar { background: repeating-linear-gradient(135deg, var(--ink-3) 0 1px, transparent 1px 6px); }
+.ins-pad { border-style: solid; border-color: rgba(10, 10, 10, .12); background: transparent; }
+.ins-outline { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: var(--radius-s); }
+.ins-ghost { border: 1px dashed var(--ink-3); border-radius: var(--radius-s); }
+.ins-line { background: var(--ink); }
+.ins-line.dashed { background: repeating-linear-gradient(var(--ink-3) 0 4px, transparent 4px 8px); }
+.ins-line.dashed[style*="height: 1px"] { background: repeating-linear-gradient(90deg, var(--ink-3) 0 4px, transparent 4px 8px); }
+.ins-chip { background: var(--ink); color: var(--surface); font: 400 12px/18px var(--mono); padding: 1px 6px; border-radius: var(--radius-s); white-space: nowrap; }
+.ins-dim, .ins-arrow { background: var(--ink); }
+.ins-dim::before, .ins-dim::after { content: ''; position: absolute; top: -4px; width: 1px; height: 9px; background: var(--ink); }
+.ins-dim::before { left: 0; } .ins-dim::after { right: 0; }
+.ins-arrow::after { content: ''; position: absolute; right: -1px; top: -4px; border-left: 7px solid var(--ink); border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
+.ins-arrow.down::after { right: -4px; top: auto; bottom: -1px; border-top: 7px solid var(--ink); border-left: 4.5px solid transparent; border-right: 4.5px solid transparent; border-bottom: 0; }
+.ins-dim-label { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); font: 400 12px/18px var(--mono); background: var(--surface); padding: 0 4px; white-space: nowrap; color: var(--ink); }
+.ins-arrow.down .ins-dim-label { left: 8px; top: 50%; transform: translateY(-50%); }
+.ins-corner { border-top: 2px solid var(--ink); border-right: 2px solid var(--ink); border-top-right-radius: 24px; }
+.ins-cap { margin: 0; color: var(--ink-2); text-align: center; min-height: 24px; }
+@media (prefers-reduced-motion: reduce) { .ins-frame, .ins-item { transition: none; } }

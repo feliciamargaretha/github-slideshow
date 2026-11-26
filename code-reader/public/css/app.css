@@ -635,3 +635,34 @@ html, body { overflow: clip; }
 .progress > li.cp-li { flex: 0 0 16px; min-width: 16px; }
 .progress > li.seg-li.open { flex-grow: var(--steps, 3); }
 .seg-group li + li { border-left: 2px solid var(--surface); }
+
+/* Prompt practice by part: full width, the result hidden in a sheet you can open */
+.workspace.cp-mode { grid-template-columns: minmax(0, 1fr); }
+.workspace.cp-mode .walk-col { grid-column: 1; grid-row: 1; }
+.workspace.cp-mode .divider { display: none; }
+.workspace.cp-mode .preview-col {
+  position: absolute; z-index: 30; top: 0; bottom: 0; left: 0; width: 560px; min-width: 0; background: var(--surface);
+  border-right: 1px solid var(--line-strong); transform: translateX(-100%); visibility: hidden;
+  transition: transform var(--dur-3) var(--ease), visibility 0s linear var(--dur-3);
+}
+.workspace.cp-mode.preview-open .preview-col { transform: none; visibility: visible; transition: transform var(--dur-3) var(--ease); }
+.workspace { position: relative; }
+.sheet-close { display: none; }
+.workspace.cp-mode .sheet-close { display: inline-grid; }
+.workspace.cp-mode .walk-col { min-width: 0; }
+.checkpoint { max-width: 1200px; }
+.cp-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.cp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--space-5); align-items: start; }
+.cp-col { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.cp-before { padding-right: var(--space-5); border-right: 1px solid var(--line); }
+.cp-h { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; }
+.cp-ask { margin: 0; color: var(--ink-2); }
+.cp-originals { margin: 0; padding-left: 20px; display: grid; gap: var(--space-2); }
+.cp-originals li { white-space: pre-wrap; }
+.checkpoint .cp-box { max-width: none; min-height: 160px; }
+.levels { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.level { display: flex; align-items: flex-start; gap: var(--space-2); text-align: left; padding: var(--space-2) var(--space-3); border: 1px solid var(--line-strong); border-radius: var(--radius-m); background: var(--surface); color: var(--ink-3); }
+.level .level-text { display: grid; color: var(--ink); }
+.level:hover { border-color: var(--ink-3); }
+.level[aria-checked='true'] { border-color: var(--ink); color: var(--ink); }
+.level-icon { display: inline-flex; padding-top: 4px; }

@@ -71,6 +71,19 @@ await page.locator('#cp-box').fill('a white card in the middle of the page with 
 await page.click('.checkpoint button:has-text("Check my part")');
 await page.waitForSelector('.cp-feedback .sharper');
 check('Parts: checking shows covered, missing and a sharper version', /You covered/.test(await page.locator('.cp-feedback').innerText()) && /Missing from the code/.test(await page.locator('.cp-feedback').innerText()));
+check('Parts: the result is hidden and opens as a sheet', await (async () => {
+  await page.waitForTimeout(400);
+  const hidden = await page.locator('.preview-col').evaluate((e) => getComputedStyle(e).visibility === 'hidden');
+  await page.click('.cp-top .btn-secondary'); await page.waitForTimeout(400);
+  const shown = await page.locator('.preview-col').evaluate((e) => getComputedStyle(e).visibility === 'visible');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+  return hidden && shown;
+})());
+await page.locator('#cp-box').fill('');
+await page.click('.level:has-text("Level 2")');
+check('Parts: level 2 fills the box with a template of blanks', /\[what the component is\]/.test(await page.inputValue('#cp-box')));
+await page.click('.level:has-text("Level 1")');
+await page.locator('#cp-box').fill('a white card in the middle of the page with 24px padding');
 await page.click('.footer-bar .nav .btn-primary');
 check('Parts: Next continues to the Style steps', await page.evaluate(() => window.__codeReader.workspace.state.steps[window.__codeReader.workspace.state.cur].panel) === 'style');
 const lastStyle = await page.evaluate(() => { const st = window.__codeReader.workspace.state.steps; let k = -1; st.forEach((x, i) => { if (x.panel === 'style') k = i; }); return k; });

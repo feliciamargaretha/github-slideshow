@@ -46,7 +46,8 @@ export function mountWorkspace(app) {
     hint.textContent = hintText();
     preview.send({ type: 'mode', inspect: inspectMode });
   }, { label: 'Preview mode' });
-  const previewHead = h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Preview'), modeSeg), h('div', { class: 'left' }, hint, resetBtn));
+  const sheetClose = h('button', { class: 'btn-icon sheet-close', type: 'button', 'aria-label': 'Hide the result', onclick: () => togglePreviewSheet(false) }, icon('close'));
+  const previewHead = h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Preview'), modeSeg), h('div', { class: 'left' }, hint, resetBtn, sheetClose));
   const motionHost = h('div', { class: 'motion-panel', 'aria-label': 'Motion' });
   motionHost.classList.add('in-step');
   // The motion panel lives in the Motion steps of the walkthrough, not under the preview.
@@ -314,6 +315,7 @@ export function mountWorkspace(app) {
     usedConcepts = new Set();
     if (S.element !== null) return renderElement();
     if (S.cp) return renderCheckpoint(dir);
+    grid.classList.remove('cp-mode', 'preview-open');
     const s = step();
     if (!s) { stepArea.replaceChildren(); return; }
     const keepScroll = dir === 'none' ? stepArea.scrollTop : 0;
@@ -683,6 +685,7 @@ export function mountWorkspace(app) {
 
   function renderElement() {
     usedConcepts = new Set();
+    grid.classList.remove('cp-mode', 'preview-open');
     const el = S.model.html.elements[S.element];
     const { matched, overridden } = cascadeFor(S.model, S.element, S.match);
     const view = h('div', { class: 'element-view step fade' });
@@ -791,41 +794,110 @@ export function mountWorkspace(app) {
   const partsKey = () => 'parts.' + hash(S.model.source);
   function saveParts() { store.set(partsKey(), S.parts); }
 
+  // Levels for prompt practice. Level 1: write freely. Level 2: fill in the blanks of a template.
+  const TEMPLATES = {
+    layout: 'This is a [what the component is]. It contains [the parts inside it]. The parts sit in a [row / column / grid] with [space] between them. Each [part] is [width] wide with [space] of inner spacing.',
+    style: 'The background is [color] and the text is [color]. Headings are [size] and [weight]. The [element] has a [border] border, [radius] rounded corners and a [soft / strong / no] shadow.',
+    motion: 'When the user [hovers / clicks / loads the page], the [element] [what changes, for example lifts 4px]. It takes [duration] with [ease-out / ease-in-out] easing.',
+  };
+  const levelIcon = (n) => {
+    const span = h('span', { class: 'level-icon', 'aria-hidden': 'true' });
+    span.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">${n === 1
+      ? '<circle cx="8" cy="8" r="4"/>'
+      : '<circle cx="4.5" cy="8" r="3.25"/><circle cx="11.5" cy="8" r="3.25"/>'}</svg>`;
+    return span;
+  };
+
   function renderCheckpoint(dir) {
     const cp = CHECKPOINTS.find((c) => c.key === S.cp);
+    grid.classList.add('cp-mode');
     const card = h('article', { class: `step checkpoint ${dir === 'next' ? 'enter-next' : dir === 'back' ? 'enter-back' : dir === 'none' ? '' : 'fade'}`, 'aria-labelledby': 'step-title' });
-    card.append(h('div', { class: 'meta t-caption' }, h('span', { class: 'tag' }, 'Prompt practice'),
-      ...cp.groups.map((g) => h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon(g), PANEL_LABEL[g]))));
+    const previewBtn = h('button', { class: 'btn btn-secondary', type: 'button', 'aria-expanded': String(grid.classList.contains('preview-open')), onclick: () => togglePreviewSheet() }, icon('eye'), 'Show the result');
+    card.append(h('div', { class: 'cp-top' },
+      h('div', { class: 'meta t-caption' }, h('span', { class: 'tag' }, 'Prompt practice'),
+        ...cp.groups.map((g) => h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon(g), PANEL_LABEL[g]))),
+      previewBtn));
     card.append(h('h2', { class: 't-title', id: 'step-title' }, cp.title));
-    card.append(h('p', { class: 'explain', style: { margin: 0 } }, cp.ask));
-    // Earlier parts, so the prompt builds up
+
+    // Left: what you prompted before. Right: this part, rewritten.
+    const left = h('section', { class: 'cp-col cp-before', 'aria-label': 'Your earlier prompt' });
+    const originals = (S.history && S.history.length ? S.history : S.prompt ? [S.prompt] : []).filter(Boolean);
+    left.append(h('h3', { class: 'cp-h' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'));
+    if (originals.length) left.append(h('ol', { class: 'cp-originals' }, ...originals.map((p) => h('li', {}, p))));
+    else left.append(h('p', { class: 'ink-2', style: { margin: 0 } }, 'You pasted this code without a prompt, so you are writing it from scratch.'));
     const earlier = CHECKPOINTS.slice(0, CHECKPOINTS.indexOf(cp)).filter((c) => S.parts[c.key]?.trim());
-    if (earlier.length) card.append(h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, 'Your prompt so far'), ...earlier.map((c) => h('p', {}, S.parts[c.key]))));
-    // Terms met in this part
+    if (earlier.length) left.append(h('h3', { class: 'cp-h' }, 'Your new prompt so far'), ...earlier.map((c) => h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, c.short), h('p', {}, S.parts[c.key]))));
+
+    const right = h('section', { class: 'cp-col cp-now', 'aria-label': cp.title });
+    right.append(h('h3', { class: 'cp-h' }, `Your ${cp.short} part`), h('p', { class: 'cp-ask' }, cp.ask));
+    const level = store.get('promptLevel', 1);
+    const box = h('textarea', { class: 'cp-box', id: 'cp-box', rows: '6', placeholder: level === 1 ? cp.placeholder : '', 'aria-label': `Your ${cp.short} part` });
+    box.value = S.parts[cp.key] || (level === 2 ? TEMPLATES[cp.key] : '');
+    if (level === 2 && !S.parts[cp.key]) { S.parts[cp.key] = box.value; saveParts(); }
+    const levels = h('div', { class: 'levels', role: 'radiogroup', 'aria-label': 'Level' },
+      ...[[1, 'Free prompting', 'Write it your own way'], [2, 'With guidance', 'Fill in the blanks of a template']].map(([n, name, hint]) =>
+        h('button', { class: 'level', type: 'button', role: 'radio', 'aria-checked': String(level === n), onclick: () => setLevel(n) },
+          levelIcon(n), h('span', { class: 'level-text' }, h('span', { class: 't-strong' }, `Level ${n}: ${name}`), h('span', { class: 't-caption ink-2' }, hint)))));
+    right.append(levels);
+    const blanksHint = h('p', { class: 't-caption ink-2', style: { margin: 0 }, hidden: level !== 2 ? true : null }, 'Replace each part in [brackets]. Tab jumps to the next blank.');
+    right.append(box, blanksHint);
+    box.addEventListener('input', () => { S.parts[cp.key] = box.value; saveParts(); checkBtn.disabled = !box.value.trim(); renderChrome(); });
+    box.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Tab' && /\[[^\]]*\]/.test(box.value)) {
+        // jump to the next (or previous) [blank] and select it
+        e.preventDefault();
+        const v = box.value;
+        const blanks = [...v.matchAll(/\[[^\]]*\]/g)].map((m) => [m.index, m.index + m[0].length]);
+        const at = box.selectionEnd;
+        const pick = e.shiftKey ? [...blanks].reverse().find(([s0]) => s0 < box.selectionStart) || blanks[blanks.length - 1] : blanks.find(([s0]) => s0 >= at) || blanks[0];
+        box.setSelectionRange(pick[0], pick[1]);
+      }
+    });
+    function setLevel(n) {
+      store.set('promptLevel', n);
+      if (n === 2 && !box.value.trim()) { S.parts[cp.key] = TEMPLATES[cp.key]; saveParts(); }
+      renderStep('none');
+      if (n === 2) setTimeout(() => { const b = stepArea.querySelector('#cp-box'); const m = /\[[^\]]*\]/.exec(b.value); b.focus({ preventScroll: true }); if (m) b.setSelectionRange(m.index, m.index + m[0].length); }, 30);
+    }
+    if (level === 2 && box.value.trim() && !box.value.includes('[') && S.parts[cp.key] !== TEMPLATES[cp.key]) {
+      right.append(h('button', { class: 'btn btn-text t-caption', type: 'button', style: { justifySelf: 'start', height: '24px' }, onclick: () => { box.value = TEMPLATES[cp.key]; box.dispatchEvent(new Event('input')); } }, 'Start over from the template'));
+    }
+    // Words met in these steps, as pills
     const terms = [];
     for (const st of S.steps) if (cp.groups.includes(groupOf(st))) for (const se of st.sentences) for (const m of se.text.matchAll(/`([^`]+)`/g)) {
       const k = termKey(m[1], TERMS);
       if (k && !terms.includes(k)) terms.push(k);
     }
-    const box = h('textarea', { class: 'cp-box', id: 'cp-box', rows: '4', placeholder: cp.placeholder, 'aria-label': cp.title });
-    box.value = S.parts[cp.key] || '';
-    box.addEventListener('input', () => { S.parts[cp.key] = box.value; saveParts(); checkBtn.disabled = !box.value.trim(); renderChrome(); box.focus({ preventScroll: true }); });
-    box.addEventListener('keydown', (e) => e.stopPropagation());
-    card.append(box);
-    if (terms.length) card.append(h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Words from these steps. Click one to add it.'),
+    if (terms.length) right.append(h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Words from these steps. Click one to add it.'),
       h('div', { class: 'chips' }, ...terms.map((k) => h('button', { class: 'tag', type: 'button', title: `“${TERMS[k].casual}”`, onclick: () => {
-        const s0 = box.selectionStart ?? box.value.length;
-        const pad = box.value && !/\s$/.test(box.value.slice(0, s0)) ? ' ' : '';
-        box.setRangeText(pad + TERMS[k].precise.replace(/ plus a duration$/, ''), s0, box.selectionEnd ?? s0, 'end');
+        const s0 = box.selectionStart ?? box.value.length, s1 = box.selectionEnd ?? s0;
+        const word = TERMS[k].precise.replace(/ plus a duration$/, '');
+        const inBlank = /^\[[^\]]*\]$/.test(box.value.slice(s0, s1));
+        const pad = !inBlank && box.value && !/\s$/.test(box.value.slice(0, s0)) ? ' ' : '';
+        box.setRangeText(pad + word, s0, s1, 'end');
         box.dispatchEvent(new Event('input'));
+        box.focus({ preventScroll: true });
       } }, TERMS[k].precise)))));
     const feedback = h('div', { class: 'cp-feedback', 'aria-live': 'polite' });
-    const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !box.value.trim() ? true : null, onclick: () => checkPart(cp, box.value, feedback, checkBtn) }, 'Check my part');
-    card.append(h('div', { class: 'gen-row' }, checkBtn, h('span', { class: 't-caption ink-3' }, 'Claude compares your words with the code. Next keeps going either way.')), feedback);
+    const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !box.value.trim() ? true : null, onclick: () => {
+      if (/\[[^\]]*\]/.test(box.value)) { feedback.replaceChildren(message('Some blanks are still empty.', 'Replace each part in [brackets] with your own words, then check again.', null)); return; }
+      checkPart(cp, box.value, feedback, checkBtn);
+    } }, 'Check my part');
+    right.append(h('div', { class: 'gen-row' }, checkBtn, h('span', { class: 't-caption ink-3' }, 'Claude compares your words with the code. Next keeps going either way.')), feedback);
     if (S.cpFeedback?.[cp.key]) showFeedback(S.cpFeedback[cp.key], feedback, box);
+
+    card.append(h('div', { class: 'cp-cols' }, left, right));
     stepArea.replaceChildren(card);
     stepArea.scrollTop = 0;
     preview.send({ type: 'outline', ids: [] });
+  }
+
+  function togglePreviewSheet(force) {
+    const open = force ?? !grid.classList.contains('preview-open');
+    grid.classList.toggle('preview-open', open);
+    stepArea.querySelector('.cp-top .btn-secondary')?.setAttribute('aria-expanded', String(open));
+    return open;
   }
 
   async function checkPart(cp, text, out, btn) {
@@ -1002,7 +1074,7 @@ export function mountWorkspace(app) {
     load,
     reset() { S.loaded = false; S.model = null; preview.clear(); motion.load(null); stepArea.replaceChildren(); closeDrawer(true); },
     openDrawer,
-    escape() { if (closeChat()) return; if (closeDrawer()) return; closeElement(); },
+    escape() { if (closeChat()) return; if (grid.classList.contains('preview-open')) { togglePreviewSheet(false); return; } if (closeDrawer()) return; closeElement(); },
     back: () => { go('workspace'); },
     key: (e) => keyHandler(e),
     goTo: (i) => goTo(i),

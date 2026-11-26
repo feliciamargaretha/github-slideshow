@@ -21,7 +21,7 @@ export const DETAILS = {
   block: { design: 'Fill container width', about: 'A block layer starts on a new line and stretches to the full width of its parent, like a layer set to fill the container.', opposite: 'inline', related: ['display', 'inline-block', 'flexbox'] },
   inline: { design: 'Text that flows', about: 'An inline layer flows inside a line of text like a word. It hugs its content and ignores width and height.', opposite: 'block', related: ['display', 'inline-block', 'inline-flex'] },
   'inline-block': { design: 'Hug contents, inside text', about: 'Sits in a line of text like a word, but still takes a width, a height and padding, like a small frame placed in a sentence.', opposite: 'block', related: ['display', 'inline', 'inline-flex'] },
-  'inline-flex': { design: 'Auto layout that hugs, inside text', about: 'An auto layout frame that hugs its content and sits in a line of text. Good for buttons and badges with an icon and a label.', opposite: 'flexbox', related: ['flexbox', 'inline-block', 'gap', 'align-items'] },
+  'inline-flex': { design: 'Auto layout that hugs, inside text', about: 'An auto layout frame that hugs its content and sits in a line of text. Good for buttons and badges with an icon and a label.', related: ['flexbox', 'inline-block', 'gap', 'align-items'] },
   position: { design: 'Layer positioning', about: 'Decides whether a layer follows the layout or is placed on its own. Most layers follow the normal flow (static). relative keeps the layer in place and makes it the frame that absolute layers are measured from. absolute takes a layer out of the flow and pins it, like turning on “absolute position” inside an auto layout frame.', related: ['relative', 'absolute', 'z-index', 'transform'] },
   relative: { design: 'The frame absolute layers are pinned to', about: 'The layer stays exactly where the layout puts it, but now it is the reference point: any absolute child is measured from its edges, like a frame that an absolute-positioned layer belongs to. Without it, an absolute layer measures from the whole page.', opposite: 'absolute', related: ['position', 'absolute', 'children', 'parent'] },
   absolute: { design: 'Absolute position', about: 'Takes a layer out of auto layout and pins it to a spot, measured from the nearest relative parent, like turning on “absolute position” for a layer inside an auto layout frame. The other layers close up as if it were not there.', opposite: 'relative', related: ['position', 'relative', 'z-index', 'transform'] },
@@ -348,6 +348,41 @@ export function inspector(key) {
   return wrap;
 }
 
+// ---- Categories and the family tree --------------------------------------------
+// Each node is [key, how it belongs to its parent, children]. value: one of the
+// parent's values (display: flex). variant: a version of the parent (inline-flex
+// is flexbox that sits inline). setting: works on the parent (gap on an auto
+// layout frame). part: a piece of the parent (::after inside an element).
+const N = (key, rel, kids = []) => [key, rel, kids];
+export const TREE = [
+  { cat: 'Building blocks', nodes: [
+    N('element', null, [N('parent', 'part'), N('children', 'part'), N('before', 'part'), N('after', 'part')]),
+    N('selector', null, [N('class', 'part')]),
+  ] },
+  { cat: 'Layout', nodes: [
+    N('display', null, [
+      N('block', 'value'), N('inline', 'value'), N('inline-block', 'value'),
+      N('flexbox', 'value', [N('inline-flex', 'variant'), N('gap', 'setting'), N('justify-content', 'setting'), N('align-items', 'setting'), N('flex-grow', 'setting'), N('flex-shrink', 'setting')]),
+      N('grid', 'value', [N('alignment', 'setting')]),
+    ]),
+  ] },
+  { cat: 'Size and spacing', nodes: [N('padding'), N('margin'), N('box-sizing'), N('fit-content')] },
+  { cat: 'Position', nodes: [
+    N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
+  ] },
+  { cat: 'Style', nodes: [N('radius'), N('pointer-events')] },
+  { cat: 'Motion', nodes: [N('transition', null, [N('easing', 'setting')]), N('keyframes'), N('transform')] },
+];
+const FAMILY = {};
+for (const t of TREE) (function walk(nodes, parent, path) {
+  for (const [key, rel, kids] of nodes) {
+    FAMILY[key] = { cat: t.cat, parent, rel, kids: kids.map((k) => [k[0], k[1]]), path };
+    walk(kids, key, [...path, key]);
+  }
+})(t.nodes, null, []);
+const REL_UP = { value: 'A value of', variant: 'A version of', setting: 'A setting that works with', part: 'Part of' };
+const REL_DOWN = { value: 'Values of', variant: 'Versions of', setting: 'Settings that work with', part: 'Parts of' };
+
 // ---- The page -------------------------------------------------------------------
 
 export function mountDictionaryPage(app, { onBack }) {
@@ -362,8 +397,7 @@ export function mountDictionaryPage(app, { onBack }) {
 
   function render() {
     const mine = learnedKeys().filter((k) => GLOSSARY[k]);
-    const others = Object.keys(GLOSSARY).filter((k) => !mine.includes(k));
-    const q = D.query.trim().toLowerCase();
+        const q = D.query.trim().toLowerCase();
     const match = (k) => !q || GLOSSARY[k].title.toLowerCase().includes(q) || (DETAILS[k]?.design || '').toLowerCase().includes(q);
     const item = (k, dim) => h('button', { class: `dict-nav-item ${D.key === k ? 'active' : ''} ${dim ? 'dim' : ''}`, type: 'button', 'aria-current': D.key === k ? 'page' : null, onclick: () => { open(k); } },
       h('span', { class: 'dict-nav-term' }, GLOSSARY[k].title), DETAILS[k]?.design ? h('span', { class: 't-caption ink-3' }, DETAILS[k].design) : null);
@@ -372,8 +406,16 @@ export function mountDictionaryPage(app, { onBack }) {
     search.addEventListener('keydown', (e) => e.stopPropagation());
     const nav = h('nav', { class: 'dict-nav', 'aria-label': 'Words' },
       h('div', { class: 'dict-nav-head' }, h('button', { class: 'btn btn-text', type: 'button', onclick: () => onBack() }, icon('arrowLeft'), 'Back'), search),
-      h('div', { class: 'dict-nav-group' }, h('span', { class: 't-caption ink-3' }, `Your words (${mine.length})`), ...(mine.filter(match).length ? mine.filter(match).map((k) => item(k)) : [h('p', { class: 't-caption ink-3', style: { margin: 0 } }, 'Click a label in an explanation and it is saved here.')])),
-      h('div', { class: 'dict-nav-group' }, h('span', { class: 't-caption ink-3' }, 'More words'), ...others.filter(match).map((k) => item(k, true))));
+      q ? null : h('div', { class: 'dict-nav-group' }, h('span', { class: 't-caption ink-3' }, `Your words (${mine.length})`), ...(mine.filter(match).length ? mine.filter(match).map((k) => item(k)) : [h('p', { class: 't-caption ink-3', style: { margin: 0 } }, 'Click a label in an explanation and it is saved here.')])),
+      ...(q ? [h('div', { class: 'dict-nav-group' }, h('span', { class: 't-caption ink-3' }, 'Matches'), ...Object.keys(GLOSSARY).filter(match).map((k) => item(k, !mine.includes(k))))]
+        : TREE.map((t) => h('div', { class: 'dict-nav-group' }, h('span', { class: 'dict-cat' }, t.cat), ...treeItems(t.nodes, 0)))));
+    function treeItems(nodes, depth) {
+      return nodes.filter(([k]) => GLOSSARY[k]).flatMap(([k, , kids]) => {
+        const el = item(k, !mine.includes(k));
+        el.style.paddingLeft = 8 + depth * 16 + 'px';
+        return [el, ...treeItems(kids, depth + 1)];
+      });
+    }
     root.replaceChildren(h('div', { class: 'dict-page' }, nav, D.key ? detail(D.key) : h('div', { class: 'dict-detail' }, h('p', { class: 'ink-2' }, 'Pick a word on the left.'))));
   }
 
@@ -381,14 +423,25 @@ export function mountDictionaryPage(app, { onBack }) {
     const g = GLOSSARY[key], d = DETAILS[key] || {};
     const link = (k) => GLOSSARY[k] ? h('button', { class: 'dict-link', type: 'button', onclick: () => open(k) }, h('span', { class: 't-strong' }, GLOSSARY[k].title), DETAILS[k]?.design ? h('span', { class: 't-caption ink-2' }, DETAILS[k].design) : null) : null;
     const ins = inspector(key);
+    const fam = FAMILY[key];
+    const crumb = fam ? h('p', { class: 'dict-crumb t-caption ink-3' }, h('span', {}, fam.cat), ...fam.path.flatMap((k) => [h('span', { 'aria-hidden': 'true' }, '›'), h('button', { class: 'dict-crumb-link', type: 'button', onclick: () => open(k) }, GLOSSARY[k].title)])) : null;
+    const groups = {};
+    for (const [k, rel] of fam?.kids || []) if (GLOSSARY[k]) (groups[rel] ||= []).push(k);
+    const family = [
+      fam?.parent ? h('div', { class: 'dict-fam' }, h('h2', { class: 'dict-h' }, `${REL_UP[fam.rel]} ${GLOSSARY[fam.parent].title}`), link(fam.parent)) : null,
+      ...['value', 'variant', 'setting', 'part'].filter((r) => groups[r]).map((r) => h('div', { class: 'dict-fam' }, h('h2', { class: 'dict-h' }, `${REL_DOWN[r]} ${g.title}`), h('div', { class: 'dict-related' }, ...groups[r].map(link)))),
+    ].filter(Boolean);
+    const shown = new Set([fam?.parent, ...(fam?.kids || []).map((k) => k[0])]);
     const article = h('article', { class: 'dict-detail', 'aria-labelledby': 'dict-title' },
       h('div', { class: 'dict-head' },
+        crumb,
         h('h1', { class: 't-display', id: 'dict-title' }, g.title),
         d.design ? h('p', { class: 'dict-design' }, h('span', { class: 't-caption ink-3' }, 'In design tools'), h('span', { class: 't-strong' }, d.design)) : null),
       ins ? h('section', { class: 'dict-section', 'aria-label': 'How it looks' }, ins) : null,
       h('section', { class: 'dict-section' }, h('h2', { class: 'dict-h' }, 'What it means'), h('p', { class: 'dict-about' }, d.about || g.text), g.example ? h('pre', { class: 'concept-code' }, g.example) : null),
+      family.length ? h('section', { class: 'dict-section dict-family', 'aria-label': 'How it connects' }, ...family) : null,
       d.opposite && GLOSSARY[d.opposite] ? h('section', { class: 'dict-section' }, h('h2', { class: 'dict-h' }, 'The opposite'), link(d.opposite)) : null,
-      d.related?.length ? h('section', { class: 'dict-section' }, h('h2', { class: 'dict-h' }, 'Related words'), h('div', { class: 'dict-related' }, ...d.related.filter((k) => GLOSSARY[k]).map(link))) : null);
+      d.related?.filter((k) => GLOSSARY[k] && !shown.has(k) && k !== d.opposite).length ? h('section', { class: 'dict-section' }, h('h2', { class: 'dict-h' }, 'Related words'), h('div', { class: 'dict-related' }, ...d.related.filter((k) => GLOSSARY[k] && !shown.has(k) && k !== d.opposite).map(link))) : null);
     return article;
   }
 

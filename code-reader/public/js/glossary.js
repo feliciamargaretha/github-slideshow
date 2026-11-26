@@ -40,6 +40,12 @@ export const GLOSSARY = {
     text: 'A shortcut for top, right, bottom and left in one line. inset: 0 on an absolute box stretches it to every edge of its relative parent, so it covers the parent exactly.',
     example: '.overlay { position: absolute; inset: 0; }',
   },
+  'aspect-ratio': {
+    title: 'aspect-ratio',
+    match: /\baspect[- ]ratio\b/i,
+    text: 'Keeps a box at a fixed shape: when its width changes, its height follows. 1 / 1 is always a square, 16 / 9 is a video shape.',
+    example: '.avatar { width: 48px; aspect-ratio: 1 / 1; }',
+  },
   'pointer-events': {
     title: 'pointer-events',
     match: /\bpointer-events\b/i,
@@ -442,7 +448,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-items', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

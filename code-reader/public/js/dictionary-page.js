@@ -35,6 +35,7 @@ export const DETAILS = {
   'fit-content': { design: 'Hug contents', about: 'The layer is only as wide as its content, like setting a frame to hug contents. If the content is longer than the space, it stops at the edge and wraps instead of overflowing.', opposite: 'block', related: ['inline-block', 'inline-flex', 'display', 'padding'] },
   after: { design: 'An extra layer drawn by CSS', about: 'Adds a layer inside an element, after its content, without adding anything to the HTML. Think of a decoration layer that lives in the style, not in the layers panel: an underline, a hover overlay, a small dot. It only shows up when it has content, usually content: \'\'.', opposite: 'before', related: ['position', 'absolute', 'inset', 'pointer-events', 'element'] },
   before: { design: 'An extra layer drawn by CSS, at the start', about: 'The same as ::after, but the extra layer comes before the content, so it is drawn first. Good for a leading icon, a bullet or an opening quote.', opposite: 'after', related: ['position', 'absolute', 'element'] },
+  'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
   'flex-shrink': { design: 'Fixed width vs. shrink to fit (auto layout)', about: 'When an auto layout frame gets too narrow, its layers squeeze to fit. flex-shrink: 0 is like setting a layer to a fixed width: it keeps its size while the others squeeze. Useful for icons and avatars that should never get squashed.', opposite: 'flex-grow', related: ['flexbox', 'fit-content', 'gap', 'children'] },
@@ -227,6 +228,14 @@ const INSPECT = {
       { caption: '::before adds a layer at the start, before the label, here a small dot.', frame: null, items: [I(130, 44, 140, 40, 'Item'), I(146, 60, 8, 8, '')], z: [1, 2], r: [undefined, 4], marks: [{ t: 'outline', x: 142, y: 56, w: 16, h: 16 }, { t: 'chip', x: 130, y: 100, text: "::before { content: '' }" }] },
     ],
   }),
+  'aspect-ratio': () => ({
+    height: 200,
+    frames: [
+      { caption: 'aspect-ratio: 1 / 1 locks a square: 80 wide, so 80 tall.', frame: null, items: [I(160, 40, 80, 80, 'Avatar')], marks: [{ t: 'dim', x: 160, y: 132, w: 80, text: '80' }, { t: 'chip', x: 160, y: 12, text: 'aspect-ratio: 1 / 1' }] },
+      { caption: 'Make it wider and the height follows: still a square.', frame: null, items: [I(130, 30, 140, 140, 'Avatar')], marks: [{ t: 'dim', x: 130, y: 180, w: 140, text: '140' }, { t: 'chip', x: 130, y: 4, text: 'aspect-ratio: 1 / 1' }] },
+      { caption: 'aspect-ratio: 16 / 9 keeps a video shape at any width.', frame: null, items: [I(104, 46, 192, 108, 'Video')], marks: [{ t: 'dim', x: 104, y: 166, w: 192, text: '192 × 108' }, { t: 'chip', x: 104, y: 18, text: 'aspect-ratio: 16 / 9' }] },
+    ],
+  }),
   inset: () => ({
     height: 190,
     frames: [
@@ -377,7 +386,7 @@ export const TREE = [
       N('grid', 'value', [N('alignment', 'setting')]),
     ]),
   ] },
-  { cat: 'Size and spacing', nodes: [N('padding'), N('margin'), N('box-sizing'), N('fit-content')] },
+  { cat: 'Size and spacing', nodes: [N('padding'), N('margin'), N('box-sizing'), N('fit-content'), N('aspect-ratio')] },
   { cat: 'Position', nodes: [
     N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
   ] },

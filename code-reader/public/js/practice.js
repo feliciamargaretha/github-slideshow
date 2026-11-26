@@ -27,6 +27,9 @@ export function mountPractice(app) {
     renderWrite();
   }
 
+  /** The original prompt(s), as one text, for the before-and-after comparison. */
+  const beforeText = () => { const c = P.ctx || {}; const list = (c.history && c.history.length ? c.history : c.prompt ? [c.prompt] : []).filter(Boolean); return list.length > 1 ? list.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : list[0] || ''; };
+
   const attemptsLabel = () => (P.ctx ? `${P.attemptsLeft} attempt${P.attemptsLeft === 1 ? '' : 's'} left` : '');
 
   function renderWrite() {
@@ -157,13 +160,13 @@ export function mountPractice(app) {
     P.attemptsLeft = Math.max(0, P.attemptsLeft - 1);
     P.result = { prompt, yours, notes: null };
     renderResult();
-    const c = await api.compare(P.ctx.source, yours, prompt);
+    const c = await api.compare(P.ctx.source, yours, prompt, beforeText());
     if (!P.result || P.result.yours !== yours) return;
     P.result.notes = c.ok ? c.data : { error: true };
     renderNotes();
   }
 
-  let notesHost, diffHost, promptView, previews = {};
+  let notesHost, diffHost, promptView, promptNotesHost, previews = {};
   function renderResult() {
     const { yours, prompt } = P.result;
     const pvWrap = (label, key, source) => {
@@ -181,6 +184,16 @@ export function mountPractice(app) {
     previews = {};
     notesHost = h('div', { class: 'notes', 'aria-live': 'polite' });
     promptView = h('div', { class: 'my-prompt' }, prompt);
+    // Before and after: your original prompt next to your new one, with the changed words marked.
+    const before = beforeText();
+    const wd = wordDiff(before, prompt);
+    promptNotesHost = h('div', { class: 'pd-notes', 'aria-live': 'polite' });
+    const promptBand = before ? h('section', { class: 'pd', 'aria-label': 'Your prompt, before and after' },
+      h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, 'Your prompt, before and after'),
+      h('div', { class: 'pd-cols' },
+        h('div', { class: 'pd-col' }, h('span', { class: 't-caption ink-3' }, 'Before: your original prompt'), h('p', { class: 'pd-text' }, ...wd.a.map((t) => (t.del ? h('del', { class: 'pd-del' }, t.text) : t.text)))),
+        h('div', { class: 'pd-col' }, h('span', { class: 't-caption ink-3' }, 'After: your re-prompt'), h('p', { class: 'pd-text' }, ...wd.b.map((t) => (t.add ? h('mark', { class: 'pd-add' }, t.text) : t.text))))),
+      promptNotesHost) : null;
     diffHost = h('div', { class: 'diff', role: 'table', 'aria-label': 'Code diff' });
     const diff = diffLines(P.ctx.source, yours);
     for (const d of diff) {
@@ -195,6 +208,7 @@ export function mountPractice(app) {
         h('button', { class: 'btn btn-text', type: 'button', onclick: () => go('workspace') }, icon('arrowLeft'), 'Back to the walkthrough'),
         h('div', { class: 'gen-row' }, h('span', { class: 't-caption ink-2' }, attemptsLabel()), again)),
       h('div', { class: 'band-previews' }, pvWrap('Original', 'original', P.ctx.source), pvWrap('Yours', 'yours', yours)),
+      promptBand,
       h('div', { class: 'band-notes' },
         h('div', { style: { display: 'grid', gap: '16px' } }, h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, 'What differs'), notesHost),
         h('div', { style: { display: 'grid', gap: '8px', alignContent: 'start' } }, h('span', { class: 't-strong' }, 'Your prompt'), promptView)),
@@ -203,8 +217,24 @@ export function mountPractice(app) {
     renderNotes();
   }
 
+  function renderPromptNotes(n) {
+    if (!promptNotesHost) return;
+    if (!n) { promptNotesHost.replaceChildren(...[0, 1].map(() => h('span', { class: 'placeholder-line', 'aria-hidden': 'true' }))); return; }
+    const list = (n.promptNotes || []).filter((x) => x.before || x.after);
+    if (!list.length) { promptNotesHost.replaceChildren(); return; }
+    const VERDICT = { better: 'Better', same: 'Same meaning', worse: 'Less clear' };
+    promptNotesHost.replaceChildren(h('h3', { class: 'pd-h' }, 'What changed, and is it better?'), ...list.slice(0, 5).map((x) => h('div', { class: 'pd-note' },
+      h('div', { class: 'pd-change' },
+        x.before ? h('del', { class: 'pd-del' }, x.before) : h('span', { class: 'ink-3' }, '(new)'),
+        icon('arrowRight'),
+        x.after ? h('mark', { class: 'pd-add' }, x.after) : h('span', { class: 'ink-3' }, '(removed)'),
+        h('span', { class: `tag pd-verdict ${x.verdict}` }, VERDICT[x.verdict] || x.verdict)),
+      h('p', { class: 'ink-2' }, x.why))));
+  }
+
   function renderNotes() {
     const n = P.result?.notes;
+    renderPromptNotes(n && !n.error ? n : null);
     if (!n) {
       notesHost.replaceChildren(...[0, 1, 2].map(() => h('span', { class: 'placeholder-line', 'aria-hidden': 'true' })), h('span', { class: 'sr-only' }, 'Comparing the two results'));
       return;
@@ -212,7 +242,7 @@ export function mountPractice(app) {
     if (n.error) {
       notesHost.replaceChildren(h('div', { class: 'ink-2' }, 'No comparison yet. ', h('button', { class: 'btn-text', type: 'button', style: { height: '24px' }, onclick: async () => {
         P.result.notes = null; renderNotes();
-        const c = await api.compare(P.ctx.source, P.result.yours, P.result.prompt);
+        const c = await api.compare(P.ctx.source, P.result.yours, P.result.prompt, beforeText());
         P.result.notes = c.ok ? c.data : { error: true }; renderNotes();
       } }, 'Retry')));
       return;
@@ -274,4 +304,30 @@ export function mountPractice(app) {
     attemptsLabel,
     reset() { P.ctx = null; P.result = null; P.draft = undefined; root.replaceChildren(); },
   };
+}
+
+/** Word-level diff of two texts: which words of a were dropped and which words of b are new. */
+function wordDiff(a, b) {
+  const split = (t) => t.split(/(\s+)/).filter((x) => x !== '');
+  const A = split(a), B = split(b);
+  const key = (w) => w.toLowerCase().replace(/[^\w#%.-]/g, '');
+  const aw = A.map((t, i) => [t, i]).filter(([t]) => /\S/.test(t)), bw = B.map((t, i) => [t, i]).filter(([t]) => /\S/.test(t));
+  const n = aw.length, m = bw.length;
+  const L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = key(aw[i][0]) === key(bw[j][0]) ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const keepA = new Set(), keepB = new Set();
+  for (let i = 0, j = 0; i < n && j < m;) {
+    if (key(aw[i][0]) === key(bw[j][0])) { keepA.add(aw[i][1]); keepB.add(bw[j][1]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
+  }
+  // Merge neighbouring changed words (and the spaces between them) into one marked run.
+  const runs = (T, keep, flag) => {
+    const out = [];
+    T.forEach((t, i) => {
+      const changed = /\S/.test(t) ? !keep.has(i) : (!keep.has(i - 1) && !keep.has(i + 1) && i > 0 && i < T.length - 1);
+      const last = out[out.length - 1];
+      if (last && !!last[flag] === changed) last.text += t; else out.push({ text: t, [flag]: changed });
+    });
+    return out;
+  };
+  return { a: runs(A, keepA, 'del'), b: runs(B, keepB, 'add') };
 }

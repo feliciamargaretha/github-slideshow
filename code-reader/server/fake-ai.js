@@ -47,7 +47,7 @@ export async function generate({ prompt }) {
   };
 }
 
-export async function compare({ yours, prompt }) {
+export async function compare({ yours, prompt, before = '' }) {
   const lines = yours.split('\n');
   const t = lines.findIndex((l) => l.includes('transition')) + 1;
   const h = lines.findIndex((l) => l.includes('transform:')) + 1;
@@ -57,6 +57,10 @@ export async function compare({ yours, prompt }) {
       { text: 'Test mode: yours animates with a different duration and easing than the original.', yoursStart: t, yoursEnd: t, originalStart: 16, originalEnd: 16, words: word ? [word] : [] },
       { text: 'Test mode: the hover change moves the card differently.', yoursStart: h, yoursEnd: h, originalStart: 19, originalEnd: 20, words: [] },
     ],
+    promptNotes: before ? [
+      { before: before.split(/\s+/).slice(0, 3).join(' '), after: prompt.split(/\s+/).slice(0, 3).join(' '), verdict: 'better', why: 'Test mode: the new words name an exact layout instead of a general idea.' },
+      { before: '', after: prompt.split(/\s+/).slice(-2).join(' '), verdict: 'same', why: 'Test mode: this adds a detail the AI would likely have guessed.' },
+    ] : [],
     sharper: 'Test mode: A 280px white card with 24px padding and a 12px radius. On hover, lift it 6px with translateY and grow the shadow, over 240ms with ease-out.',
   };
 }

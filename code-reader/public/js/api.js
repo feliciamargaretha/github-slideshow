@@ -23,7 +23,7 @@ export const api = {
   explain: (code, items) => post('explain', { code, items }),
   issues: (code, known) => post('issues', { code, known }),
   generate: (prompt) => post('generate', { prompt }),
-  compare: (original, yours, prompt) => post('compare', { original, yours, prompt }),
+  compare: (original, yours, prompt, before = '') => post('compare', { original, yours, prompt, before }),
   revise: (code, instruction, history) => post('revise', { code, instruction, history }),
   review: (prompts, code) => post('review', { prompts, code }),
   ask: (payload) => post('ask', payload),

@@ -112,8 +112,8 @@ const ROUTES = {
     run: ai.makeTemplate,
   },
   compare: {
-    kind: 'compare',
-    clean: (b) => ({ original: str(b.original, config.maxChars), yours: str(b.yours, config.maxChars), prompt: str(b.prompt, 2000) }),
+    kind: 'compare-v2',
+    clean: (b) => ({ original: str(b.original, config.maxChars), yours: str(b.yours, config.maxChars), prompt: str(b.prompt, 2000), before: str(b.before, 4000) }),
     run: ai.compare,
   },
 };

@@ -838,3 +838,19 @@ html, body { overflow: clip; }
 .practice textarea.prompt { min-height: 240px; overflow: hidden; resize: none; }
 .practice textarea.prompt-readonly { background: var(--surface); color: var(--ink); cursor: default; }
 .practice textarea.prompt-readonly:focus { border-color: var(--line-strong); }
+
+/* Prompt before and after */
+.pd { display: grid; gap: var(--space-3); }
+.pd-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-3); }
+.pd-col { display: grid; gap: var(--space-2); align-content: start; border: 1px solid var(--line); border-radius: var(--radius-m); padding: var(--space-3); }
+.pd-text { margin: 0; white-space: pre-wrap; line-height: 26px; }
+.pd-del { color: var(--ink-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+.pd-add { background: var(--surface-3); color: var(--ink); font-weight: 500; padding: 1px 2px; border-radius: 2px; }
+.pd-notes { display: grid; gap: var(--space-3); max-width: 880px; }
+.pd-h { margin: var(--space-2) 0 0; font-size: 14px; font-weight: 500; }
+.pd-note { display: grid; gap: 4px; padding-left: var(--space-3); border-left: 1px solid var(--line); }
+.pd-note p { margin: 0; }
+.pd-change { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.pd-verdict { margin-left: var(--space-1); }
+.pd-verdict.better { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.pd-verdict.worse { border-style: dashed; }

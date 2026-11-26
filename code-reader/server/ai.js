@@ -247,7 +247,7 @@ export async function checkPart({ code, part, text, template, answers }) {
 }
 
 /** Prompt practice comparison: works only from the two versions of code and the prompt. */
-export async function compare({ original, yours, prompt }) {
+export async function compare({ original, yours, prompt, before = '' }) {
   const schema = obj({
     notes: {
       type: 'array',
@@ -261,16 +261,21 @@ export async function compare({ original, yours, prompt }) {
       }),
     },
     sharper: { type: 'string' },
+    promptNotes: {
+      type: 'array',
+      items: obj({ before: { type: 'string' }, after: { type: 'string' }, verdict: { type: 'string', enum: ['better', 'same', 'worse'] }, why: { type: 'string' } }),
+    },
   });
   return call({
     system:
       `You compare two versions of a UI component: the original, and one generated from a learner's prompt. ${READER} ${DATA_RULE} ` +
       'Work only from the code itself, never from guesses. Each note must cite the lines behind it.',
     user:
-      `<original>\n${number(original)}\n</original>\n\n<yours>\n${number(yours)}\n</yours>\n\n<prompt>\n${prompt}\n</prompt>\n\n` +
+      `<original>\n${number(original)}\n</original>\n\n<yours>\n${number(yours)}\n</yours>\n\n<before>\n${before}\n</before>\n\n<prompt>\n${prompt}\n</prompt>\n\n` +
       'Write 2 to 4 notes on visible differences between the two results. For each: one sentence, the line range in <yours> and in <original> it comes from ' +
       '(use 0 and 0 when a side has no such lines), and the exact words copied from the prompt that likely caused it (an empty list if the prompt is silent on it). ' +
-      'Then write a sharper version of the prompt that would get closer to the original, using precise terms.',
+      'Then write a sharper version of the prompt that would get closer to the original, using precise terms. ' +
+      'Also compare the learner\'s original prompt in <before> with their new prompt in <prompt>, if <before> is not empty. List 2 to 5 meaningful wording changes, in reading order: the words before (empty if new), the words after (empty if dropped), a verdict (better if the change makes the request clearer or more precise for an AI, same if it says the same thing, worse if something important was lost or made vaguer), and one short plain sentence why, written for a designer, no jargon. Copy the before and after words exactly from the two prompts. If <before> is empty, return an empty list.',
     schema,
     effort: 'medium',
   });

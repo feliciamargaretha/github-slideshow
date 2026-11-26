@@ -17,7 +17,7 @@ const SAMPLES = [
   { file: 'hover-card.html', label: 'Hover card' },
   { file: 'gsap-hero.html', label: 'GSAP hero' },
   { file: 'toggle-menu.html', label: 'Menu with JS' },
-  { file: 'curved-panel.html', label: 'Curved side panel' },
+  { file: 'curved-panel.html', label: 'Curved sidebar' },
   { file: 'framer-button.jsx', label: 'Framer Motion button' },
 ];
 

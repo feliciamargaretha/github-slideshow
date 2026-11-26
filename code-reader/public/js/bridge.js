@@ -31,6 +31,12 @@ function bridgeMain() {
     .chip{position:fixed;background:#0A0A0A;color:#fff;font:400 13px/20px system-ui,sans-serif;padding:2px 6px;border-radius:2px;white-space:nowrap;opacity:0;transform:translateY(4px);animation:rise 120ms cubic-bezier(.4,0,.2,1) forwards}
     .sw{display:inline-block;width:10px;height:10px;border:1px solid #fff;margin-right:6px;vertical-align:-1px}
     .dim{position:fixed;background:#15803D}
+    .rbox{position:fixed;box-sizing:border-box;border:1px solid #F24822}
+    .rl{position:fixed;background:#F24822}
+    .rpad{position:fixed;background:rgba(242,72,34,.12)}
+    .rgap{position:fixed;background:repeating-linear-gradient(45deg,rgba(242,72,34,.4) 0 1px,transparent 1px 5px)}
+    .rchip{position:fixed;background:#F24822;color:#fff;font:500 11px/16px system-ui,sans-serif;padding:0 4px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-50%)}
+    .rchip.size{transform:none}
     @keyframes in{to{opacity:1}}
     @keyframes rise{to{opacity:1;transform:none}}
     @media (prefers-reduced-motion: reduce){.box{transition:opacity 120ms}.chip{animation:in 120ms forwards;transform:none}}
@@ -81,10 +87,75 @@ function bridgeMain() {
     if (linked) return drawLinked();
     const el = id !== null && byId(id);
     if (!el) return;
+    if (inspect) { measure(el); return; }
     const b = document.createElement('div');
     b.className = 'box hover noglide on';
     place(b, el);
     hoverEl.appendChild(b);
+  }
+
+  // Inspect: spec lines like a design tool. Size, padding, gaps between the
+  // children, and the distance to the nearest neighbour or the parent's edge.
+  function measure(el) {
+    const add = (cls, x, y, w, h, text) => {
+      const d = document.createElement('div');
+      d.className = cls;
+      if (text !== undefined) { d.textContent = text; Object.assign(d.style, { left: x + 'px', top: y + 'px' }); }
+      else Object.assign(d.style, { left: x + 'px', top: y + 'px', width: Math.max(1, w) + 'px', height: Math.max(1, h) + 'px' });
+      hoverEl.appendChild(d);
+      return d;
+    };
+    const n = (v) => String(Math.round(v * 10) / 10);
+    const r = el.getBoundingClientRect();
+    const s = cs(el);
+    // Padding bands with their values
+    const pt = px(s.paddingTop), pr = px(s.paddingRight), pb = px(s.paddingBottom), pl = px(s.paddingLeft);
+    const bt = px(s.borderTopWidth), br = px(s.borderRightWidth), bb = px(s.borderBottomWidth), bl = px(s.borderLeftWidth);
+    const ix = r.left + bl, iy = r.top + bt, iw = r.width - bl - br, ih = r.height - bt - bb;
+    if (pt) { add('rpad', ix, iy, iw, pt); if (pt >= 10) add('rchip', ix + iw / 2, iy + pt / 2, 0, 0, n(pt)); }
+    if (pb) { add('rpad', ix, iy + ih - pb, iw, pb); if (pb >= 10) add('rchip', ix + iw / 2, iy + ih - pb / 2, 0, 0, n(pb)); }
+    if (pl) { add('rpad', ix, iy + pt, pl, ih - pt - pb); if (pl >= 10) add('rchip', ix + pl / 2, iy + ih / 2, 0, 0, n(pl)); }
+    if (pr) { add('rpad', ix + iw - pr, iy + pt, pr, ih - pt - pb); if (pr >= 10) add('rchip', ix + iw - pr / 2, iy + ih / 2, 0, 0, n(pr)); }
+    // Gaps between its own children
+    const visible = (k) => k.tagName !== 'CR-LAYER' && cs(k).display !== 'none' && cs(k).position !== 'absolute' && cs(k).position !== 'fixed';
+    const kids = [...el.children].filter(visible).map((k) => k.getBoundingClientRect()).filter((k) => k.width && k.height);
+    let gapLabel = false;
+    for (let i = 0; i < kids.length - 1; i++) {
+      const a = kids[i], b = kids[i + 1];
+      const oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top), ox = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+      if (b.left - a.right >= 1 && oy > 0) {
+        add('rgap', a.right, Math.max(a.top, b.top), b.left - a.right, oy);
+        if (!gapLabel) { add('rchip', (a.right + b.left) / 2, Math.max(a.top, b.top) + oy / 2, 0, 0, n(b.left - a.right)); gapLabel = true; }
+      } else if (b.top - a.bottom >= 1 && ox > 0) {
+        add('rgap', Math.max(a.left, b.left), a.bottom, ox, b.top - a.bottom);
+        if (!gapLabel) { add('rchip', Math.max(a.left, b.left) + ox / 2, (a.bottom + b.top) / 2, 0, 0, n(b.top - a.bottom)); gapLabel = true; }
+      }
+    }
+    // Outline and size
+    add('rbox', r.left, r.top, r.width, r.height);
+    const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+    const sizeY = r.bottom + 4 + 18 < vh ? r.bottom + 4 : Math.max(2, r.top - 22);
+    add('rchip size', Math.max(2, r.left), sizeY, 0, 0, `${n(r.width)} × ${n(r.height)}`);
+    // Distance to the nearest neighbour, or else to the parent's inner edge
+    const parent = el.parentElement;
+    if (!parent || parent === document.documentElement) return;
+    const top = parent === document.body;
+    const prc = top ? { left: 0, top: 0, right: vw, bottom: vh } : (() => { const q = parent.getBoundingClientRect(), qs = cs(parent); return { left: q.left + px(qs.borderLeftWidth), top: q.top + px(qs.borderTopWidth), right: q.right - px(qs.borderRightWidth), bottom: q.bottom - px(qs.borderBottomWidth) }; })();
+    const sibs = [...parent.children].filter((k) => k !== el && visible(k)).map((k) => k.getBoundingClientRect()).filter((k) => k.width && k.height);
+    const midY = r.top + r.height / 2, midX = r.left + r.width / 2;
+    const overlapsY = (k) => Math.min(k.bottom, r.bottom) - Math.max(k.top, r.top) > 0;
+    const overlapsX = (k) => Math.min(k.right, r.right) - Math.max(k.left, r.left) > 0;
+    const pick = (list, f) => list.reduce((best, k) => (best === null || f(k) < f(best) ? k : best), null);
+    const hline = (x1, x2, y) => { const d = x2 - x1; if (d < 1) return; add('rl', x1, y, d, 1); add('rl', x1, y - 3, 1, 7); add('rl', x2 - 1, y - 3, 1, 7); add('rchip', x1 + d / 2, y - 10, 0, 0, n(d)); };
+    const vline = (y1, y2, x) => { const d = y2 - y1; if (d < 1) return; add('rl', x, y1, 1, d); add('rl', x - 3, y1, 7, 1); add('rl', x - 3, y2 - 1, 7, 1); add('rchip', x + 14, y1 + d / 2, 0, 0, n(d)); };
+    const right = pick(sibs.filter((k) => k.left >= r.right - 0.5 && overlapsY(k)), (k) => k.left);
+    const left = pick(sibs.filter((k) => k.right <= r.left + 0.5 && overlapsY(k)), (k) => -k.right);
+    const below = pick(sibs.filter((k) => k.top >= r.bottom - 0.5 && overlapsX(k)), (k) => k.top);
+    const above = pick(sibs.filter((k) => k.bottom <= r.top + 0.5 && overlapsX(k)), (k) => -k.bottom);
+    hline(r.right, right ? right.left : prc.right, midY);
+    hline(left ? left.right : prc.left, r.left, midY);
+    vline(r.bottom, below ? below.top : prc.bottom, midX);
+    vline(above ? above.bottom : prc.top, r.top, midX);
   }
   // Hover linking from the code: outline fades in on the matching elements, no glide.
   function drawLinked() {

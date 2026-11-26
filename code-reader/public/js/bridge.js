@@ -453,7 +453,19 @@ function bridgeMain() {
   });
 
   window.addEventListener('error', () => {}, true);
-  const ready = () => { mount(); post({ type: 'ready' }); setTimeout(analyse, 60); };
+  // Report how tall the component really is, so the page can give the preview enough room.
+  let lastH = 0;
+  const reportSize = () => {
+    const kids = [...document.body.children].filter((k) => !/^(CR-LAYER|SCRIPT|STYLE|LINK|TEMPLATE)$/.test(k.tagName));
+    let top = Infinity, bottom = -Infinity;
+    for (const k of kids) { const r = k.getBoundingClientRect(); if (!r.height && !r.width) continue; top = Math.min(top, r.top); bottom = Math.max(bottom, r.bottom); }
+    const h = bottom > top ? Math.ceil(bottom - top) : 0;
+    if (h && Math.abs(h - lastH) > 2) { lastH = h; post({ type: 'size', h }); }
+  };
+  const ready = () => {
+    mount(); post({ type: 'ready' }); setTimeout(analyse, 60); setTimeout(reportSize, 30);
+    try { const ro = new ResizeObserver(() => reportSize()); [...document.body.children].forEach((k) => ro.observe(k)); } catch (e) {}
+  };
   if (document.readyState === 'complete') ready();
   else window.addEventListener('load', ready);
 }

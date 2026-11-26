@@ -26,7 +26,7 @@ export function mountBuild(app) {
 
   function render() {
     frameWrap = h('div', { class: 'frame-wrap' });
-    preview = new Preview(frameWrap, {});
+    preview = new Preview(frameWrap, { size: (m) => { B.contentH = m.h; fitPreview(); } });
     versionCap = h('span', { class: 't-caption ink-2' });
     const left = h('section', { class: 'build-preview', 'aria-label': 'Result' },
       h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Result'), versionCap),
@@ -49,8 +49,23 @@ export function mountBuild(app) {
       h('div', { class: 'build-bar' }, box, sendBtn),
       h('div', { class: 't-caption ink-3 build-hint' }, 'Enter sends. Shift Enter adds a line.'));
     root.replaceChildren(h('div', { class: 'build' }, left, right));
+    B.left = left;
+    fitPreview();
     renderLog();
   }
+
+  // The result takes the room the component needs: at least 45% of the screen, up to all of it
+  // except a compact prompt area. A taller component scrolls inside the preview.
+  function fitPreview() {
+    const left = B.left, page = left?.parentElement;
+    if (!page || !page.clientHeight) return;
+    const total = page.clientHeight;
+    const head = left.querySelector('.preview-head')?.offsetHeight || 32;
+    const want = (B.contentH || 0) + head + 96;
+    const px = Math.max(total * 0.45, Math.min(total - 240, want));
+    left.style.flex = `0 0 ${Math.round(px)}px`;
+  }
+  window.addEventListener('resize', () => fitPreview());
 
   function renderLog() {
     log.replaceChildren();

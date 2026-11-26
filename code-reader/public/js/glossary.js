@@ -106,6 +106,12 @@ export const GLOSSARY = {
     text: 'A GSAP easing that overshoots the end, springs back and wobbles a few times before settling, like a rubber band. The two numbers tune it: elastic.out(1, 0.35) means normal strength, quick wobbles.',
     example: "gsap.to(s, { bulge: 0, ease: 'elastic.out(1, 0.35)' })",
   },
+  stagger: {
+    title: 'stagger',
+    match: /\bstagger\b/i,
+    text: 'A GSAP setting that starts the same animation on several items one after another instead of all at once. stagger: 0.05 waits 0.05 seconds between each item, so they cascade in.',
+    example: "gsap.to('.label', { opacity: 1, stagger: 0.05 })",
+  },
   'aspect-ratio': {
     title: 'aspect-ratio',
     match: /\baspect[- ]ratio\b/i,
@@ -514,7 +520,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-self', stretch: 'stretch', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', elastic: 'elastic', bulge: 'bulge', 'margin-top': 'margin', 'margin-left': 'margin', 'margin-right': 'margin', 'margin-bottom': 'margin', overflow: 'overflow', 'overflow-x': 'overflow', 'overflow-y': 'overflow', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', stagger: 'stagger', elastic: 'elastic', bulge: 'bulge', 'margin-top': 'margin', 'margin-left': 'margin', 'margin-right': 'margin', 'margin-bottom': 'margin', overflow: 'overflow', 'overflow-x': 'overflow', 'overflow-y': 'overflow', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

@@ -10,6 +10,7 @@ export const PANELS = ['structure', 'layout', 'style', 'motion'];
 export const PANEL_LABEL = { structure: 'Structure', layout: 'Layout', style: 'Style', motion: 'Motion' };
 
 let seq = 0;
+import { explainLine, splitPieces, pieceTitle } from './js-explain.js';
 const sentence = (text, lines, extra = {}) => ({ id: 's' + seq++, text, lines: [...new Set(lines)].sort((a, b) => a - b), source: 'rule', status: 'ready', ...extra });
 
 export function buildSteps(model, match = () => []) {
@@ -194,18 +195,27 @@ export function buildSteps(model, match = () => []) {
       ls.forEach((l) => covered.add(l));
       steps.push(jsMotionStep(m, ls, match));
     }
-    // Trigger lines: listeners and class toggles get plain words; other code is not explained (v1 no-go).
+    // Every other line of the script gets plain words, one step per top-level piece
+    // (a group of "find this element" lines, a function, a listener...).
     const restLines = range(sc.block.contentStartLine, sc.block.endLine - (sc.block.endLine > sc.block.contentStartLine ? 1 : 0))
       .filter((l) => !covered.has(l) && model.lines[l - 1]?.trim());
-    if (restLines.length) {
+    const pieces = splitPieces(restLines.map((n) => ({ n, text: model.lines[n - 1] })));
+    const known = new Set([...model.lines.join('\n').matchAll(/function\s+(\w+)|(?:const|let)\s+(\w+)\s*=\s*(?:async\s*)?\(?[\w\s,]*\)?\s*=>/g)].map((m) => m[1] || m[2]));
+    const vars = {};
+    for (const m of model.lines.join('\n').matchAll(/(?:const|let|var)\s+(\w+)\s*=\s*(?:\w+\.)?querySelector(?:All)?\((['"`])(.+?)\2\)/g)) vars[m[1]] = m[3];
+    for (const p of pieces) {
       const ss = [];
-      for (const l of sc.js.listeners) ss.push(sentence(`Waits for a ${l.event === 'mouseenter' || l.event === 'mouseover' ? 'hover' : l.event} on ${l.target ? '`' + l.target + '`' : 'the page'}, then runs the code inside (\`addEventListener\`).`, [l.line]));
-      for (const c of model.classTriggers.filter((ct) => ct.line >= sc.block.startLine && ct.line <= sc.block.endLine)) {
-        ss.push(sentence(`Adds or removes the class \`.${c.className}\`, which switches on the CSS written for it.`, [c.line]));
+      const targets = new Set();
+      for (const ln of p.lines) {
+        const t = explainLine(ln.text, { known });
+        const lv = ln.text.match(/^\s*([\w]+)[.\w]*\.(?:addEventListener|classList|setAttribute|style)/);
+        if (lv && vars[lv[1]]) (match(vars[lv[1]]) || []).forEach((id) => targets.add(id));
+        if (t === null) continue;
+        if (t === undefined) ss.push(sentence(`\`${ln.text.trim()}\``, [ln.n], { source: 'ai', status: 'pending', aiText: `JavaScript line: ${ln.text.trim()}` }));
+        else ss.push(sentence(t, [ln.n]));
       }
-      for (const lp of sc.js.loops) ss.push(sentence(lp.kind === 'frame' ? 'Redraws on every screen refresh, about 60 times a second (`requestAnimationFrame`).' : 'Runs again and again on a timer (`setInterval`).', [lp.line]));
-      ss.push(sentence('The rest of this script finds elements and wires them up. This tool explains only the animation parts of JavaScript.', restLines));
-      steps.push({ panel: 'motion', concept: 'javascript triggers', rank: 47, title: 'The script listens for the visitor', sentences: ss, lines: restLines, targets: sc.js.listeners.flatMap((l) => match(l.target) || []) });
+      if (!ss.length) ss.push(sentence('These lines close the piece of code above.', p.lines.map((l) => l.n)));
+      steps.push({ panel: 'motion', concept: 'javascript', rank: 47, title: pieceTitle(p), sentences: ss, lines: p.lines.map((l) => l.n), targets: [...targets] });
     }
   }
 

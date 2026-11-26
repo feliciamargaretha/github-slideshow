@@ -43,10 +43,7 @@ check('R16: prompt series saved for practice', JSON.stringify(await page.evaluat
 await page.click('.progress .seg-btn.practice.final');
 await page.waitForSelector('#practice-prompt');
 check('Practice: asks to rewrite the first prompt for a one-try result', /in one try/.test(await page.locator('.practice-now').innerText()));
-await page.click(".practice-before .cp-sofar summary");
-await page.click('.series-review >> xpath=.. >> button:has-text("Review my prompts")');
-await page.waitForSelector('.series-steps');
-check('Practice: reviewing the series shows what each prompt changed and one combined prompt', await page.locator('.series-steps li').count() === 1 && /One prompt that gets there/.test(await page.locator('.practice-before').innerText()));
+check('Practice: the original prompts are on the left', /Your original prompts/.test(await page.locator('.practice-before').innerText()));
 
 // AI rows: paste code with a property the dictionary lacks
 await page.goto(BASE);

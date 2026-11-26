@@ -650,9 +650,9 @@ html, body { overflow: clip; }
 .sheet-close { display: none; }
 .workspace.cp-mode .sheet-close { display: inline-grid; }
 .workspace.cp-mode .walk-col { min-width: 0; }
-.checkpoint { max-width: 1200px; }
+.checkpoint { max-width: none; }
 .cp-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.cp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--space-5); align-items: start; }
+.cp-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .cp-col { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
 .cp-before { padding-right: var(--space-5); border-right: 1px solid var(--line); }
 .cp-h { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; }

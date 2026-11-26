@@ -61,8 +61,7 @@ export function mountPractice(app) {
     const fitBox = (t) => () => { if (!t.isConnected) return; t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; };
     const left = h('section', { class: 'practice-col practice-before', 'aria-label': 'Your original prompt' },
       h('label', { class: 't-strong', for: 'practice-original' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'),
-      orig,
-      series ? h('details', { class: 'cp-sofar' }, h('summary', {}, icon('chevronDown'), h('span', { class: 't-strong' }, 'Review how your prompts built it')), h('div', { class: 'cp-sofar-body' }, seriesPanel(ctx))) : null);
+      orig);
     const right = h('section', { class: 'practice-col practice-now', 'aria-label': 'Your new prompt' },
       h('label', { for: 'practice-prompt', class: 't-strong' }, written.length ? 'Your re-prompts, put together' : 'Your new prompt'),
       h('p', { class: 'ink-2', style: { margin: 0 } }, written.length ? 'Each part you rewrote, combined into one prompt. Edit it so it reads as one request, then generate.' : label),
@@ -70,14 +69,7 @@ export function mountPractice(app) {
       ctx.terms.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Terms from this breakdown. Click one to add it.'), chips) : null,
       h('div', { class: 'gen-row' }, genBtn, attemptsCap),
       inlineMsg,
-      h('details', { class: 'cp-sofar' }, h('summary', {}, icon('chevronDown'), h('span', { class: 't-strong' }, 'What makes a sharp UI prompt')),
-        h('ul', { class: 'hint-list cp-sofar-body' },
-          h('li', {}, 'Name the layout: a row, a column, or a grid with a number of columns.'),
-          h('li', {}, 'Give spacing in numbers: “16px padding, 24px gap between cards.”'),
-          h('li', {}, 'Say what moves, on what trigger, for how long, with which easing: “on hover, lift 4px over 200ms, ease out.”'),
-          h('li', {}, 'Name colors and type: a hex value, a font size, a weight.'),
-          h('li', {}, 'Ask for one component, in one HTML file.'))),
-      ctx.lost.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Concepts you marked Lost'), h('div', { class: 'chips' }, ...ctx.lost.map((c) => h('span', { class: 'tag' }, c)))) : null);
+    );
     if (app.state.ai !== 'ok') inlineMsg.replaceChildren(message(app.state.ai === 'paused' ? 'Prompt practice is paused for today.' : 'Prompt practice needs AI, which is not set up on this server.', 'The walkthrough and the dictionary still work.', null));
     else if (DIALECTS[ctx.dialect]?.preview === false) inlineMsg.replaceChildren(message('No preview for this code.', 'You can still write a prompt; the original side shows no preview.', null));
 
@@ -206,7 +198,7 @@ export function mountPractice(app) {
     root.replaceChildren(h('div', { class: 'practice-result' },
       h('div', { class: 'result-head' },
         h('button', { class: 'btn btn-text', type: 'button', onclick: () => go('workspace') }, icon('arrowLeft'), 'Back to the walkthrough'),
-        h('div', { class: 'gen-row' }, h('span', { class: 't-caption ink-2' }, attemptsLabel()), again)),
+        h('div', { class: 'gen-row' }, h('button', { class: 'btn btn-text', type: 'button', onclick: () => diffHost.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 'Jump to the code diff'), h('span', { class: 't-caption ink-2' }, attemptsLabel()), again)),
       h('div', { class: 'band-previews' }, pvWrap('Original', 'original', P.ctx.source), pvWrap('Yours', 'yours', yours)),
       promptBand,
       h('div', { class: 'band-notes' },

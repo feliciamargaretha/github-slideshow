@@ -67,6 +67,7 @@ check('Parts: Next says Prompt this part at the end of Layout', /Prompt this par
 await page.click('.footer-bar .nav .btn-primary');
 await page.waitForSelector('.checkpoint #cp-box');
 check('Parts: the layout practice opens in the walkthrough', /Prompt the structure and layout/.test(await page.locator('#step-title').innerText()));
+await page.click('.level:has-text("Normal")');
 await page.locator('#cp-box').fill('a white card in the middle of the page with 24px padding');
 await page.click('.checkpoint button:has-text("Check my part")');
 await page.waitForSelector('.cp-feedback .sharper');
@@ -74,15 +75,16 @@ check('Parts: checking shows covered, missing and a sharper version', /You cover
 check('Parts: the result is hidden and opens as a sheet', await (async () => {
   await page.waitForTimeout(400);
   const hidden = await page.locator('.preview-col').evaluate((e) => getComputedStyle(e).visibility === 'hidden');
-  await page.click('.cp-top .btn-secondary'); await page.waitForTimeout(400);
+  await page.click('.sheet-tab'); await page.waitForTimeout(400);
   const shown = await page.locator('.preview-col').evaluate((e) => getComputedStyle(e).visibility === 'visible');
   await page.keyboard.press('Escape'); await page.waitForTimeout(400);
   return hidden && shown;
 })());
-await page.locator('#cp-box').fill('');
-await page.click('.level:has-text("Level 2")');
-check('Parts: level 2 fills the box with a template of blanks', /\[what the component is\]/.test(await page.inputValue('#cp-box')));
-await page.click('.level:has-text("Level 1")');
+await page.click('.level:has-text("Easy")');
+check('Parts: Easy shows a template where only the blanks can be edited', await page.locator('#cp-box .blank').count() >= 4 && await page.locator('#cp-box .fixed').count() >= 4);
+await page.locator('#cp-box .blank >> nth=0').fill('card');
+check('Parts: a filled blank goes into the part', /This is a card\./.test(await page.evaluate(() => window.__codeReader.workspace.state.parts.layout)));
+await page.click('.level:has-text("Normal")');
 await page.locator('#cp-box').fill('a white card in the middle of the page with 24px padding');
 await page.click('.footer-bar .nav .btn-primary');
 check('Parts: Next continues to the Style steps', await page.evaluate(() => window.__codeReader.workspace.state.steps[window.__codeReader.workspace.state.cur].panel) === 'style');

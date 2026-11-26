@@ -69,7 +69,9 @@ export function mountWorkspace(app) {
   const chatDrawer = h('aside', { class: 'drawer chat-drawer', 'aria-label': 'Ask', 'aria-hidden': 'true' });
   const walkCol = h('section', { class: 'col walk-col', 'aria-label': 'Walkthrough' }, tabrow, progress, stepArea, footer, drawer, chatDrawer);
   const divider = h('div', { class: 'divider', role: 'separator', 'aria-orientation': 'vertical', 'aria-label': 'Resize columns', tabindex: '0' });
-  const grid = h('div', { class: 'workspace', style: { height: '100%' } }, previewCol, divider, walkCol);
+  // In prompt practice the preview hides; this tab on the left edge slides it in. It shows the original component.
+  const sheetTab = h('button', { class: 'sheet-tab', type: 'button', 'aria-expanded': 'false', onclick: () => togglePreviewSheet() }, icon('eye'), h('span', {}, 'Show preview'));
+  const grid = h('div', { class: 'workspace', style: { height: '100%' } }, previewCol, divider, walkCol, sheetTab);
   root.append(grid);
   setupDivider();
 
@@ -761,13 +763,13 @@ export function mountWorkspace(app) {
   // ---- Prompt practice by part: after Structure and Layout, after Style, after Motion ----------
   const CHECKPOINTS = [
     { key: 'layout', short: 'structure and layout', title: 'Prompt the structure and layout', groups: ['structure', 'layout'],
-      ask: 'Describe what this component is made of and how it is arranged, as if you were asking an AI to build it: its parts, whether they sit in a row, a column or a grid, their sizes and the spacing. Leave colors and motion for later.',
+      ask: 'Describe what this component is made of and how it is arranged, as if you were asking an AI to build it.',
       placeholder: 'For example: a pricing section with three cards in a row, 24px apart. Each card is 240px wide with 24px padding: a heading, a price and a full-width button.' },
     { key: 'style', short: 'style', title: 'Prompt the style', groups: ['style'],
-      ask: 'Now describe how it looks: colors, type (font, size, weight), borders, corner radius and shadows.',
+      ask: 'Describe how it looks, as if you were asking an AI to build it.',
       placeholder: 'For example: white cards with a 1px light grey border and 8px rounded corners on a light grey page. Headings 18px semibold, prices 32px bold, blue buttons with white text.' },
     { key: 'motion', short: 'motion', title: 'Prompt the motion', groups: ['motion'],
-      ask: 'Finally, describe what moves: what starts it (hover, click, page load), what changes, how long it takes and the easing.',
+      ask: 'Describe what moves and how, as if you were asking an AI to build it.',
       placeholder: 'For example: on hover, the card lifts 6px and its shadow grows, over 240ms with ease-out.' },
   ];
   const groupOf = (st) => (st.overview ? 'structure' : st.panel);
@@ -800,92 +802,119 @@ export function mountWorkspace(app) {
     style: 'The background is [color] and the text is [color]. Headings are [size] and [weight]. The [element] has a [border] border, [radius] rounded corners and a [soft / strong / no] shadow.',
     motion: 'When the user [hovers / clicks / loads the page], the [element] [what changes, for example lifts 4px]. It takes [duration] with [ease-out / ease-in-out] easing.',
   };
-  const levelIcon = (n) => {
+  // Easy: fill in the blanks of a template (one dot). Normal: write it your own way (two dots).
+  const MODES = [
+    { key: 'easy', name: 'Easy', hint: 'Fill in the blanks', dots: 1 },
+    { key: 'normal', name: 'Normal', hint: 'Write it your own way', dots: 2 },
+  ];
+  const levelIcon = (dots) => {
     const span = h('span', { class: 'level-icon', 'aria-hidden': 'true' });
-    span.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">${n === 1
+    span.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">${dots === 1
       ? '<circle cx="8" cy="8" r="4"/>'
       : '<circle cx="4.5" cy="8" r="3.25"/><circle cx="11.5" cy="8" r="3.25"/>'}</svg>`;
     return span;
   };
+  // The template split into fixed text and blanks: ["This is a ", {blank: "what the component is"}, ...]
+  const templateParts = (key) => TEMPLATES[key].split(/(\[[^\]]*\])/).filter(Boolean).map((p) => (p.startsWith('[') ? { blank: p.slice(1, -1) } : p));
+  /** The part as text, from whichever mode is in use. Empty blanks stay as [label]. */
+  function partText(key) {
+    const mode = store.get('promptMode', 'easy');
+    if (mode === 'normal') return S.free[key] || '';
+    const vals = S.blanks[key] || [];
+    if (!vals.some((v) => v && v.trim())) return '';
+    let k = 0;
+    return templateParts(key).map((p) => (typeof p === 'string' ? p : (vals[k++] || '').trim() || `[${p.blank}]`)).join('');
+  }
+  function syncPart(key) {
+    S.parts[key] = partText(key);
+    store.set(partsKey(), S.parts);
+    store.set(partsKey() + '.free', S.free);
+    store.set(partsKey() + '.blanks', S.blanks);
+  }
 
   function renderCheckpoint(dir) {
     const cp = CHECKPOINTS.find((c) => c.key === S.cp);
     grid.classList.add('cp-mode');
+    S.free ||= store.get(partsKey() + '.free', {});
+    S.blanks ||= store.get(partsKey() + '.blanks', {});
+    if (S.free[cp.key] === undefined && S.parts[cp.key] && !S.blanks[cp.key]) S.free[cp.key] = S.parts[cp.key];
+    const mode = store.get('promptMode', 'easy');
     const card = h('article', { class: `step checkpoint ${dir === 'next' ? 'enter-next' : dir === 'back' ? 'enter-back' : dir === 'none' ? '' : 'fade'}`, 'aria-labelledby': 'step-title' });
-    const previewBtn = h('button', { class: 'btn btn-secondary', type: 'button', 'aria-expanded': String(grid.classList.contains('preview-open')), onclick: () => togglePreviewSheet() }, icon('eye'), 'Show the result');
-    card.append(h('div', { class: 'cp-top' },
-      h('div', { class: 'meta t-caption' }, h('span', { class: 'tag' }, 'Prompt practice'),
-        ...cp.groups.map((g) => h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon(g), PANEL_LABEL[g]))),
-      previewBtn));
+    card.append(h('div', { class: 'meta t-caption' }, h('span', { class: 'tag' }, 'Prompt practice'),
+      ...cp.groups.map((g) => h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon(g), PANEL_LABEL[g]))));
     card.append(h('h2', { class: 't-title', id: 'step-title' }, cp.title));
 
-    // Left: what you prompted before. Right: this part, rewritten.
-    const left = h('section', { class: 'cp-col cp-before', 'aria-label': 'Your earlier prompt' });
+    // Left: the original prompt, read only
+    const left = h('section', { class: 'cp-col cp-before', 'aria-label': 'Your original prompt' });
     const originals = (S.history && S.history.length ? S.history : S.prompt ? [S.prompt] : []).filter(Boolean);
-    left.append(h('h3', { class: 'cp-h' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'));
-    if (originals.length) left.append(h('ol', { class: 'cp-originals' }, ...originals.map((p) => h('li', {}, p))));
-    else left.append(h('p', { class: 'ink-2', style: { margin: 0 } }, 'You pasted this code without a prompt, so you are writing it from scratch.'));
+    left.append(h('label', { class: 'cp-h', for: 'cp-original' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'));
+    const orig = h('textarea', { class: 'cp-box cp-readonly', id: 'cp-original', rows: '6', readonly: true, 'aria-readonly': 'true', placeholder: 'You pasted this code without a prompt, so you are writing it from scratch.' });
+    orig.value = originals.length > 1 ? originals.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : originals[0] || '';
+    left.append(orig);
     const earlier = CHECKPOINTS.slice(0, CHECKPOINTS.indexOf(cp)).filter((c) => S.parts[c.key]?.trim());
     if (earlier.length) left.append(h('h3', { class: 'cp-h' }, 'Your new prompt so far'), ...earlier.map((c) => h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, c.short), h('p', {}, S.parts[c.key]))));
 
+    // Right: this part, in Easy or Normal mode
     const right = h('section', { class: 'cp-col cp-now', 'aria-label': cp.title });
     right.append(h('h3', { class: 'cp-h' }, `Your ${cp.short} part`), h('p', { class: 'cp-ask' }, cp.ask));
-    const level = store.get('promptLevel', 1);
-    const box = h('textarea', { class: 'cp-box', id: 'cp-box', rows: '6', placeholder: level === 1 ? cp.placeholder : '', 'aria-label': `Your ${cp.short} part` });
-    box.value = S.parts[cp.key] || (level === 2 ? TEMPLATES[cp.key] : '');
-    if (level === 2 && !S.parts[cp.key]) { S.parts[cp.key] = box.value; saveParts(); }
-    const levels = h('div', { class: 'levels', role: 'radiogroup', 'aria-label': 'Level' },
-      ...[[1, 'Free prompting', 'Write it your own way'], [2, 'With guidance', 'Fill in the blanks of a template']].map(([n, name, hint]) =>
-        h('button', { class: 'level', type: 'button', role: 'radio', 'aria-checked': String(level === n), onclick: () => setLevel(n) },
-          levelIcon(n), h('span', { class: 'level-text' }, h('span', { class: 't-strong' }, `Level ${n}: ${name}`), h('span', { class: 't-caption ink-2' }, hint)))));
-    right.append(levels);
-    const blanksHint = h('p', { class: 't-caption ink-2', style: { margin: 0 }, hidden: level !== 2 ? true : null }, 'Replace each part in [brackets]. Tab jumps to the next blank.');
-    right.append(box, blanksHint);
-    box.addEventListener('input', () => { S.parts[cp.key] = box.value; saveParts(); checkBtn.disabled = !box.value.trim(); renderChrome(); });
-    box.addEventListener('keydown', (e) => {
-      e.stopPropagation();
-      if (e.key === 'Tab' && /\[[^\]]*\]/.test(box.value)) {
-        // jump to the next (or previous) [blank] and select it
-        e.preventDefault();
-        const v = box.value;
-        const blanks = [...v.matchAll(/\[[^\]]*\]/g)].map((m) => [m.index, m.index + m[0].length]);
-        const at = box.selectionEnd;
-        const pick = e.shiftKey ? [...blanks].reverse().find(([s0]) => s0 < box.selectionStart) || blanks[blanks.length - 1] : blanks.find(([s0]) => s0 >= at) || blanks[0];
-        box.setSelectionRange(pick[0], pick[1]);
+    right.append(h('div', { class: 'levels', role: 'radiogroup', 'aria-label': 'Level' },
+      ...MODES.map((m) => h('button', { class: 'level', type: 'button', role: 'radio', 'aria-checked': String(mode === m.key), onclick: () => { store.set('promptMode', m.key); syncPart(cp.key); renderChrome(); renderStep('none'); } },
+        levelIcon(m.dots), h('span', { class: 'level-text' }, h('span', { class: 't-strong' }, m.name), h('span', { class: 't-caption ink-2' }, m.hint))))));
+    let lastBlank = null;
+    let field;
+    const onChange = () => { syncPart(cp.key); checkBtn.disabled = !S.parts[cp.key].trim(); renderChrome(); };
+    if (mode === 'easy') {
+      // Only the blanks can be edited; the template text around them is fixed.
+      const vals = (S.blanks[cp.key] ||= []);
+      let k = 0;
+      field = h('div', { class: 'cp-box fill', id: 'cp-box', role: 'group', 'aria-label': `Your ${cp.short} part, fill in the blanks` });
+      for (const p of templateParts(cp.key)) {
+        if (typeof p === 'string') { field.append(h('span', { class: 'fixed' }, p)); continue; }
+        const i = k++;
+        const blank = h('span', { class: 'blank', contenteditable: 'plaintext-only', role: 'textbox', 'aria-label': p.blank, 'data-ph': p.blank, spellcheck: 'false' });
+        blank.textContent = vals[i] || '';
+        blank.addEventListener('input', () => { vals[i] = blank.textContent; onChange(); });
+        blank.addEventListener('focus', () => { lastBlank = blank; });
+        blank.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') e.preventDefault(); });
+        field.append(blank);
       }
-    });
-    function setLevel(n) {
-      store.set('promptLevel', n);
-      if (n === 2 && !box.value.trim()) { S.parts[cp.key] = TEMPLATES[cp.key]; saveParts(); }
-      renderStep('none');
-      if (n === 2) setTimeout(() => { const b = stepArea.querySelector('#cp-box'); const m = /\[[^\]]*\]/.exec(b.value); b.focus({ preventScroll: true }); if (m) b.setSelectionRange(m.index, m.index + m[0].length); }, 30);
+    } else {
+      field = h('textarea', { class: 'cp-box', id: 'cp-box', rows: '6', placeholder: cp.placeholder, 'aria-label': `Your ${cp.short} part` });
+      field.value = S.free[cp.key] || '';
+      field.addEventListener('input', () => { S.free[cp.key] = field.value; onChange(); });
+      field.addEventListener('keydown', (e) => e.stopPropagation());
     }
-    if (level === 2 && box.value.trim() && !box.value.includes('[') && S.parts[cp.key] !== TEMPLATES[cp.key]) {
-      right.append(h('button', { class: 'btn btn-text t-caption', type: 'button', style: { justifySelf: 'start', height: '24px' }, onclick: () => { box.value = TEMPLATES[cp.key]; box.dispatchEvent(new Event('input')); } }, 'Start over from the template'));
-    }
+    right.append(field);
     // Words met in these steps, as pills
     const terms = [];
     for (const st of S.steps) if (cp.groups.includes(groupOf(st))) for (const se of st.sentences) for (const m of se.text.matchAll(/`([^`]+)`/g)) {
-      const k = termKey(m[1], TERMS);
-      if (k && !terms.includes(k)) terms.push(k);
+      const k2 = termKey(m[1], TERMS);
+      if (k2 && !terms.includes(k2)) terms.push(k2);
     }
     if (terms.length) right.append(h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Words from these steps. Click one to add it.'),
-      h('div', { class: 'chips' }, ...terms.map((k) => h('button', { class: 'tag', type: 'button', title: `“${TERMS[k].casual}”`, onclick: () => {
-        const s0 = box.selectionStart ?? box.value.length, s1 = box.selectionEnd ?? s0;
-        const word = TERMS[k].precise.replace(/ plus a duration$/, '');
-        const inBlank = /^\[[^\]]*\]$/.test(box.value.slice(s0, s1));
-        const pad = !inBlank && box.value && !/\s$/.test(box.value.slice(0, s0)) ? ' ' : '';
-        box.setRangeText(pad + word, s0, s1, 'end');
-        box.dispatchEvent(new Event('input'));
-        box.focus({ preventScroll: true });
-      } }, TERMS[k].precise)))));
+      h('div', { class: 'chips' }, ...terms.map((k2) => h('button', { class: 'tag', type: 'button', title: `“${TERMS[k2].casual}”`, onmousedown: (e) => e.preventDefault(), onclick: () => {
+        const word = TERMS[k2].precise.replace(/ plus a duration$/, '');
+        if (mode === 'easy') {
+          const target = lastBlank || field.querySelector('.blank:empty') || field.querySelector('.blank');
+          target.textContent = (target.textContent.trim() ? target.textContent.trim() + ' ' : '') + word;
+          target.dispatchEvent(new Event('input'));
+          target.focus();
+          getSelection().selectAllChildren(target); getSelection().collapseToEnd();
+        } else {
+          const s0 = field.selectionStart ?? field.value.length, s1 = field.selectionEnd ?? s0;
+          const pad = field.value && !/\s$/.test(field.value.slice(0, s0)) ? ' ' : '';
+          field.setRangeText(pad + word, s0, s1, 'end');
+          field.dispatchEvent(new Event('input'));
+          field.focus({ preventScroll: true });
+        }
+      } }, TERMS[k2].precise)))));
     const feedback = h('div', { class: 'cp-feedback', 'aria-live': 'polite' });
-    const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !box.value.trim() ? true : null, onclick: () => {
-      if (/\[[^\]]*\]/.test(box.value)) { feedback.replaceChildren(message('Some blanks are still empty.', 'Replace each part in [brackets] with your own words, then check again.', null)); return; }
-      checkPart(cp, box.value, feedback, checkBtn);
+    const checkBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: !(S.parts[cp.key] || '').trim() ? true : null, onclick: () => {
+      if (/\[[^\]]*\]/.test(S.parts[cp.key] || '')) { feedback.replaceChildren(message('Some blanks are still empty.', 'Fill in every blank, then check again.', null)); return; }
+      checkPart(cp, S.parts[cp.key], feedback, checkBtn);
     } }, 'Check my part');
-    right.append(h('div', { class: 'gen-row' }, checkBtn, h('span', { class: 't-caption ink-3' }, 'Claude compares your words with the code. Next keeps going either way.')), feedback);
-    if (S.cpFeedback?.[cp.key]) showFeedback(S.cpFeedback[cp.key], feedback, box);
+    right.append(h('div', { class: 'gen-row' }, checkBtn), feedback);
+    if (S.cpFeedback?.[cp.key]) showFeedback(S.cpFeedback[cp.key], feedback, mode === 'normal' ? field : null);
 
     card.append(h('div', { class: 'cp-cols' }, left, right));
     stepArea.replaceChildren(card);
@@ -896,7 +925,8 @@ export function mountWorkspace(app) {
   function togglePreviewSheet(force) {
     const open = force ?? !grid.classList.contains('preview-open');
     grid.classList.toggle('preview-open', open);
-    stepArea.querySelector('.cp-top .btn-secondary')?.setAttribute('aria-expanded', String(open));
+    sheetTab.setAttribute('aria-expanded', String(open));
+    sheetTab.lastChild.textContent = open ? 'Hide preview' : 'Show preview';
     return open;
   }
 
@@ -919,7 +949,15 @@ export function mountWorkspace(app) {
   function showFeedback(d, out, box) {
     usedConcepts = new Set();
     const list = (title, items) => (items?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, title), h('ul', {}, ...items.map((x) => h('li', {}, ...richText({ text: x, chips: [] }))))) : null);
-    const use = d.sharper ? h('button', { class: 'btn btn-text', type: 'button', onclick: () => { box.value = d.sharper; box.dispatchEvent(new Event('input')); } }, 'Use this version') : null;
+    const use = d.sharper ? h('button', { class: 'btn btn-text', type: 'button', onclick: () => {
+      // Use the sharper version as your own text (it moves you to Normal, where you can edit it freely)
+      const key = S.cp;
+      S.free[key] = d.sharper;
+      store.set('promptMode', 'normal');
+      syncPart(key);
+      renderChrome();
+      renderStep('none');
+    } }, 'Use this version') : null;
     out.replaceChildren(
       list('You covered', d.covered),
       list('Missing from the code', d.missed),

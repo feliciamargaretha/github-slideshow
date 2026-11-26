@@ -666,3 +666,27 @@ html, body { overflow: clip; }
 .level:hover { border-color: var(--ink-3); }
 .level[aria-checked='true'] { border-color: var(--ink); color: var(--ink); }
 .level-icon { display: inline-flex; padding-top: 4px; }
+
+/* Practice step: read-only original, fill-in-the-blank field, floating preview tab */
+.cp-readonly { background: var(--surface-2); color: var(--ink-2); resize: none; cursor: default; }
+.cp-readonly:focus { border-color: var(--line-strong) !important; }
+.cp-box.fill { min-height: 160px; line-height: 32px; padding: var(--space-3); border: 1px solid var(--line-strong); border-radius: var(--radius-m); cursor: text; }
+.cp-box.fill .fixed { color: var(--ink-3); }
+.cp-box.fill .blank {
+  color: var(--ink); background: var(--surface-3); border-radius: var(--radius-s); padding: 2px 6px; margin: 0 1px;
+  border-bottom: 1px solid var(--ink-3); outline: none; min-width: 2ch; display: inline; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+.cp-box.fill .blank:empty::before { content: attr(data-ph); color: var(--ink-3); font-style: italic; }
+.cp-box.fill .blank:focus { background: var(--surface); box-shadow: 0 0 0 1px var(--line-focus); border-bottom-color: var(--ink); }
+.sheet-tab {
+  display: none; position: absolute; z-index: 31; left: 0; top: 50%; transform: translateY(-50%);
+  writing-mode: vertical-rl; rotate: 180deg; padding: var(--space-3) var(--space-2); gap: var(--space-2); align-items: center;
+  border: 1px solid var(--line-strong); border-left: 0; border-radius: 0 var(--radius-m) var(--radius-m) 0; background: var(--surface);
+  font-weight: 500; color: var(--ink); transition: left var(--dur-3) var(--ease);
+}
+.sheet-tab { border-left: 1px solid var(--line-strong); border-right: 0; border-radius: var(--radius-m) 0 0 var(--radius-m); }
+.sheet-tab .icon { rotate: 90deg; }
+.sheet-tab:hover { background: var(--surface-2); }
+.workspace.cp-mode .sheet-tab { display: inline-flex; }
+.workspace.cp-mode.preview-open .sheet-tab { left: 560px; }
+.workspace.cp-mode .walk-col .step.checkpoint { padding-left: calc(var(--space-5) + 24px); }

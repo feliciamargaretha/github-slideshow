@@ -6,6 +6,7 @@ import { Preview } from './preview.js';
 import { buildModel } from './model.js';
 import { detectDialect, DIALECTS } from './detect.js';
 import { go, startReading, renderBanner, message } from './app.js';
+import { scriptProblems, explainRuntimeError } from './script-check.js';
 
 const clean = (code) => code.replace(/^```\w*\n?|```\s*$/g, '').trim() + '\n';
 
@@ -14,6 +15,15 @@ export function mountBuild(app) {
   const B = { turns: [], versions: [], current: -1, busy: false };
   let preview, log, box, sendBtn, doneBtn, frameWrap, versionCap, emptyNote;
   const showEmpty = (on) => { if (emptyNote) emptyNote.hidden = !on; };
+  // Problems with this version's code, shown in a bar above the preview.
+  let problemBar = null, problems = [];
+  const addProblem = (text) => { if (!text || problems.includes(text)) return; problems.push(text); paintProblems(); };
+  const paintProblems = () => {
+    if (!problemBar) return;
+    problemBar.hidden = !problems.length;
+    problemBar.replaceChildren(h('span', { class: 't-strong' }, 'This version can’t fully run here.'), ...problems.map((p) => h('span', { class: 'ink-2' }, p)),
+      h('span', { class: 'ink-2' }, 'Ask for the same motion without plugins, for example by animating the shape of an SVG path or a clip-path.'));
+  };
 
   function open({ prompt, code }) {
     B.turns = [{ role: 'you', text: prompt }, { role: 'result', version: 0 }];
@@ -27,7 +37,7 @@ export function mountBuild(app) {
 
   function render() {
     frameWrap = h('div', { class: 'frame-wrap' });
-    preview = new Preview(frameWrap, { size: (m) => { B.contentH = m.h; fitPreview(); showEmpty(m.h === 0); } });
+    preview = new Preview(frameWrap, { size: (m) => { B.contentH = m.h; fitPreview(); showEmpty(m.h === 0); }, scripterror: (m) => { const t = explainRuntimeError(m.message || ''); if (/can’t load here/.test(t) && problems.some((p) => /can’t load here/.test(p))) return; addProblem(t); } });
     emptyNote = h('div', { class: 'frame-empty build-empty', hidden: true }, h('div', { class: 't-strong' }, 'Nothing shows in this version.'),
       h('div', { class: 'ink-2' }, 'Claude wrote code, but nothing visible came out of it. Ask for the change again, or press “Show this version” on an earlier one.'));
     frameWrap.append(emptyNote);
@@ -35,6 +45,7 @@ export function mountBuild(app) {
     const left = h('section', { class: 'build-preview', 'aria-label': 'Result' },
       h('div', { class: 'preview-head' }, h('div', { class: 'left' }, h('span', { class: 't-strong' }, 'Result'), versionCap),
         h('span', { class: 't-caption ink-3' }, 'Click, type and hover like the real thing.')),
+      problemBar = h('div', { class: 'build-problem', role: 'status', hidden: true }),
       h('div', { class: 'stage' }, frameWrap));
 
     log = h('div', { class: 'build-log', 'aria-live': 'polite' });
@@ -118,6 +129,8 @@ export function mountBuild(app) {
   function showVersion(i) {
     B.current = i;
     showEmpty(false);
+    problems = scriptProblems(B.versions[i] || '');
+    paintProblems();
     const code = B.versions[i];
     const d = detectDialect(code);
     if (DIALECTS[d].preview) preview.render(buildModel(code, d).instrumented, { title: `Version ${i + 1}`, center: true });

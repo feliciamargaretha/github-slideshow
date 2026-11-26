@@ -113,6 +113,7 @@ export async function findIssues({ code, known }) {
 const GEN_RULES =
   'Write ONE UI component as a single HTML file: semantic HTML plus one <style> block, and plain JavaScript or GSAP only when the component needs motion that CSS cannot do. ' +
   'If you use GSAP, load exactly <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>. ' +
+  'Use only the GSAP core: never GSAP plugins such as MorphSVG, DrawSVG, MotionPath, ScrollTrigger, CustomEase, Flip or SplitText, because they cannot load. To change a shape, animate an SVG path with gsap.to(path, { attr: { d: \'...\' } }) using paths with the same number of points, or animate a CSS clip-path or border-radius. ' +
   'No other libraries, no frameworks, no Tailwind, no external images or fonts, no network requests. Stay under 100 lines. ' +
   'Never use emoji: draw every icon as a small inline <svg> with a stroke or fill that follows the text color. ' +
   'Do not include <!doctype>, <html>, <head> or <body> tags: start with the <style> block, then the markup, then any script.';

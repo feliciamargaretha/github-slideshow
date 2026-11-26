@@ -452,7 +452,15 @@ function bridgeMain() {
     else if (m.type === 'mode') { inspect = !!m.inspect; lastHover = null; drawHover(null); }
   });
 
-  window.addEventListener('error', () => {}, true);
+  // Tell the page when the component's own script fails or a script file is blocked.
+  let errs = 0;
+  window.addEventListener('error', (e) => {
+    if (errs++ > 4) return;
+    const t = e.target;
+    if (t && t !== window && t.tagName === 'SCRIPT') post({ type: 'scripterror', message: `could not load ${t.src}` });
+    else if (e.message) post({ type: 'scripterror', message: String(e.message) });
+  }, true);
+  window.addEventListener('unhandledrejection', (e) => { if (errs++ <= 4) post({ type: 'scripterror', message: String(e.reason?.message || e.reason || 'a promise failed') }); });
   // Report how tall the component really is, so the page can give the preview enough room.
   let lastH = -1;
   const reportSize = () => {

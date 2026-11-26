@@ -111,6 +111,11 @@ const ROUTES = {
     clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40) }),
     run: ai.makeTemplate,
   },
+  tips: {
+    kind: 'tips-v1',
+    clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40), prompts: str(b.prompts, 4000) }),
+    run: ai.promptTips,
+  },
   compare: {
     kind: 'compare-v2',
     clean: (b) => ({ original: str(b.original, config.maxChars), yours: str(b.yours, config.maxChars), prompt: str(b.prompt, 2000), before: str(b.before, 4000) }),

@@ -112,3 +112,11 @@ export async function checkPart({ text, template, answers }) {
     terms: [{ casual: 'space between', precise: 'gap' }],
   };
 }
+
+export async function promptTips({ part, prompts }) {
+  const words = prompts.replace(/^\d+\.\s*/, '').split(/\s+/);
+  return { tips: [
+    { quote: words.slice(1, 3).join(' '), suggestion: `Test mode ${part}: a precise version of these words`, why: 'Test mode: an exact value means the AI does not have to guess.' },
+    { quote: '', suggestion: 'Test mode: put the icon inside a 40px round container', why: 'Test mode: the code has this, but the prompt never says it.' },
+  ] };
+}

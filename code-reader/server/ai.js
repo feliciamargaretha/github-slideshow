@@ -282,3 +282,17 @@ export async function compare({ original, yours, prompt, before = '' }) {
 }
 
 const number = (code) => code.split('\n').map((l, i) => `${i + 1}| ${l}`).join('\n');
+
+/** Tips on the learner's original prompt: vague words to sharpen, and details it leaves out, for one part. */
+export async function promptTips({ code, part, prompts }) {
+  const schema = obj({ tips: { type: 'array', items: obj({ quote: { type: 'string' }, suggestion: { type: 'string' }, why: { type: 'string' } }) } });
+  return call({
+    system: `You coach a designer who is learning to prompt an AI for UI code. ${DATA_RULE}`,
+    user: `<code>\n${number(code)}\n</code>\n\n<prompt>\n${prompts}\n</prompt>\n\n` + `Read the learner\'s original prompt below and find where its ${part} details could be clearer, compared with the code.${scopeOf(part)} ` +
+      'Give 2 to 6 tips. For vague or wrong wording, quote the exact words from the prompt (copied character for character, a few words long), and give a clearer version with the real value from the code, for example "small gap" becomes "8px gap". ' +
+      'For something the code has but the prompt never mentions (for example an icon sitting inside a round container), leave quote empty and give the words they could add. ' +
+      'For every tip, one short plain sentence on why it helps, written for a designer, no jargon. Skip anything an AI does by default.',
+    schema,
+    effort: 'low',
+  });
+}

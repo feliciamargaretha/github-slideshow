@@ -29,6 +29,7 @@ export const api = {
   ask: (payload) => post('ask', payload),
   checkPart: (payload) => post('check', payload),
   template: (payload) => post('template', payload),
+  tips: (payload) => post('tips', payload),
   feedback: (payload) => post('feedback', payload),
 };
 

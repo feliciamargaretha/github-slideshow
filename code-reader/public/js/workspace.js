@@ -898,14 +898,55 @@ export function mountWorkspace(app) {
     const left = h('section', { class: 'cp-col cp-before', 'aria-label': 'Your original prompt' });
     const originals = (S.history && S.history.length ? S.history : S.prompt ? [S.prompt] : []).filter(Boolean);
     left.append(h('label', { class: 'cp-h', for: 'cp-original' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'));
-    const orig = h('textarea', { class: 'cp-box cp-readonly', id: 'cp-original', rows: '6', readonly: true, 'aria-readonly': 'true', placeholder: 'You pasted this code without a prompt, so you are writing it from scratch.' });
-    orig.value = originals.length > 1 ? originals.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : originals[0] || '';
-    left.append(orig);
-    // Grow to show every prompt in full, no inner scrolling.
-    const fit = () => { if (!orig.isConnected) return; orig.style.height = 'auto'; orig.style.height = orig.scrollHeight + 2 + 'px'; };
-    requestAnimationFrame(fit);
-    let fitW = 0;
-    new ResizeObserver(() => { if (left.clientWidth !== fitW) { fitW = left.clientWidth; fit(); } }).observe(left);
+    // The original prompts, read only. Words that could be clearer for this part are marked; click one for a suggestion.
+    const origText = originals.length > 1 ? originals.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : originals[0] || '';
+    const orig = h('div', { class: 'cp-box cp-readonly cp-orig', id: 'cp-original', role: 'textbox', 'aria-readonly': 'true', 'aria-multiline': 'true', 'aria-label': 'Your original prompt' });
+    const tipsNote = h('div', { class: 'cp-tips', 'aria-live': 'polite' });
+    left.append(orig, tipsNote);
+    const tipsKey = partsKey() + '.tips.' + cp.key;
+    const paintTips = (tips) => {
+      if (!origText) { orig.replaceChildren(h('span', { class: 'ink-3' }, 'You pasted this code without a prompt, so you are writing it from scratch.')); return; }
+      const lower = origText.toLowerCase();
+      const spans = [];
+      for (const t of tips || []) {
+        const q = (t.quote || '').trim();
+        if (!q) continue;
+        const at = lower.indexOf(q.toLowerCase());
+        if (at < 0 || spans.some((x) => at < x.end && at + q.length > x.start)) continue;
+        spans.push({ start: at, end: at + q.length, tip: t });
+      }
+      spans.sort((a, b) => a.start - b.start);
+      const out = [];
+      let pos = 0;
+      for (const sp of spans) {
+        if (sp.start > pos) out.push(origText.slice(pos, sp.start));
+        const b = h('button', { class: 'tip-mark', type: 'button', 'aria-label': `${origText.slice(sp.start, sp.end)}: could be clearer. Show suggestion` }, origText.slice(sp.start, sp.end));
+        b.addEventListener('click', () => popover(b, tipCard(sp.tip), { focus: false }));
+        out.push(b);
+        pos = sp.end;
+      }
+      out.push(origText.slice(pos));
+      orig.replaceChildren(...out);
+      const missing = (tips || []).filter((t) => !(t.quote || '').trim() && t.suggestion);
+      tipsNote.replaceChildren(
+        spans.length ? h('p', { class: 't-caption ink-2' }, 'Marked words could be clearer. Click one to see a suggestion.') : null,
+        missing.length ? h('div', { class: 'cp-missing' }, h('span', { class: 't-caption ink-3' }, 'Not in your prompt yet'),
+          ...missing.map((t) => { const b = h('button', { class: 'tip-mark missing', type: 'button' }, icon('plus'), t.suggestion); b.addEventListener('click', () => popover(b, tipCard(t), { focus: false })); return b; })) : null);
+    };
+    const tipCard = (t) => h('div', { class: 'ans-pop' },
+      t.quote ? h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, 'You wrote'), h('span', {}, t.quote)) : null,
+      h('div', { class: 'ans-row' }, h('span', { class: 't-caption ink-3' }, t.quote ? 'Clearer' : 'Add'), h('span', { class: 't-strong' }, t.suggestion)),
+      t.why ? h('p', { style: { margin: 0 } }, t.why) : null);
+    const cachedTips = store.get(tipsKey, null);
+    paintTips(cachedTips);
+    if (!cachedTips && origText && app.state.ai === 'ok') {
+      tipsNote.replaceChildren(h('p', { class: 't-caption ink-3' }, 'Looking for words that could be clearer…'));
+      api.tips({ code: S.model.source, part: cp.short, prompts: origText }).then((r) => {
+        const tips = r.ok && Array.isArray(r.data.tips) ? r.data.tips : [];
+        if (r.ok) store.set(tipsKey, tips);
+        if (orig.isConnected) paintTips(tips);
+      });
+    }
     const earlier = CHECKPOINTS.slice(0, CHECKPOINTS.indexOf(cp)).filter((c) => S.parts[c.key]?.trim());
 
     // Right: this part, in Easy or Normal mode

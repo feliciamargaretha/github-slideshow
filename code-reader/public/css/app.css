@@ -807,3 +807,10 @@ html, body { overflow: clip; }
 /* Original prompt: big, white, shows every prompt in full */
 .checkpoint .cp-box.cp-readonly { background: var(--surface); color: var(--ink); min-height: 320px; overflow: hidden; resize: none; }
 .checkpoint .cp-box.cp-readonly { overflow: auto; }
+
+/* Inspector drawings for icon strokes */
+.ins-svg { position: absolute; inset: 0; pointer-events: none; }
+.ins-svg svg { width: 100%; height: 100%; display: block; }
+.ins-svg line, .ins-svg polyline { stroke: var(--ink-3); }
+.ins-svg .g { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 3; }
+.ins-svg .c { stroke: var(--ink); stroke-width: 1; }

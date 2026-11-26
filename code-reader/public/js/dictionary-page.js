@@ -37,6 +37,9 @@ export const DETAILS = {
   before: { design: 'An extra layer drawn by CSS, at the start', about: 'The same as ::after, but the extra layer comes before the content, so it is drawn first. Good for a leading icon, a bullet or an opening quote.', opposite: 'after', related: ['position', 'absolute', 'element'] },
   'align-self': { design: 'Alignment for one layer (auto layout)', about: 'The auto layout frame sets one alignment for all its layers. align-self lets a single layer break the rule, like one badge sitting at the top while the rest stay centered. In Figma you would need an extra frame or absolute position for this; in code it is one line on that layer.', related: ['align-items', 'stretch', 'flexbox', 'children'] },
   stretch: { design: 'Fill container, across (auto layout)', about: 'The layers grow to fill the frame across its direction: in a row, every layer becomes as tall as the frame, like setting each one\'s height to fill container. It is what happens by default unless you pick another alignment.', opposite: 'fit-content', related: ['align-items', 'align-self', 'flex-grow'] },
+  'stroke-linecap': { design: 'Stroke end points (cap)', about: 'The end of a line in an icon, like the end point setting in Figma\'s stroke panel. None (butt) stops flat right at the end, round gives soft rounded ends, square gives flat ends that reach a little further. Round caps make line icons feel friendlier.', related: ['stroke-linejoin', 'radius'] },
+  'stroke-linejoin': { design: 'Stroke join', about: 'The corner where two lines of an icon meet, like the join setting in Figma\'s stroke panel. Miter makes a sharp point, round softens the corner, bevel cuts it off flat. Round joins usually go with round caps.', related: ['stroke-linecap', 'radius'] },
+  'outline-offset': { design: 'Gap between a layer and its focus ring', about: 'An outline is a ring drawn around a layer, most often the focus ring that shows keyboard users where they are. outline-offset is the space between the layer and that ring, like an outside stroke pushed a few pixels away. A small gap (2 to 4px) keeps the ring from blending into the button.', related: ['radius', 'padding', 'margin'] },
   'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
@@ -244,6 +247,29 @@ const INSPECT = {
       { caption: 'stretch: every layer fills the frame from top to bottom.', frame: F(40, 20, 320, 120), items: [I(52, 32, 88, 96, 'Icon'), I(156, 32, 88, 96, 'Label'), I(260, 32, 88, 96, 'Badge')], marks: [{ t: 'arrow', x: 368, y: 32, len: 96, dir: 'down' }, { t: 'chip', x: 40, y: 148, text: 'align-items: stretch' }] },
     ],
   }),
+  'stroke-linecap': () => ({
+    height: 150,
+    frames: [
+      { caption: 'butt (none): the line stops flat, exactly at its end points (the dotted guides).', frame: null, items: [], svg: `<svg viewBox="0 0 400 150"><line x1="100" y1="30" x2="100" y2="120" class="g"/><line x1="300" y1="30" x2="300" y2="120" class="g"/><line x1="100" y1="75" x2="300" y2="75" stroke-width="24" stroke-linecap="butt"/><line x1="100" y1="75" x2="300" y2="75" class="c"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'stroke-linecap: butt' }] },
+      { caption: 'round: each end gets a half circle, so the line has soft ends.', frame: null, items: [], svg: `<svg viewBox="0 0 400 150"><line x1="100" y1="30" x2="100" y2="120" class="g"/><line x1="300" y1="30" x2="300" y2="120" class="g"/><line x1="100" y1="75" x2="300" y2="75" stroke-width="24" stroke-linecap="round"/><line x1="100" y1="75" x2="300" y2="75" class="c"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'stroke-linecap: round' }] },
+      { caption: 'square: flat ends that reach past the end points by half the line thickness.', frame: null, items: [], svg: `<svg viewBox="0 0 400 150"><line x1="100" y1="30" x2="100" y2="120" class="g"/><line x1="300" y1="30" x2="300" y2="120" class="g"/><line x1="100" y1="75" x2="300" y2="75" stroke-width="24" stroke-linecap="square"/><line x1="100" y1="75" x2="300" y2="75" class="c"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'stroke-linecap: square' }] },
+    ],
+  }),
+  'stroke-linejoin': () => ({
+    height: 150,
+    frames: [
+      { caption: 'miter: where the two lines meet, the corner comes to a sharp point.', frame: null, items: [], svg: `<svg viewBox="0 0 400 150"><polyline points="130,115 200,40 270,115" stroke-width="22" stroke-linejoin="miter" fill="none"/><polyline points="130,115 200,40 270,115" class="c" fill="none"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'stroke-linejoin: miter' }] },
+      { caption: 'round: the corner is rounded off.', frame: null, items: [], svg: `<svg viewBox="0 0 400 150"><polyline points="130,115 200,40 270,115" stroke-width="22" stroke-linejoin="round" fill="none"/><polyline points="130,115 200,40 270,115" class="c" fill="none"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'stroke-linejoin: round' }] },
+      { caption: 'bevel: the corner is cut off flat.', frame: null, items: [], svg: `<svg viewBox="0 0 400 150"><polyline points="130,115 200,40 270,115" stroke-width="22" stroke-linejoin="bevel" fill="none"/><polyline points="130,115 200,40 270,115" class="c" fill="none"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'stroke-linejoin: bevel' }] },
+    ],
+  }),
+  'outline-offset': () => ({
+    height: 150,
+    frames: [
+      { caption: 'outline-offset: 0: the focus ring hugs the edge of the button.', frame: null, items: [I(150, 50, 100, 40, 'Search')], marks: [{ t: 'outline', x: 148, y: 48, w: 104, h: 44 }, { t: 'chip', x: 150, y: 108, text: 'outline-offset: 0' }] },
+      { caption: 'outline-offset: 4px: the ring moves out, with a clear gap around the button.', frame: null, items: [I(150, 50, 100, 40, 'Search')], marks: [{ t: 'outline', x: 142, y: 42, w: 116, h: 56 }, { t: 'gap', x: 144, y: 44, w: 6, h: 52 }, { t: 'chip', x: 150, y: 108, text: 'outline-offset: 4px' }] },
+    ],
+  }),
   'aspect-ratio': () => ({
     height: 200,
     frames: [
@@ -342,7 +368,8 @@ export function inspector(key) {
   const count = Math.max(...spec.frames.map((f) => f.items.length));
   const items = Array.from({ length: count }, () => h('div', { class: 'ins-item' }));
   const marks = h('div', { class: 'ins-marks' });
-  stage.append(frameEl, ...items, marks);
+  const art = h('div', { class: 'ins-svg' });
+  stage.append(frameEl, art, ...items, marks);
   const cap = h('p', { class: 'ins-cap' });
   const wrap = h('div', { class: 'ins' }, stage, cap);
   let i = 0;
@@ -359,6 +386,7 @@ export function inspector(key) {
       el.style.transitionDuration = fr.dur ? fr.dur + 'ms' : '';
       el.textContent = it.label;
     });
+    art.innerHTML = fr.svg || '';
     marks.replaceChildren(...fr.marks.map(drawMark));
     cap.textContent = fr.caption;
   };
@@ -406,7 +434,7 @@ export const TREE = [
   { cat: 'Position', nodes: [
     N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
   ] },
-  { cat: 'Style', nodes: [N('radius'), N('pointer-events')] },
+  { cat: 'Style', nodes: [N('radius'), N('stroke-linecap'), N('stroke-linejoin'), N('outline-offset'), N('pointer-events')] },
   { cat: 'Motion', nodes: [N('transition', null, [N('easing', 'setting')]), N('keyframes'), N('transform')] },
 ];
 const FAMILY = {};

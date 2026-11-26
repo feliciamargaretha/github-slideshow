@@ -17,7 +17,8 @@ import { withConcepts, termDemo, codeWithConcepts } from './glossary.js';
 import { renderBanner, go, startReading, message } from './app.js';
 import { recordReading, recordProgress, recordCheck } from './history.js';
 
-const COLOR = { structure: '#2563EB', layout: '#15803D', style: '#7C3AED', motion: '#C2410C', overview: '#0A0A0A', issue: '#B91C1C' };
+// Step outlines are monochrome; only issues keep a red dashed outline.
+const COLOR = { structure: '#0A0A0A', layout: '#0A0A0A', style: '#0A0A0A', motion: '#0A0A0A', overview: '#0A0A0A', issue: '#B91C1C' };
 const SPACING = /^(padding|margin|gap|row-gap|column-gap)/;
 const SIZE = /^(width|height|min-width|max-width|min-height|max-height|aspect-ratio)$/;
 const COLORISH = /color|background|fill|stroke|border$/;
@@ -655,19 +656,26 @@ export function mountWorkspace(app) {
     return v;
   }
 
+  // The outline shows which part a step is about, then fades so it never sits on the component.
+  let outlineTimer = null;
+  function flashOutline(msg) {
+    clearTimeout(outlineTimer);
+    preview.send(msg);
+    if (msg.ids?.length && !msg.dashed) outlineTimer = setTimeout(() => preview.send({ type: 'outline', ids: [] }), 1600);
+  }
   function outlineStep() {
     const s = step();
     if (!s) return;
     const issueEls = s.issues.flatMap((i) => i.elementIds || (i.ruleId ? ruleTargets(S.model, S.model.ruleById.get(i.ruleId) || { parts: [] , decls: [], selector: '' }, S.match) : []));
     if (s.overview) { preview.send({ type: 'outline', ids: [] }); return; }
-    if (issueEls.length) preview.send({ type: 'outline', ids: [...new Set(issueEls)], color: COLOR.issue, dashed: true });
-    else preview.send({ type: 'outline', ids: s.targets || [], color: COLOR[panelOfStep(s)] });
+    if (issueEls.length) flashOutline({ type: 'outline', ids: [...new Set(issueEls)], color: COLOR.issue, dashed: true });
+    else flashOutline({ type: 'outline', ids: s.targets || [], color: COLOR[panelOfStep(s)] });
   }
 
   function outlineElement(id, land) {
     const el = S.model.html.elements[id];
     const panel = 'structure';
-    preview.send({ type: 'outline', ids: [id], color: COLOR[panel], land });
+    flashOutline({ type: 'outline', ids: [id], color: COLOR[panel], land });
     void el;
   }
 

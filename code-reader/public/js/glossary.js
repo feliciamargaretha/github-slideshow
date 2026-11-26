@@ -52,6 +52,24 @@ export const GLOSSARY = {
     text: 'An alignment value: the items grow to fill the box across its direction, so in a row they all become as tall as the box. It is the default for align-items.',
     example: '.row { display: flex; align-items: stretch; }',
   },
+  'stroke-linecap': {
+    title: 'stroke-linecap',
+    match: /\bstroke-linecap\b/i,
+    text: 'The shape of the ends of a line in an icon: butt stops flat at the end, round adds a half circle, square sticks out a little past the end.',
+    example: 'path { stroke-linecap: round; }',
+  },
+  'stroke-linejoin': {
+    title: 'stroke-linejoin',
+    match: /\bstroke-linejoin\b/i,
+    text: 'The shape of the corners where two lines of an icon meet: miter is a sharp point, round is rounded, bevel is cut off flat.',
+    example: 'path { stroke-linejoin: round; }',
+  },
+  'outline-offset': {
+    title: 'outline-offset',
+    match: /\boutline-offset\b/i,
+    text: 'The space between a box and its outline, usually the focus ring keyboard users see. 0 hugs the edge; 2 to 4px leaves a small gap so the ring reads clearly.',
+    example: '.btn:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 3px; }',
+  },
   'aspect-ratio': {
     title: 'aspect-ratio',
     match: /\baspect[- ]ratio\b/i,
@@ -460,7 +478,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-self', stretch: 'stretch', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

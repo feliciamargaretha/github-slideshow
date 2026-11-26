@@ -47,6 +47,8 @@ export const DETAILS = {
   bulge: { design: 'Bending a path (dragging a curve handle)', about: 'bulge is a name this code invented, not a CSS word. The sidebar shape is drawn as a vector path whose right edge is one curve, with a single handle in the middle of that edge. bulge is how far that handle is pulled to the right: 0 keeps the edge straight, 56 bends it outward like dragging a bezier handle in Figma, a negative number bends it inward. Animating it from 0 to 56 and back, with a bouncy ease, is what makes the edge wobble.', related: ['easing', 'keyframes', 'transition'] },
   elastic: { design: 'Spring easing with a wobble', about: 'An easing curve that goes past the end, springs back and wobbles before it settles, like a spring or a rubber band. In Figma prototypes the closest is a Spring or Bouncy animation. elastic.out(1, 0.35): the first number is how strong the overshoot is (1 is normal), the second is how quick each wobble is (smaller is quicker and more wobbly, bigger is calmer). In the curved sidebar it is what makes the edge bounce before it ends up straight.', related: ['transition', 'bulge', 'keyframes'] },
   stagger: { design: 'Staggered animation (delay per item)', about: 'Plays the same animation on a group of layers one after another, each starting a little later than the one before, so they cascade in like a wave instead of popping in together. In Figma you would give each layer a slightly bigger delay by hand; here one number does it for all of them. Small values (0.02 to 0.08 seconds) feel smooth; bigger ones feel slow and deliberate.', related: ['easing', 'transition', 'keyframes'] },
+  querySelector: { design: 'Selecting a layer by its name', about: 'Before a script can do anything to a layer, it has to find it, the way you click a layer in the layers panel before changing it. querySelector searches the page with a selector (the same kind CSS uses, like .toggle) and hands back the first match; the script then keeps it under a name, like toggle, to use later. querySelectorAll finds every match, for example all the labels, as a list.', related: ['selector', 'class', 'element'] },
+  addEventListener: { design: 'Trigger (like “On click” in prototyping)', about: 'The code version of a prototype interaction in Figma: a trigger and an action. addEventListener picks the trigger (click, key press, hover, scroll, the window being resized) on a layer, and the code inside is the action that runs every time it happens. Without it, a page only looks right; with it, the page reacts.', related: ['querySelector', 'transition', 'stagger'] },
   'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
@@ -338,6 +340,25 @@ const INSPECT = {
       { caption: '…and Team last: one smooth cascade.', frame: F(140, 10, 120, 142), items: [I(150, 20, 100, 26, 'Home'), I(150, 52, 100, 26, 'Inbox'), I(150, 84, 100, 26, 'Analytics'), I(150, 116, 100, 26, 'Team')].slice(0, 4), dur: 300, marks: [{ t: 'chip', x: 268, y: 20, text: 'stagger: 0.05' }] },
     ],
   }),
+  querySelector: () => ({
+    height: 190,
+    every: 2000,
+    frames: [
+      { caption: 'The page is full of layers, each with a class name.', frame: F(56, 18, 288, 140), items: [I(70, 30, 120, 30, '.toggle'), I(70, 72, 120, 30, '.t'), I(210, 72, 120, 30, '.t'), I(70, 114, 260, 30, '.card')], marks: [] },
+      { caption: "querySelector('.toggle') finds the first layer with that name…", frame: F(56, 18, 288, 140), items: [I(70, 30, 120, 30, '.toggle'), I(70, 72, 120, 30, '.t'), I(210, 72, 120, 30, '.t'), I(70, 114, 260, 30, '.card')], marks: [{ t: 'outline', x: 68, y: 28, w: 124, h: 34 }, { t: 'chip', x: 56, y: 166, text: "document.querySelector('.toggle')" }] },
+      { caption: '…and the script keeps it under a name, toggle, to change it or listen for clicks.', frame: F(56, 18, 288, 140), items: [I(70, 30, 120, 30, '.toggle'), I(70, 72, 120, 30, '.t'), I(210, 72, 120, 30, '.t'), I(70, 114, 260, 30, '.card')], marks: [{ t: 'outline', x: 68, y: 28, w: 124, h: 34 }, { t: 'chip', x: 200, y: 36, text: 'const toggle' }] },
+      { caption: "querySelectorAll('.t') finds every match, as a list.", frame: F(56, 18, 288, 140), items: [I(70, 30, 120, 30, '.toggle'), I(70, 72, 120, 30, '.t'), I(210, 72, 120, 30, '.t'), I(70, 114, 260, 30, '.card')], marks: [{ t: 'outline', x: 68, y: 70, w: 124, h: 34 }, { t: 'outline', x: 208, y: 70, w: 124, h: 34 }, { t: 'chip', x: 56, y: 166, text: "document.querySelectorAll('.t')" }] },
+    ],
+  }),
+  addEventListener: () => ({
+    height: 190,
+    every: 1800,
+    frames: [
+      { caption: 'The listener is set up and waits: nothing happens yet.', frame: F(56, 18, 288, 140), items: [I(80, 40, 96, 32, 'Toggle')], marks: [{ t: 'chip', x: 56, y: 166, text: "toggle.addEventListener('click', open)" }] },
+      { caption: 'The visitor clicks: that is the trigger it was waiting for.', frame: F(56, 18, 288, 140), items: [I(80, 40, 96, 32, 'Toggle')], marks: [{ t: 'outline', x: 78, y: 38, w: 100, h: 36 }, { t: 'chip', x: 186, y: 46, text: 'click' }] },
+      { caption: 'The action runs: here, open() shows the panel.', frame: F(56, 18, 288, 140), items: [I(80, 40, 96, 32, 'Toggle'), I(80, 84, 240, 60, 'Panel')], marks: [{ t: 'chip', x: 186, y: 46, text: 'open()' }] },
+    ],
+  }),
   'aspect-ratio': () => ({
     height: 200,
     frames: [
@@ -490,6 +511,7 @@ export const TREE = [
   { cat: 'Building blocks', nodes: [
     N('element', null, [N('parent', 'part'), N('children', 'part'), N('before', 'part'), N('after', 'part')]),
     N('selector', null, [N('class', 'part')]),
+    N('querySelector'), N('addEventListener'),
   ] },
   { cat: 'Layout', nodes: [
     N('display', null, [

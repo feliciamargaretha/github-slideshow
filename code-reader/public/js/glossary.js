@@ -112,6 +112,18 @@ export const GLOSSARY = {
     text: 'A GSAP setting that starts the same animation on several items one after another instead of all at once. stagger: 0.05 waits 0.05 seconds between each item, so they cascade in.',
     example: "gsap.to('.label', { opacity: 1, stagger: 0.05 })",
   },
+  querySelector: {
+    title: 'querySelector',
+    match: /\bquerySelector(?:All)?\b/,
+    text: 'How a script finds a part of the page: you give it a selector, like .toggle, and it hands back the first element that matches, so the script can change it or listen to it. querySelectorAll hands back every match as a list.',
+    example: "const toggle = document.querySelector('.toggle');\nconst labels = document.querySelectorAll('.t');",
+  },
+  addEventListener: {
+    title: 'addEventListener',
+    match: /\baddEventListener\b/,
+    text: 'Tells an element to wait for something the visitor does, like a click, a key press or a hover, and then run some code. It is how a page reacts to people.',
+    example: "toggle.addEventListener('click', () => set(!expanded));",
+  },
   'aspect-ratio': {
     title: 'aspect-ratio',
     match: /\baspect[- ]ratio\b/i,
@@ -520,7 +532,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-self', stretch: 'stretch', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', stagger: 'stagger', elastic: 'elastic', bulge: 'bulge', 'margin-top': 'margin', 'margin-left': 'margin', 'margin-right': 'margin', 'margin-bottom': 'margin', overflow: 'overflow', 'overflow-x': 'overflow', 'overflow-y': 'overflow', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', addEventListener: 'addEventListener', querySelector: 'querySelector', querySelectorAll: 'querySelector', stagger: 'stagger', elastic: 'elastic', bulge: 'bulge', 'margin-top': 'margin', 'margin-left': 'margin', 'margin-right': 'margin', 'margin-bottom': 'margin', overflow: 'overflow', 'overflow-x': 'overflow', 'overflow-y': 'overflow', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

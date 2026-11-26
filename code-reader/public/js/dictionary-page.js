@@ -30,6 +30,7 @@ export const DETAILS = {
   transition: { design: 'Smart animate', about: 'Plays a change over time instead of jumping, like smart animate between two variants. You choose what changes, how long it takes and the easing.', related: ['easing', 'transform', 'keyframes'] },
   easing: { design: 'Easing curve', about: 'How speed changes during an animation. Ease out starts fast and settles gently, which feels natural for things arriving. Linear keeps one speed.', related: ['transition', 'keyframes'] },
   keyframes: { design: 'Animation keyframes', about: 'An animation written as moments in time, from 0% to 100%, each saying how the layer looks then. The browser fills in the frames between.', opposite: 'transition', related: ['easing', 'transform'] },
+  'fit-content': { design: 'Hug contents', about: 'The layer is only as wide as its content, like setting a frame to hug contents. If the content is longer than the space, it stops at the edge and wraps instead of overflowing.', opposite: 'block', related: ['inline-block', 'inline-flex', 'display', 'padding'] },
   children: { design: 'Layers inside a frame', about: 'The layers directly inside a frame. When the frame has auto layout (flex) or a grid, it arranges its children: their direction, the gap between them and their alignment. A child can be a parent of its own children too.', opposite: 'parent', related: ['element', 'flexbox', 'grid', 'gap', 'display'] },
   parent: { design: 'The frame that holds layers', about: 'The frame that holds other layers. Its settings, like auto layout, gap and padding, decide how the layers inside it sit.', opposite: 'children', related: ['element', 'flexbox', 'padding', 'gap'] },
   class: { design: 'Style name', about: 'A name you give layers in the HTML, like naming a component. CSS finds every layer with that name and styles them all at once, like a shared style.', related: ['element', 'selector'] },
@@ -187,6 +188,13 @@ const INSPECT = {
       { caption: '0%: where it starts.', frame: null, items: [I(40, 40, 50, 40, '')], marks: [{ t: 'chip', x: 40, y: 90, text: '0%' }] },
       { caption: '50%: a moment in the middle.', frame: null, items: [I(175, 20, 50, 40, '')], marks: [{ t: 'chip', x: 175, y: 90, text: '50%' }] },
       { caption: '100%: where it ends. The browser fills in the frames between.', frame: null, items: [I(310, 40, 50, 40, '')], marks: [{ t: 'chip', x: 310, y: 90, text: '100%' }] },
+    ],
+  }),
+  'fit-content': () => ({
+    height: 150,
+    frames: [
+      { caption: 'Fill container: the button stretches to the full width.', frame: F(40, 30, 320, 90), items: [I(56, 54, 288, 40, 'Get started')], marks: [{ t: 'dim', x: 56, y: 106, w: 288, text: 'full width' }] },
+      { caption: 'width: fit-content: the button hugs its label.', frame: F(40, 30, 320, 90), items: [I(56, 54, 112, 40, 'Get started')], marks: [{ t: 'dim', x: 56, y: 106, w: 112, text: 'hugs the content' }] },
     ],
   }),
   children: () => {

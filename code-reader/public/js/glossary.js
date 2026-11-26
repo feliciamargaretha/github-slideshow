@@ -16,6 +16,12 @@ export const GLOSSARY = {
     text: 'One building block of the page, written as a tag in the HTML, such as <button> or <p>. Elements sit inside each other like boxes in boxes.',
     example: '<button>Buy</button>',
   },
+  'fit-content': {
+    title: 'fit-content',
+    match: /\bfit-content\b/i,
+    text: 'A size value: the box is as wide as its content needs, and never wider than the space it has. Used as width: fit-content.',
+    example: '.tag { width: fit-content; }',
+  },
   children: {
     title: 'Children',
     match: /\bchild(?:ren)?\b/i,
@@ -386,7 +392,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-items', 'place-items': 'alignment', position: 'position', absolute: 'position',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

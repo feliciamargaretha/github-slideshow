@@ -124,13 +124,14 @@ export function buildSteps(model, match = () => []) {
     const name = nameOfRule(rule);
     const media = rule.context?.at ? mediaWords(rule.context.at) : '';
     const state = rule.parts?.find((p) => p.state)?.state || '';
-    const statePrefix = state ? `On ${state === 'hover' ? 'hover' : state}, ` : '';
+    const statePrefix = state ? `${stateWords(state)}, ` : '';
     const groups = {};
     for (const d of rule.decls) {
       const ex = explainDecl(d.prop, d.value);
       let panel = ex?.panel || panelOf(d.prop);
-      // A state rule that is animated by a transition reads as Motion.
-      if (state && motionRuleIds.has(rule.id) && panel !== 'motion') panel = 'motion';
+      // In a state rule (hover, pressed, focus) the look of that state is Style, like a variant;
+      // only movement that a transition animates (move, scale, turn) reads as Motion.
+      if (state && motionRuleIds.has(rule.id) && /^(transform|translate|scale|rotate)$/.test(d.prop)) panel = 'motion';
       if (media && panel !== 'motion') panel = 'layout';
       (groups[panel] ||= []).push({ d, ex });
     }
@@ -162,6 +163,7 @@ export function buildSteps(model, match = () => []) {
         title: cssTitle(panel, items.map((x) => x.d), name, state, media, model, targets, match),
         sentences, lines: ruleLines.concat(items.flatMap((x) => range(x.d.line, x.d.endLine)), atLines),
         targets, ruleId: rule.id, line: rule.line,
+        transitionOnly: panel === 'motion' && items.every((x) => /^transition/.test(x.d.prop)),
       });
     }
   }
@@ -223,6 +225,11 @@ export function buildSteps(model, match = () => []) {
 }
 
 function finish(steps, model) {
+  // Motion only appears when something actually moves. A transition that just fades a color
+  // or a shadow between states is part of how it looks, so it is explained in Style.
+  if (!steps.some((st) => st.panel === 'motion' && !st.transitionOnly)) {
+    for (const st of steps) if (st.transitionOnly) { st.panel = 'style'; st.title = st.title.replace(/changes smoothly$/, 'fades between states'); }
+  }
   const order = (s) => PANELS.indexOf(s.panel) * 1000 + s.rank * 10 + (Math.min(...s.lines) / 10000);
   steps.sort((a, b) => order(a) - order(b));
   steps.forEach((s, i) => {
@@ -312,9 +319,20 @@ export function ruleName(model, rule, match) {
   return `the ${ids.length > 1 ? plural(word, ids.length) : word}`;
 }
 
+const STATE_WORDS = { hover: 'On hover', active: 'When pressed', focus: 'On focus', 'focus-visible': 'On keyboard focus', 'focus-within': 'When something inside has focus', disabled: 'When disabled', checked: 'When checked', visited: 'After a visit', 'placeholder-shown': 'While the field is empty', invalid: 'When the value is invalid', target: 'When linked to', open: 'When open' };
+/** A state like "active" or "focus-visible,hover" in plain words. */
+export function stateWords(state) {
+  const parts = state.split(',').map((x) => STATE_WORDS[x] || `On ${x}`);
+  return parts.length > 1 ? parts[0] + ' and ' + parts.slice(1).map((p) => p.replace(/^(On|When|While) /, '')).join(' and ') : parts[0];
+}
+
 function cssTitle(panel, decls, name, state, media, model, targets, match) {
+  const t = cssTitleRaw(panel, decls, name, state, media, model, targets, match);
+  return /^(On|When|While|After) [^,]+, [A-Z][a-z]/.test(t) ? t.replace(/, ([A-Z])/, (m, c) => ', ' + c.toLowerCase()) : t;
+}
+function cssTitleRaw(panel, decls, name, state, media, model, targets, match) {
   const has = (p) => decls.find((d) => d.prop === p);
-  const prefix = state ? `On ${state === 'hover' ? 'hover' : state}, ` : media ? `${cap(media)}, ` : '';
+  const prefix = state ? `${stateWords(state)}, ` : media ? `${cap(media)}, ` : '';
   const who = prefix ? name : cap(name);
   if (panel === 'layout') {
     const disp = has('display');
@@ -346,7 +364,7 @@ function cssTitle(panel, decls, name, state, media, model, targets, match) {
   if (panel === 'motion') {
     if (has('transition')) return `${prefix}${who} changes smoothly`;
     if (has('animation') || has('animation-name')) return `${prefix}${who} plays an animation`;
-    if (state) return `On ${state === 'hover' ? 'hover' : state}, ${name} changes`;
+    if (state) return `${stateWords(state)}, ${name} ${/(transform|translate|scale|rotate)/.test(decls.map((d) => d.prop).join(' ')) ? 'moves' : 'changes'}`;
     return `${prefix}How ${name} moves`;
   }
   return `${prefix}${who}`;

@@ -2,7 +2,7 @@
 // on the right is about. Pointing at either side lights up the other.
 import { h, icon, segmented, popover, closePopover, store, announce, tooltip, reducedMotion, panelIcon, promptIcon } from './ui.js';
 import { buildModel, makeMatcher, ruleTargets, cascadeFor, applyTweaks } from './model.js';
-import { buildSteps, PANELS, PANEL_LABEL, pendingAiItems, assignTermChips, termKey } from './steps.js';
+import { buildSteps, PANELS, PANEL_LABEL, pendingAiItems, assignTermChips, termKey, stateWords } from './steps.js';
 import { staticIssues, runtimeIssues, attachIssues } from './issues.js';
 import { explainDecl, explainTag, TERMS } from './dictionary.js';
 import { elementName } from './parse-html.js';
@@ -400,7 +400,18 @@ export function mountWorkspace(app) {
     const first = Math.max(1, (hl[0] || 1) - ctx);
     const last = Math.min(total, (hl[hl.length - 1] || 1) + ctx);
     // Group sentences that end on the same code piece; order them by their last line.
-    const withLines = s.sentences.filter((se) => se.lines.length).sort((x, y) => Math.max(...x.lines) - Math.max(...y.lines));
+    // Lines shown here that another step explains get a short note and a link, so no code goes undiscussed.
+    const mine = new Set(s.sentences.flatMap((se) => se.lines));
+    const others = [];
+    for (let l = first; l <= last; l++) {
+      if (mine.has(l)) continue;
+      const idx = S.steps.findIndex((st) => st !== s && !st.overview && st.sentences.some((se) => se.declId !== undefined && se.lines.includes(l)));
+      if (idx < 0) continue;
+      const se = S.steps[idx].sentences.find((x) => x.declId !== undefined && x.lines.includes(l));
+      if (others.some((o) => o.se === se)) continue;
+      others.push({ lines: [l], other: idx, se, id: 'o' + l });
+    }
+    const withLines = [...s.sentences.filter((se) => se.lines.length), ...others].sort((x, y) => Math.max(...x.lines) - Math.max(...y.lines));
     const groups = [];
     for (const se of withLines) {
       const end = Math.min(last, Math.max(...se.lines));
@@ -415,6 +426,15 @@ export function mountWorkspace(app) {
       if (to >= from) wrap.append(codeBlock({ ...opts, range: [from, to] }));
       const notes = h('div', { class: 'stack-notes' });
       for (const se of g.items) {
+        if (se.other !== undefined) {
+          const st = S.steps[se.other];
+          const n = h('p', { class: 'stack-note other' }, ...sentenceBody(se.se), ' ',
+            h('button', { class: 'btn-text other-link', type: 'button', onclick: () => goTo(se.other) }, `More in ${PANEL_LABEL[st.panel] || 'another step'}`, icon('arrowRight')));
+          n.addEventListener('mouseenter', () => hoverLines(se.lines));
+          n.addEventListener('mouseleave', () => hoverLine(null));
+          notes.append(n);
+          continue;
+        }
         const n = h('p', { class: 'stack-note', 'data-sid': se.id }, ...sentenceBody(se), askLink(s, se));
         n.addEventListener('mouseenter', () => { n.classList.add('hot'); hoverLines(se.lines); });
         n.addEventListener('mouseleave', () => { n.classList.remove('hot'); hoverLine(null); });
@@ -728,7 +748,7 @@ export function mountWorkspace(app) {
         h('div', { class: 'rule-head' },
           h('code', { class: 'inline-code t-strong' }, rule.inlineFor !== undefined ? `style="…"` : rule.selector),
           h('span', { class: 't-caption ink-3' }, linesLabel([rule.line, rule.endLine])),
-          part.state ? h('span', { class: 'tag' }, `On ${part.state}`) : null,
+          part.state ? h('span', { class: 'tag' }, stateWords(part.state)) : null,
           part.pseudo ? h('span', { class: 'tag' }, `::${part.pseudo}`) : null,
           rule.context?.at ? h('span', { class: 'tag' }, rule.context.at) : null),
         h('div', { class: 'decl-list' }, ...rows)));
@@ -850,10 +870,12 @@ export function mountWorkspace(app) {
     (S.tplTried ||= {})[cp.key] = true;
     const r = await api.template({ code: S.model.source, part: cp.short });
     const t = r.ok && typeof r.data.template === 'string' ? r.data.template.trim() : '';
-    if (t && (t.match(/\[[^\]]*\]/g) || []).length >= 2) {
+    // A style or layout template must not ask about motion; fall back to the built-in one if it does.
+    const strays = cp.key !== 'motion' && /\b(hover|transition|animat\w*|duration|easing|ease-\w+|\d+\s?ms)\b/i.test(t);
+    if (t && !strays && (t.match(/\[[^\]]*\]/g) || []).length >= 2) {
       S.templates[cp.key] = t;
       S.blanks[cp.key] = [];
-      store.set(partsKey() + '.templates2', S.templates);
+      store.set(partsKey() + '.templates3', S.templates);
       syncPart(cp.key);
     }
     if (S.cp === cp.key) renderStep('none');
@@ -864,7 +886,7 @@ export function mountWorkspace(app) {
     grid.classList.add('cp-mode');
     S.free ||= store.get(partsKey() + '.free', {});
     S.blanks ||= store.get(partsKey() + '.blanks', {});
-    S.templates ||= store.get(partsKey() + '.templates2', {});
+    S.templates ||= store.get(partsKey() + '.templates3', {});
     if (S.free[cp.key] === undefined && S.parts[cp.key] && !S.blanks[cp.key]) S.free[cp.key] = S.parts[cp.key];
     const mode = store.get('promptMode', 'easy');
     const card = h('article', { class: `step checkpoint ${dir === 'next' ? 'enter-next' : dir === 'back' ? 'enter-back' : dir === 'none' ? '' : 'fade'}`, 'aria-labelledby': 'step-title' });

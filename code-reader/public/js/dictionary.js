@@ -268,7 +268,66 @@ export const CSS = {
   'border-radius': P(S, 'borders', 19, (v) => v === '50%' || v === '999px' || v === '9999px' ? 'Rounds the corners all the way into a circle or pill (`border-radius`).' : `Rounds the corners by ${v} (\`border-radius\`).`),
   outline: P(S, 'borders', 20, (v) => v === 'none' || v === '0' ? 'Removes the focus ring browsers draw for keyboard users (`outline: none`).' : `Draws a ring outside the border: ${v} (\`outline\`).`),
   'outline-offset': P(S, 'borders', 20, (v) => `Moves the ring ${v} away from the box (\`outline-offset\`).`),
-  'box-shadow': P(S, 'shadows', 21, (v) => v === 'none' ? 'Removes the shadow (`box-shadow: none`).' : `Adds a soft drop shadow under the box (\`box-shadow\`), offset and blurred by ${words(v).filter((w) => /px|^0$/.test(w)).slice(0, 3).join(', ')}.`),
+  'box-shadow': P(S, 'shadows', 21, (v) => {
+    if (v === 'none') return 'Removes the shadow (`box-shadow: none`).';
+    const layers = v.split(/,(?![^(]*\))/).map((x) => x.trim()).filter(Boolean);
+    const one = (l) => {
+      const inset = /\binset\b/.test(l);
+      const n = (l.replace(/\binset\b/, '').match(/-?\d*\.?\d+(px|rem|em)?|\b0\b/g) || []).map((x) => parseFloat(x));
+      const [x = 0, y = 0, blur = 0, spread = 0] = n;
+      if (!x && !y && !blur && spread) return `a ${Math.abs(spread)}px solid ring ${inset ? 'inside the edge' : 'around the edge'}`;
+      if (inset) return `an inner shadow${blur ? `, blurred ${blur}px` : ''}`;
+      const where = y > 0 ? `${y}px below` : y < 0 ? `${-y}px above` : 'all around';
+      return `${blur >= 12 ? 'a soft' : blur ? 'a small' : 'a hard'} shadow ${where}${blur ? `, blurred ${blur}px` : ''}`;
+    };
+    const parts = layers.map(one);
+    const ring = layers.length === 1 && /ring/.test(parts[0]);
+    return `Adds ${parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1] : parts[0]} (\`box-shadow\`).${ring ? ' A shadow used like this is a common way to draw a focus ring.' : ''}`;
+  }),
+  'stroke-width': P(S, 'icons', 23, (v) => `Sets how thick the icon lines are: ${v} (\`stroke-width\`).`),
+  'stroke-linecap': P(S, 'icons', 23, (v) => ({ round: 'Gives the ends of the icon lines soft rounded ends (`stroke-linecap: round`).', square: 'Gives the ends of the icon lines flat ends that reach a little past the end (`stroke-linecap: square`).', butt: 'Stops the icon lines flat, right at their ends (`stroke-linecap: butt`).' }[v] || `Sets the shape of the line ends: \`${v}\` (\`stroke-linecap\`).`)),
+  'stroke-linejoin': P(S, 'icons', 23, (v) => ({ round: 'Rounds the corners where icon lines meet (`stroke-linejoin: round`).', bevel: 'Cuts off the corners where icon lines meet (`stroke-linejoin: bevel`).', miter: 'Makes sharp corners where icon lines meet (`stroke-linejoin: miter`).' }[v] || `Sets the shape of the corners: \`${v}\` (\`stroke-linejoin\`).`)),
+  'stroke-dasharray': P(S, 'icons', 23, (v) => `Draws the line as dashes: ${v} (\`stroke-dasharray\`).`),
+  'stroke-dashoffset': P(S, 'icons', 23, (v) => `Shifts where the dashes start by ${v}, often animated to make a line draw itself (\`stroke-dashoffset\`).`),
+  'outline-color': P(S, 'borders', 20, (v) => `Sets the focus ring color to ${colorWord(v)} (\`outline-color\`).`),
+  'outline-width': P(S, 'borders', 20, (v) => `Sets the focus ring thickness to ${v} (\`outline-width\`).`),
+  'outline-style': P(S, 'borders', 20, (v) => `Sets the focus ring line style to ${v} (\`outline-style\`).`),
+  'border-top-left-radius': P(S, 'borders', 19, (v) => `Rounds the top left corner by ${v} (\`border-top-left-radius\`).`),
+  'border-top-right-radius': P(S, 'borders', 19, (v) => `Rounds the top right corner by ${v} (\`border-top-right-radius\`).`),
+  'border-bottom-left-radius': P(S, 'borders', 19, (v) => `Rounds the bottom left corner by ${v} (\`border-bottom-left-radius\`).`),
+  'border-bottom-right-radius': P(S, 'borders', 19, (v) => `Rounds the bottom right corner by ${v} (\`border-bottom-right-radius\`).`),
+  'text-decoration-color': P(S, 'typography', 19, (v) => `Sets the underline color to ${colorWord(v)} (\`text-decoration-color\`).`),
+  'text-decoration-thickness': P(S, 'typography', 19, (v) => `Sets the underline thickness to ${v} (\`text-decoration-thickness\`).`),
+  'text-underline-offset': P(S, 'typography', 19, (v) => `Moves the underline ${v} below the text (\`text-underline-offset\`).`),
+  'text-wrap': P(S, 'typography', 19, (v) => v === 'balance' ? 'Balances the line lengths so a heading wraps evenly (`text-wrap: balance`).' : `Sets how the text wraps: \`${v}\` (\`text-wrap\`).`),
+  'overflow-wrap': P(S, 'typography', 19, () => 'Lets very long words break onto the next line instead of spilling out (`overflow-wrap`).'),
+  'font-variant-numeric': P(S, 'typography', 19, (v) => /tabular/.test(v) ? 'Gives every digit the same width, so numbers line up in columns (`font-variant-numeric: tabular-nums`).' : `Changes how numbers are drawn: \`${v}\` (\`font-variant-numeric\`).`),
+  '-webkit-line-clamp': P(S, 'typography', 19, (v) => `Cuts the text off after ${v} lines with an ellipsis (\`-webkit-line-clamp\`).`),
+  'line-clamp': P(S, 'typography', 19, (v) => `Cuts the text off after ${v} lines with an ellipsis (\`line-clamp\`).`),
+  '-webkit-box-orient': P(S, 'typography', 19, () => 'Needed together with line-clamp so the text can be cut off after a few lines (`-webkit-box-orient`).'),
+  'caret-color': P(S, 'interaction', 24, (v) => `Colors the blinking text cursor ${colorWord(v)} (\`caret-color\`).`),
+  'background-clip': P(S, 'color', 17, (v) => v === 'text' ? 'Shows the background only inside the letters, for gradient text (`background-clip: text`).' : `Sets where the background is painted: \`${v}\` (\`background-clip\`).`),
+  '-webkit-background-clip': P(S, 'color', 17, (v) => v === 'text' ? 'Shows the background only inside the letters, for gradient text (`-webkit-background-clip: text`).' : `Sets where the background is painted: \`${v}\`.`),
+  '-webkit-text-fill-color': P(S, 'color', 17, (v) => v === 'transparent' ? 'Makes the letters see-through so a background shows inside them (`-webkit-text-fill-color`).' : `Sets the letter color to ${colorWord(v)} (\`-webkit-text-fill-color\`).`),
+  'mix-blend-mode': P(S, 'effects', 22, (v) => `Blends it with what is underneath, like the ${v} blend mode in design tools (\`mix-blend-mode\`).`),
+  isolation: P(S, 'effects', 22, () => 'Keeps blend effects inside this box so they do not mix with the page behind it (`isolation`).'),
+  'clip-path': P(S, 'effects', 22, (v) => `Crops it to a shape: \`${v}\` (\`clip-path\`).`),
+  mask: P(S, 'effects', 22, () => 'Hides parts of it using a mask image or gradient (`mask`).'),
+  'mask-image': P(S, 'effects', 22, () => 'Hides parts of it using a mask image or gradient, often a fade at the edge (`mask-image`).'),
+  resize: P(S, 'interaction', 24, (v) => v === 'none' ? 'Hides the corner handle so the box cannot be resized by dragging (`resize: none`).' : `Lets the visitor resize it by dragging: \`${v}\` (\`resize\`).`),
+  'touch-action': P(S, 'interaction', 24, (v) => `Sets which touch gestures the browser handles here: \`${v}\` (\`touch-action\`).`),
+  'scroll-behavior': P(S, 'interaction', 24, (v) => v === 'smooth' ? 'Scrolls smoothly instead of jumping when a link moves you down the page (`scroll-behavior: smooth`).' : `Sets how scrolling moves: \`${v}\` (\`scroll-behavior\`).`),
+  'backface-visibility': P(S, 'effects', 22, () => 'Hides the back of the box when it is flipped over (`backface-visibility`).'),
+  perspective: P(S, 'effects', 22, (v) => `Adds 3D depth for children that rotate in space; smaller numbers look more dramatic (\`perspective: ${v}\`).`),
+  translate: P(L, 'transforms', 40, (v) => `Moves it by ${v} without affecting the layout (\`translate\`).`),
+  scale: P(L, 'transforms', 40, (v) => `Scales it to ${v} times its size (\`scale\`).`),
+  rotate: P(L, 'transforms', 40, (v) => `Turns it by ${v} (\`rotate\`).`),
+  'place-self': P(L, 'alignment', 26, (v) => `Lines up just this item in both directions: \`${v}\` (\`place-self\`).`),
+  'grid-gap': P(L, 'spacing', 21, (v) => `Leaves ${v} of spacing between the items (\`grid-gap\`, the older name for gap).`),
+  'inset-inline': P(L, 'position', 33, (v) => `Sets the left and right offsets to ${v} (\`inset-inline\`).`),
+  'inset-block': P(L, 'position', 33, (v) => `Sets the top and bottom offsets to ${v} (\`inset-block\`).`),
+  'text-indent': P(S, 'typography', 19, (v) => `Indents the first line by ${v} (\`text-indent\`).`),
+  hyphens: P(S, 'typography', 19, () => 'Lets long words break with a hyphen at the end of a line (`hyphens`).'),
   filter: P(S, 'effects', 22, (v) => /blur/.test(v) ? `Blurs it (\`filter: ${v}\`).` : `Applies a visual effect: \`${v}\` (\`filter\`).`),
   'backdrop-filter': P(S, 'effects', 22, () => 'Blurs or tints whatever sits behind the box, like frosted glass (`backdrop-filter`).'),
   cursor: P(S, 'interaction', 23, (v) => v === 'pointer' ? 'Shows the pointing hand cursor, so it reads as clickable (`cursor: pointer`).' : `Sets the mouse cursor to \`${v}\` (\`cursor\`).`),

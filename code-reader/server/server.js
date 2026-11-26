@@ -102,12 +102,12 @@ const ROUTES = {
     run: ai.ask,
   },
   check: {
-    kind: 'check',
+    kind: 'check-v2',
     clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40), text: str(b.text, 2000), template: str(b.template, 2000), answers: (Array.isArray(b.answers) ? b.answers : []).slice(0, 20).map((a) => str(String(a ?? ''), 200)) }),
     run: ai.checkPart,
   },
   template: {
-    kind: 'template-v2',
+    kind: 'template-v3',
     clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40) }),
     run: ai.makeTemplate,
   },

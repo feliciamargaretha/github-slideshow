@@ -51,30 +51,38 @@ export function mountPractice(app) {
     inlineMsg = h('div', { 'aria-live': 'polite' });
     genBtn.disabled = !canGenerate();
 
-    const main = h('div', { class: 'practice-main' },
-      h('div', {}, h('button', { class: 'btn btn-text', type: 'button', onclick: () => go('workspace') }, icon('arrowLeft'), 'Back to the walkthrough')),
-      h('h1', { class: 't-title' }, 'Practice the prompt'),
-      h('label', { for: 'practice-prompt', class: 't-strong' }, label),
+    // Left: what you first asked for. Right: your rewritten parts, combined into one prompt.
+    const originals = (ctx.history && ctx.history.length ? ctx.history : ctx.prompt ? [ctx.prompt] : []).filter(Boolean);
+    const orig = h('textarea', { class: 'prompt prompt-readonly', id: 'practice-original', readonly: true, 'aria-readonly': 'true', placeholder: 'You pasted this code without a prompt.' });
+    orig.value = originals.length > 1 ? originals.map((p, i) => `${i + 1}. ${p}`).join('\n\n') : originals[0] || '';
+    const fitBox = (t) => () => { if (!t.isConnected) return; t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; };
+    const left = h('section', { class: 'practice-col practice-before', 'aria-label': 'Your original prompt' },
+      h('label', { class: 't-strong', for: 'practice-original' }, originals.length > 1 ? 'Your original prompts' : 'Your original prompt'),
+      orig,
+      series ? h('details', { class: 'cp-sofar' }, h('summary', {}, icon('chevronDown'), h('span', { class: 't-strong' }, 'Review how your prompts built it')), h('div', { class: 'cp-sofar-body' }, seriesPanel(ctx))) : null);
+    const right = h('section', { class: 'practice-col practice-now', 'aria-label': 'Your new prompt' },
+      h('label', { for: 'practice-prompt', class: 't-strong' }, written.length ? 'Your re-prompts, put together' : 'Your new prompt'),
+      h('p', { class: 'ink-2', style: { margin: 0 } }, written.length ? 'Each part you rewrote, combined into one prompt. Edit it so it reads as one request, then generate.' : label),
       promptBox,
       ctx.terms.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Terms from this breakdown. Click one to add it.'), chips) : null,
       h('div', { class: 'gen-row' }, genBtn, attemptsCap),
-      inlineMsg);
+      inlineMsg,
+      h('details', { class: 'cp-sofar' }, h('summary', {}, icon('chevronDown'), h('span', { class: 't-strong' }, 'What makes a sharp UI prompt')),
+        h('ul', { class: 'hint-list cp-sofar-body' },
+          h('li', {}, 'Name the layout: a row, a column, or a grid with a number of columns.'),
+          h('li', {}, 'Give spacing in numbers: “16px padding, 24px gap between cards.”'),
+          h('li', {}, 'Say what moves, on what trigger, for how long, with which easing: “on hover, lift 4px over 200ms, ease out.”'),
+          h('li', {}, 'Name colors and type: a hex value, a font size, a weight.'),
+          h('li', {}, 'Ask for one component, in one HTML file.'))),
+      ctx.lost.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Concepts you marked Lost'), h('div', { class: 'chips' }, ...ctx.lost.map((c) => h('span', { class: 'tag' }, c)))) : null);
     if (app.state.ai !== 'ok') inlineMsg.replaceChildren(message(app.state.ai === 'paused' ? 'Prompt practice is paused for today.' : 'Prompt practice needs AI, which is not set up on this server.', 'The walkthrough and the dictionary still work.', null));
     else if (DIALECTS[ctx.dialect]?.preview === false) inlineMsg.replaceChildren(message('No preview for this code.', 'You can still write a prompt; the original side shows no preview.', null));
 
-    const rail = h('aside', { class: 'practice-rail', 'aria-label': 'Hints' },
-      written.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, 'Your parts'),
-        ...(ctx.parts || []).map((p) => h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, p.label), h('p', { class: p.text.trim() ? '' : 'ink-3' }, p.text.trim() || 'Not written yet')))) : null,
-      series ? seriesPanel(ctx) : null,
-      h('h2', { class: 't-strong', style: { margin: 0, fontSize: '16px' } }, 'What makes a sharp UI prompt'),
-      h('ul', { class: 'hint-list' },
-        h('li', {}, 'Name the layout: a row, a column, or a grid with a number of columns.'),
-        h('li', {}, 'Give spacing in numbers: “16px padding, 24px gap between cards.”'),
-        h('li', {}, 'Say what moves, on what trigger, for how long, with which easing: “on hover, lift 4px over 200ms, ease out.”'),
-        h('li', {}, 'Name colors and type: a hex value, a font size, a weight.'),
-        h('li', {}, 'Ask for one component, in one HTML file.')),
-      ctx.lost.length ? h('div', { style: { display: 'grid', gap: '8px' } }, h('span', { class: 't-caption ink-2' }, 'Concepts you marked Lost'), h('div', { class: 'chips' }, ...ctx.lost.map((c) => h('span', { class: 'tag' }, c)))) : null);
-    root.replaceChildren(h('div', { class: 'practice-write' }, main, rail));
+    root.replaceChildren(h('div', { class: 'practice-page' },
+      h('div', { class: 'practice-top' }, h('button', { class: 'btn btn-text', type: 'button', onclick: () => go('workspace') }, icon('arrowLeft'), 'Back to the walkthrough'), h('h1', { class: 't-title' }, 'Put your prompt together')),
+      h('div', { class: 'practice-split' }, left, right)));
+    requestAnimationFrame(() => { fitBox(orig)(); fitBox(promptBox)(); });
+    promptBox.addEventListener('input', fitBox(promptBox));
     renderTopbar();
     setTimeout(() => promptBox.focus(), 50);
   }

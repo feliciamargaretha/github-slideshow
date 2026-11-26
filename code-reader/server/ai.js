@@ -52,6 +52,14 @@ const obj = (properties) => ({
 });
 
 /** Explain lines the dictionary could not. */
+// What each part of the prompt covers, so a part never repeats or jumps ahead of another.
+const PART_SCOPE = {
+  'structure and layout': 'This part covers only what the component is made of and how it is arranged: the pieces inside it, row, column or grid, sizes, padding, gaps, alignment and position. It does not cover colors, fonts, borders, corner radius, shadows or icon strokes (that is the style part), and nothing that changes on hover, focus or over time (that is the motion part).',
+  style: 'This part covers only how it looks when nothing is happening: colors, backgrounds, fonts and text sizes and weights, borders, corner radius, shadows, icon strokes and the look of the focus ring. It does not cover arrangement, sizes, padding, gaps or alignment (the learner already wrote those in the structure and layout part), and nothing that changes on hover, focus or over time, no transitions, durations or easing (that is the motion part, which comes later).',
+  motion: 'This part covers only what changes and how: which state or trigger (hover, focus, click, page load), what changes and by how much, the duration, easing and delay. It does not cover the arrangement or the resting look, which the learner already wrote in the earlier parts.',
+};
+const scopeOf = (part) => PART_SCOPE[part] ? ` ${PART_SCOPE[part]} Leave out anything outside this part, even if the code has it.` : '';
+
 export async function explain({ code, items }) {
   const schema = obj({
     items: {
@@ -196,7 +204,7 @@ export async function makeTemplate({ code, part }) {
     system:
       `You write fill-in-the-blank exercises that teach a designer to prompt an AI for UI code. ${DATA_RULE} ` +
       'Write in plain English for someone who knows basic HTML.',
-    user: `<code>\n${number(code)}\n</code>\n\nWrite a template for the ${part} part of a prompt that would rebuild exactly this component. ` +
+    user: `<code>\n${number(code)}\n</code>\n\nWrite a template for the ${part} part of a prompt that would rebuild exactly this component.${scopeOf(part)} ` +
       `Fixed words are plain text. Every specific value or choice the learner must supply is a blank written as [short hint], for example [icon size] or [padding]. ` +
       `Only ask for the ${part} details that matter: the ones a capable AI would not guess on its own or would likely get wrong, such as the layout pattern and the few sizes, spacings or values that define this component. Skip anything an AI does by default (resets, box-sizing, cursor, font smoothing, ordinary margins). ` +
       'Never put an answer in the fixed text. Use 1 or 2 short sentences and 3 to 6 blanks. Return only the template.',
@@ -215,7 +223,7 @@ export async function checkPart({ code, part, text, template, answers }) {
     const list = (template.match(/\[[^\]]*\]/g) || []).map((b, k) => `${k + 1}. ${b} -> learner wrote: ${JSON.stringify((answers || [])[k] || '')}`).join('\n');
     return call({
       system: `You grade a fill-in-the-blank prompt exercise for a designer learning to prompt an AI for UI code. ${READER} ${DATA_RULE} Work only from the code.`,
-      user: `<code>\n${number(code)}\n</code>\n\nThe ${part} template:\n<prompt>\n${template}\n</prompt>\n\nThe blanks, in order, with what the learner wrote:\n<prompt>\n${list}\n</prompt>\n\n` +
+      user: `<code>\n${number(code)}\n</code>\n\nThe ${part} template:\n<prompt>\n${template}\n</prompt>\n\nThe blanks, in order, with what the learner wrote:\n<prompt>\n${list}\n</prompt>\n\n${scopeOf(part).trim()}\n\n` +
         'For every blank, in the same order, give: the correct value from the code (short, a few words, real values), status "right" if the learner\'s value means the same thing, "wrong" if it differs, or "missing" if they left it empty, and one plain sentence on why that value is correct, pointing to the line. ' +
         'Also list up to 4 casual words the learner used with the precise term that says it better.',
       schema,
@@ -229,7 +237,7 @@ export async function checkPart({ code, part, text, template, answers }) {
   return call({
     system: `You coach a designer who is learning to prompt an AI for UI code, one part at a time. ${READER} ${DATA_RULE} Judge only the part named. Work only from the code.`,
     user: `<code>\n${number(code)}\n</code>\n\nThe learner wrote the ${part} part of a prompt that should rebuild this component:\n<prompt>\n${text}\n</prompt>\n\n` +
-      `Write the shortest accurate version of this ${part} part: 1 or 2 plain sentences with only the details that matter, the ones a capable AI would not guess on its own (skip defaults like resets, box-sizing or cursor), with precise terms and real values. Split it into segments in reading order. ` +
+      `${scopeOf(part).trim()} Write the shortest accurate version of this ${part} part: 1 or 2 plain sentences with only the details that matter, the ones a capable AI would not guess on its own (skip defaults like resets, box-sizing or cursor), with precise terms and real values. Split it into segments in reading order. ` +
       'Connecting words are segments with status "fixed". Every detail is its own segment: status "right" when the learner already said it correctly, "wrong" when they said it differently (put their words in "yours"), "missing" when they did not mention it. ' +
       'For every detail give one plain sentence in "why" explaining the correct value and the line it comes from. Leave "yours" and "why" empty for fixed segments. ' +
       'Also list up to 4 casual words the learner used with the precise term that says it better.',

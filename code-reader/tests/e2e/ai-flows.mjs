@@ -42,10 +42,11 @@ check('Shape it: I am done opens the breakdown with the last version', /border-r
 check('R16: prompt series saved for practice', JSON.stringify(await page.evaluate(() => window.__codeReader.workspace.state.history)) === JSON.stringify(['a card that lifts smoothly on hover', 'make the corners rounder']));
 await page.click('.progress .seg-btn.practice.final');
 await page.waitForSelector('#practice-prompt');
-check('Practice: asks to rewrite the first prompt for a one-try result', /in one try/.test(await page.locator('.practice-main').innerText()));
+check('Practice: asks to rewrite the first prompt for a one-try result', /in one try/.test(await page.locator('.practice-now').innerText()));
+await page.click(".practice-before .cp-sofar summary");
 await page.click('.series-review >> xpath=.. >> button:has-text("Review my prompts")');
 await page.waitForSelector('.series-steps');
-check('Practice: reviewing the series shows what each prompt changed and one combined prompt', await page.locator('.series-steps li').count() === 1 && /One prompt that gets there/.test(await page.locator('.practice-rail').innerText()));
+check('Practice: reviewing the series shows what each prompt changed and one combined prompt', await page.locator('.series-steps li').count() === 1 && /One prompt that gets there/.test(await page.locator('.practice-before').innerText()));
 
 // AI rows: paste code with a property the dictionary lacks
 await page.goto(BASE);
@@ -112,7 +113,7 @@ const lastStyle = await page.evaluate(() => { const st = window.__codeReader.wor
 await page.evaluate((i) => window.__codeReader.workspace.goTo(i), lastStyle);
 await page.click('.footer-bar .nav .btn-primary');
 await page.waitForSelector('.checkpoint #cp-box');
-check('Parts: the style practice shows the prompt so far', /white card in the middle/.test(await page.locator('.cp-earlier').innerText()));
+check('Parts: the style practice shows the prompt so far', /white card in the middle/.test(await page.locator('.cp-earlier').first().textContent()));
 await page.locator('#cp-box').fill('rounded corners and a soft shadow');
 await page.click('.progress .seg-btn.practice.final');
 await page.waitForSelector('#practice-prompt');
@@ -125,8 +126,8 @@ await page.locator('.paste-editor textarea').fill(fs0.readFileSync(new URL('../.
 await page.click('.paste-actions .btn-primary');
 await page.waitForSelector('#step-title');
 await page.evaluate(() => window.__codeReader.workspace.goTo(7));
-await page.hover('.stack-note >> nth=0');
-await page.click('.stack-note >> nth=0 >> .ask-link');
+await page.hover('.stack-note:not(.other) >> nth=0');
+await page.click('.stack-note:not(.other) >> nth=0 >> .ask-link');
 await page.waitForSelector('.chat-drawer.open');
 check('Ask: opening from an explanation shows what it is about', /Asking about/.test(await page.locator('.chat-ctx').innerText()) && !/whole component/.test(await page.locator('.chat-ctx').innerText()));
 await page.locator('.chat-drawer textarea').fill('why are the cards side by side?');
@@ -153,7 +154,7 @@ await page.waitForSelector('#practice-prompt');
 check('R7: prompt first, original prompt is already in the box', await page.inputValue('#practice-prompt') === 'a card that lifts on hover');
 check('R7: shows attempts left', /3 attempts left/.test(await page.locator('.gen-row').innerText()));
 await page.locator('#practice-prompt').fill('a 280px card that lifts smoothly on hover');
-await page.click('.practice-main .btn-primary');
+await page.click('.practice-now .btn-primary');
 await page.waitForSelector('.band-previews');
 check('R7: two previews side by side', await page.locator('.band-previews .pv').count() === 2);
 await page.waitForSelector('.note');
@@ -174,8 +175,8 @@ await page.click('.paste-actions .btn-primary');
 await page.waitForSelector('#step-title');
 await page.click('.progress .seg-btn.practice.final');
 await page.waitForSelector('#practice-prompt');
-check('R7: code first, the box is empty', await page.inputValue('#practice-prompt') === '' && /Write the prompt that would build this code/.test(await page.locator('.practice-main').innerText()));
-check('R13: terms from the breakdown appear as chips', await page.locator('.practice-main .chips .tag').count() > 0);
+check('R7: code first, the box is empty', await page.inputValue('#practice-prompt') === '' && /Write the prompt that would build this code/.test(await page.locator('.practice-now').innerText()));
+check('R13: terms from the breakdown appear as chips', await page.locator('.practice-now .chips .tag').count() > 0);
 if (SHOTS) await page.screenshot({ path: SHOTS + '/practice-write.png' });
 
 check('No page errors', errors.length === 0, errors.join(' | '));

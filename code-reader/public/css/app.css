@@ -409,12 +409,12 @@ button.tag:hover:not(.filled) { border-color: var(--ink); color: var(--ink); }
 .practice-result { padding: var(--space-4) var(--space-5) var(--space-6); display: grid; gap: var(--space-5); }
 .result-head { display: flex; align-items: center; justify-content: space-between; }
 .band-previews { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); height: 360px; }
-.band-previews .pv { display: grid; grid-template-rows: auto 1fr; gap: var(--space-2); min-height: 0; opacity: 0; animation: fadeIn var(--dur-3) var(--ease) forwards; }
+.band-previews .pv { display: grid; grid-template-rows: auto 1fr; gap: var(--space-2); min-height: 0; animation: fadeIn var(--dur-3) var(--ease) both; }
 .band-previews .pv:nth-child(2) { animation-delay: 80ms; }
 .band-previews .frame-wrap { min-height: 0; }
 .band-notes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .notes { display: grid; gap: var(--space-3); max-width: 640px; }
-.note { opacity: 0; animation: fadeIn var(--dur-3) var(--ease) forwards; padding-left: var(--space-3); border-left: 1px solid var(--line); }
+.note { animation: fadeIn var(--dur-3) var(--ease) both; padding-left: var(--space-3); border-left: 1px solid var(--line); }
 .note:hover { border-color: var(--ink); }
 .line-chip { font-size: 13px; line-height: 20px; height: 24px; display: inline-flex; align-items: center; padding: 0 var(--space-2); background: var(--surface-3); border-radius: var(--radius-s); margin-left: var(--space-1); border: 0; }
 .sharper { border: 1px solid var(--line); border-radius: var(--radius-m); padding: var(--space-3); display: grid; gap: var(--space-2); }
@@ -822,3 +822,19 @@ html, body { overflow: clip; }
 .cp-sofar summary > span:first-child { transform: rotate(-90deg); transition: transform 150ms var(--ease); }
 .cp-sofar[open] summary > span:first-child { transform: none; }
 .cp-sofar-body { display: grid; gap: var(--space-3); padding: var(--space-2) 0 var(--space-1) 24px; }
+
+/* Notes for nearby lines another step explains */
+.stack-note.other { color: var(--ink-2); }
+.other-link { display: inline-flex; align-items: center; gap: 4px; height: auto; padding: 0; color: var(--ink-2); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.other-link:hover { color: var(--ink); }
+
+/* Put it together: original prompts left, re-prompts combined right */
+.practice-page { padding: var(--space-5) var(--space-6) var(--space-7); display: grid; gap: var(--space-4); align-content: start; max-width: 1280px; margin: 0 auto; }
+.practice-top { display: grid; gap: var(--space-3); justify-items: start; }
+.practice-top .t-title { margin: 0; }
+.practice-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.practice-col { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.practice-before { padding-right: var(--space-6); border-right: 1px solid var(--line); }
+.practice textarea.prompt { min-height: 240px; overflow: hidden; resize: none; }
+.practice textarea.prompt-readonly { background: var(--surface); color: var(--ink); cursor: default; }
+.practice textarea.prompt-readonly:focus { border-color: var(--line-strong); }

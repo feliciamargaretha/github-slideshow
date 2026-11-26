@@ -70,6 +70,18 @@ export const GLOSSARY = {
     text: 'The space between a box and its outline, usually the focus ring keyboard users see. 0 hugs the edge; 2 to 4px leaves a small gap so the ring reads clearly.',
     example: '.btn:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 3px; }',
   },
+  'white-space': {
+    title: 'white-space',
+    match: /\bwhite-space\b/i,
+    text: 'Decides how text handles spaces and line breaks: normal wraps onto the next line when it runs out of room, nowrap keeps it on one line, pre keeps the line breaks exactly as typed.',
+    example: '.label { white-space: nowrap; }',
+  },
+  nowrap: {
+    title: 'nowrap',
+    match: /\bnowrap\b/i,
+    text: 'A value of white-space: the text stays on one line and never wraps, even when the box is too narrow. Often paired with an ellipsis (…) for text that is too long.',
+    example: '.label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+  },
   'aspect-ratio': {
     title: 'aspect-ratio',
     match: /\baspect[- ]ratio\b/i,
@@ -478,7 +490,7 @@ const CODE_CONCEPT = {
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
   'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-self', stretch: 'stretch', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', 'aspect-ratio': 'aspect-ratio', 'white-space': 'white-space', nowrap: 'nowrap', 'outline-offset': 'outline-offset', 'stroke-linecap': 'stroke-linecap', 'stroke-linejoin': 'stroke-linejoin', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

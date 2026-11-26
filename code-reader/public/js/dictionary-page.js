@@ -40,6 +40,8 @@ export const DETAILS = {
   'stroke-linecap': { design: 'Stroke end points (cap)', about: 'The end of a line in an icon, like the end point setting in Figma\'s stroke panel. None (butt) stops flat right at the end, round gives soft rounded ends, square gives flat ends that reach a little further. Round caps make line icons feel friendlier.', related: ['stroke-linejoin', 'radius'] },
   'stroke-linejoin': { design: 'Stroke join', about: 'The corner where two lines of an icon meet, like the join setting in Figma\'s stroke panel. Miter makes a sharp point, round softens the corner, bevel cuts it off flat. Round joins usually go with round caps.', related: ['stroke-linecap', 'radius'] },
   'outline-offset': { design: 'Gap between a layer and its focus ring', about: 'An outline is a ring drawn around a layer, most often the focus ring that shows keyboard users where they are. outline-offset is the space between the layer and that ring, like an outside stroke pushed a few pixels away. A small gap (2 to 4px) keeps the ring from blending into the button.', related: ['radius', 'padding', 'margin'] },
+  'white-space': { design: 'Text wrapping (auto width vs. fixed width text)', about: 'How a text layer behaves when it runs out of room. Normal wraps onto the next line, like a fixed-width text box. nowrap keeps it on one line, like an auto-width text layer that just keeps growing. pre keeps every line break exactly as typed.', related: ['nowrap', 'fit-content', 'flex-shrink'] },
+  nowrap: { design: 'Auto width text, one line', about: 'The text stays on a single line and never wraps, like an auto-width text layer in Figma. If the box is too narrow, the text spills out, so it is often paired with an ellipsis (…) to cut it off neatly. Handy for labels, buttons and menu items that should never break onto two lines.', related: ['white-space', 'fit-content', 'flex-shrink'] },
   'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
@@ -270,6 +272,21 @@ const INSPECT = {
       { caption: 'outline-offset: 4px: the ring moves out, with a clear gap around the button.', frame: null, items: [I(150, 50, 100, 40, 'Search')], marks: [{ t: 'outline', x: 142, y: 42, w: 116, h: 56 }, { t: 'gap', x: 144, y: 44, w: 6, h: 52 }, { t: 'chip', x: 150, y: 108, text: 'outline-offset: 4px' }] },
     ],
   }),
+  'white-space': () => ({
+    height: 150,
+    frames: [
+      { caption: 'white-space: normal: the text wraps onto a second line inside the box.', frame: F(120, 30, 160, 76), items: [I(132, 42, 136, 22, 'Search all your'), I(132, 70, 72, 22, 'projects')], marks: [{ t: 'chip', x: 120, y: 116, text: 'white-space: normal' }] },
+      { caption: 'white-space: nowrap: the text stays on one line and runs past the edge of the box.', frame: F(120, 30, 160, 76), items: [I(132, 42, 210, 22, 'Search all your projects')], marks: [{ t: 'outline', x: 280, y: 40, w: 64, h: 26 }, { t: 'chip', x: 120, y: 116, text: 'white-space: nowrap' }] },
+    ],
+  }),
+  nowrap: () => ({
+    height: 150,
+    frames: [
+      { caption: 'Without nowrap, a narrow menu item breaks onto two lines.', frame: F(120, 30, 160, 76), items: [I(132, 42, 136, 22, 'Website'), I(132, 70, 136, 22, 'redesign')], marks: [] },
+      { caption: 'nowrap keeps it on one line, even if it runs out of room.', frame: F(120, 30, 160, 76), items: [I(132, 42, 180, 22, 'Website redesign')], marks: [{ t: 'chip', x: 120, y: 116, text: 'white-space: nowrap' }] },
+      { caption: 'With an ellipsis, the extra text is cut off neatly inside the box.', frame: F(120, 30, 160, 76), items: [I(132, 42, 136, 22, 'Website redes…')], marks: [{ t: 'chip', x: 120, y: 116, text: 'text-overflow: ellipsis' }] },
+    ],
+  }),
   'aspect-ratio': () => ({
     height: 200,
     frames: [
@@ -434,7 +451,7 @@ export const TREE = [
   { cat: 'Position', nodes: [
     N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
   ] },
-  { cat: 'Style', nodes: [N('radius'), N('stroke-linecap'), N('stroke-linejoin'), N('outline-offset'), N('pointer-events')] },
+  { cat: 'Style', nodes: [N('radius'), N('white-space', null, [N('nowrap', 'value')]), N('stroke-linecap'), N('stroke-linejoin'), N('outline-offset'), N('pointer-events')] },
   { cat: 'Motion', nodes: [N('transition', null, [N('easing', 'setting')]), N('keyframes'), N('transform')] },
 ];
 const FAMILY = {};

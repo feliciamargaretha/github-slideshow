@@ -814,3 +814,11 @@ html, body { overflow: clip; }
 .ins-svg line, .ins-svg polyline { stroke: var(--ink-3); }
 .ins-svg .g { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 3; }
 .ins-svg .c { stroke: var(--ink); stroke-width: 1; }
+
+/* Earlier re-prompt parts, folded under the level picker */
+.cp-sofar { max-width: 720px; }
+.cp-sofar summary { display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; list-style: none; padding: var(--space-1) 0; }
+.cp-sofar summary::-webkit-details-marker { display: none; }
+.cp-sofar summary > span:first-child { transform: rotate(-90deg); transition: transform 150ms var(--ease); }
+.cp-sofar[open] summary > span:first-child { transform: none; }
+.cp-sofar-body { display: grid; gap: var(--space-3); padding: var(--space-2) 0 var(--space-1) 24px; }

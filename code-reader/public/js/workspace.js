@@ -885,7 +885,6 @@ export function mountWorkspace(app) {
     let fitW = 0;
     new ResizeObserver(() => { if (left.clientWidth !== fitW) { fitW = left.clientWidth; fit(); } }).observe(left);
     const earlier = CHECKPOINTS.slice(0, CHECKPOINTS.indexOf(cp)).filter((c) => S.parts[c.key]?.trim());
-    if (earlier.length) left.append(h('h3', { class: 'cp-h' }, 'Your new prompt so far'), ...earlier.map((c) => h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, c.short), h('p', {}, S.parts[c.key]))));
 
     // Right: this part, in Easy or Normal mode
     const right = h('section', { class: 'cp-col cp-now', 'aria-label': cp.title });
@@ -893,6 +892,10 @@ export function mountWorkspace(app) {
     right.append(h('div', { class: 'levels', role: 'radiogroup', 'aria-label': 'Level' },
       ...MODES.map((m) => h('button', { class: 'level', type: 'button', role: 'radio', 'aria-checked': String(mode === m.key), onclick: () => { store.set('promptMode', m.key); (S.cpEdit ||= {})[cp.key] = true; syncPart(cp.key); renderChrome(); renderStep('none'); } },
         levelIcon(m.dots), h('span', { class: 'level-text' }, h('span', { class: 't-strong' }, m.name), h('span', { class: 't-caption ink-2' }, m.hint))))));
+    // The parts you already rewrote: for reference only, folded away under the level.
+    if (earlier.length) right.append(h('details', { class: 'cp-sofar' },
+      h('summary', {}, icon('chevronDown'), h('span', { class: 't-strong' }, `Your earlier parts (${earlier.length})`)),
+      h('div', { class: 'cp-sofar-body' }, ...earlier.map((c) => h('div', { class: 'cp-earlier' }, h('span', { class: 't-caption ink-3' }, cap(c.short)), h('p', {}, S.parts[c.key]))))));
     let lastBlank = null;
     let field;
     const onChange = () => { syncPart(cp.key); checkBtn.disabled = !S.parts[cp.key].trim(); renderChrome(); };

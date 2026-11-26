@@ -132,7 +132,7 @@ export function buildSteps(model, match = () => []) {
       let panel = ex?.panel || panelOf(d.prop);
       // In a state rule (hover, pressed, focus) the look of that state is Style, like a variant;
       // only movement that a transition animates (move, scale, turn) reads as Motion.
-      if (state && motionRuleIds.has(rule.id) && /^(transform|translate|scale|rotate)$/.test(d.prop)) panel = 'motion';
+      if (motionRuleIds.has(rule.id) && rule.id !== undefined && (state || isStateClassRule(rule)) && /^(transform|translate|scale|rotate)$/.test(d.prop)) panel = 'motion';
       if (media && panel !== 'motion') panel = 'layout';
       (groups[panel] ||= []).push({ d, ex });
     }
@@ -335,6 +335,9 @@ export function stateWords(state) {
   const parts = state.split(',').map((x) => STATE_WORDS[x] || `On ${x}`);
   return parts.length > 1 ? parts[0] + ' and ' + parts.slice(1).map((p) => p.replace(/^(On|When|While) /, '')).join(' and ') : parts[0];
 }
+
+/** A rule like .menu.is-open, whose class a script switches on, is a state too. */
+function isStateClassRule(rule) { return (rule.parts || []).some((p) => /\.[\w-]+\.[\w-]+/.test(p.base || '') ) || /\.[\w-]+\.(is-|open|active|show|visible|expanded)/.test(rule.selector || ''); }
 
 function cssTitle(panel, decls, name, state, media, model, targets, match) {
   const t = cssTitleRaw(panel, decls, name, state, media, model, targets, match);

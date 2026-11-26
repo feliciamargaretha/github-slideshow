@@ -15,6 +15,7 @@ import { DIALECTS, detectDialect } from './detect.js';
 import { linesLabel, escapeHtml, hash } from './util.js';
 import { withConcepts, termDemo, codeWithConcepts } from './glossary.js';
 import { renderBanner, go, startReading, message } from './app.js';
+import { recordReading, recordProgress, recordCheck } from './history.js';
 
 const COLOR = { structure: '#2563EB', layout: '#15803D', style: '#7C3AED', motion: '#C2410C', overview: '#0A0A0A', issue: '#B91C1C' };
 const SPACING = /^(padding|margin|gap|row-gap|column-gap)/;
@@ -106,6 +107,7 @@ export function mountWorkspace(app) {
     S.loaded = true;
     S.starts = lineStarts(source);
     S.parts = store.get('parts.' + hash(source), {});
+    recordReading({ source, dialect, prompt, history: S.history, origin });
     S.issues = staticIssues(S.model, S.match, { supports: (p, v) => { try { return CSS.supports(p, v); } catch { return true; } } });
     attachIssues(S.steps, S.issues);
     assignTermChips(S.steps, TERMS, known);
@@ -735,6 +737,7 @@ export function mountWorkspace(app) {
     S.cp = null;
     S.cur = i;
     S.element = null;
+    recordProgress(S.model.source, { cur: i, total: S.steps.length });
     closePopover();
     renderChrome();
     renderStep(d);
@@ -788,6 +791,7 @@ export function mountWorkspace(app) {
     S.cp = key;
     S.cur = cpIndex(key);
     S.element = null;
+    recordProgress(S.model.source, { cur: S.cur, total: S.steps.length, part: key });
     closePopover();
     renderChrome();
     renderStep(dir);
@@ -989,6 +993,7 @@ export function mountWorkspace(app) {
       segments = (r.data.segments || []).map((x) => ({ ...x, status: ['right', 'wrong', 'missing'].includes(x.status) ? x.status : 'fixed' }));
     }
     (S.cpFeedback ||= {})[cp.key] = { mode: easy ? 'easy' : 'normal', segments, terms: r.data.terms || [], mine: easy ? answers : text };
+    { const det = segments.filter((x) => x.status !== 'fixed'); recordCheck(S.model.source, cp.key, { accurate: segments.map((x) => x.text).join(''), right: det.filter((x) => x.status === 'right').length, total: det.length }); }
     (S.cpEdit ||= {})[cp.key] = false;
     renderStep('none');
   }
@@ -1212,6 +1217,7 @@ export function mountWorkspace(app) {
     back: () => { go('workspace'); },
     key: (e) => keyHandler(e),
     goTo: (i) => goTo(i),
+    openPart: (key) => { if (cpIndex(key) >= 0) openCp(key, 'fade'); },
     get state() { return S; },
   };
 

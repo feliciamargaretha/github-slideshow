@@ -784,3 +784,22 @@ html, body { overflow: clip; }
 .ins-pause { position: absolute; right: var(--space-2); bottom: var(--space-2); width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: var(--radius-s); background: none; color: var(--ink-2); cursor: pointer; }
 .ins-pause:hover { color: var(--ink); background: var(--surface-2); }
 .ins-pause:focus-visible { outline: 2px solid var(--line-focus); outline-offset: 2px; }
+
+/* History page */
+.hist-actions { display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-2); }
+.hist-progress { display: grid; gap: 6px; max-width: 480px; }
+.hist-bar { display: flex; gap: 2px; height: 6px; }
+.hist-bar span { flex: 1; background: var(--surface-3); }
+.hist-bar span.done { background: var(--ink); }
+.hist-list { display: grid; gap: var(--space-4); }
+.hist-part { display: grid; gap: var(--space-3); }
+.hist-part-h { margin: 0; font-size: 14px; font-weight: 500; }
+.hist-prompt { display: grid; gap: 4px; max-width: 720px; }
+.hist-prompt p { margin: 0; white-space: pre-wrap; }
+.hist-prompt-head { display: flex; align-items: center; gap: var(--space-2); min-height: 28px; }
+.hist-copy { margin-left: auto; height: 28px; }
+.hist-code summary { cursor: pointer; list-style: none; }
+.hist-code summary::-webkit-details-marker { display: none; }
+.hist-code summary::before { content: '›'; display: inline-block; width: 16px; transition: transform 150ms; }
+.hist-code[open] summary::before { transform: rotate(90deg); }
+.hist-code pre { max-height: 420px; overflow: auto; white-space: pre-wrap; }

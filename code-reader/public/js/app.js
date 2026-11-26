@@ -8,6 +8,7 @@ import { mountPractice } from './practice.js';
 import { mountBuild } from './build.js';
 import { learnedCount, onLearned, setDictionaryOpener } from './glossary.js';
 import { mountDictionaryPage } from './dictionary-page.js';
+import { mountHistoryPage } from './history.js';
 
 const AI_PROMPT = `Write one UI component as a single HTML file: semantic HTML, one <style> block, and plain JavaScript only if it needs motion CSS cannot do (or GSAP 3 from https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js). No frameworks, no Tailwind, no other libraries, no external images or fonts. Keep it under 100 lines. Start with the <style> block, then the markup, then any script. The component is: `;
 
@@ -52,6 +53,7 @@ async function init() {
   app.practice = mountPractice(app);
   app.build = mountBuild(app);
   app.dictionary = mountDictionaryPage(app, { onBack: () => go(app.state.beforeDictionary || 'paste') });
+  app.history = mountHistoryPage(app, { onBack: () => go(app.state.beforeHistory || 'paste'), onContinue: (e) => continueFromHistory(e) });
   setDictionaryOpener((key) => openDictionaryPage(key));
   document.addEventListener('keydown', onKey);
   onLearned(() => renderTopbar());
@@ -69,8 +71,26 @@ export function renderBanner() {
   );
 }
 
+export function openHistoryPage() {
+  if (app.state.screen !== 'history') app.state.beforeHistory = app.state.screen === 'dictionary' ? (app.state.beforeDictionary || 'paste') : app.state.screen;
+  app.history.open();
+  go('history');
+}
+
+async function continueFromHistory(e) {
+  closePopover();
+  app.practice.reset();
+  app.build.reset();
+  Object.assign(app.state, { source: e.source, dialect: e.dialect, dialectManual: false, originalPrompt: e.prompts?.[0] || '' });
+  if (app.state.mode === 'paste') paste.editor.value = e.source;
+  await startReading(e.source, { dialect: e.dialect, prompt: e.prompts?.[0] || '', origin: e.origin, history: e.prompts || [] });
+  const p = e.progress;
+  if (p?.part) app.workspace.openPart(p.part);
+  else if (p?.cur) app.workspace.goTo(p.cur);
+}
+
 export function openDictionaryPage(key) {
-  if (app.state.screen !== 'dictionary') app.state.beforeDictionary = app.state.screen;
+  if (app.state.screen !== 'dictionary') app.state.beforeDictionary = app.state.screen === 'history' ? (app.state.beforeHistory || 'paste') : app.state.screen;
   app.dictionary.open(key);
   go('dictionary');
 }
@@ -86,7 +106,8 @@ export function renderTopbar() {
   a.replaceChildren();
   const s = app.state.screen;
   const dict = h('button', { class: 'btn btn-text', type: 'button', 'aria-current': s === 'dictionary' ? 'page' : null, onclick: () => openDictionaryPage() }, 'Dictionary', h('span', { class: 't-caption ink-3' }, String(learnedCount())));
-  a.append(dict);
+  const hist = h('button', { class: 'btn btn-text', type: 'button', 'aria-current': s === 'history' ? 'page' : null, onclick: () => openHistoryPage() }, 'History');
+  a.append(hist, dict);
   if (s === 'practice') {
     a.append(h('span', { class: 't-caption ink-2', id: 'attempts-top' }, app.practice?.attemptsLabel() || ''));
   }

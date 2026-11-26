@@ -9,6 +9,7 @@ import { detectDialect, DIALECTS } from './detect.js';
 import { diffLines } from './diff.js';
 import { go, renderTopbar, renderBanner, message } from './app.js';
 import { hash } from './util.js';
+import { recordFinal } from './history.js';
 
 export function mountPractice(app) {
   const root = document.querySelector('[data-screen="practice"]');
@@ -128,6 +129,7 @@ export function mountPractice(app) {
     genBtn.disabled = true;
     genBtn.replaceChildren(icon('spinner'), 'Generating');
     inlineMsg.replaceChildren();
+    recordFinal(P.ctx.source, prompt);
     const r = await api.generate(prompt);
     genBtn.replaceChildren('Generate');
     genBtn.disabled = !canGenerate();

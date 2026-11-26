@@ -806,3 +806,4 @@ html, body { overflow: clip; }
 
 /* Original prompt: big, white, shows every prompt in full */
 .checkpoint .cp-box.cp-readonly { background: var(--surface); color: var(--ink); min-height: 320px; overflow: hidden; resize: none; }
+.checkpoint .cp-box.cp-readonly { overflow: auto; }

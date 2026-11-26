@@ -117,6 +117,11 @@ export function mountBuild(app) {
 
   async function done() {
     if (B.busy) return;
+    // A prompt still in the box counts too: send it first, then open the code with that result.
+    if (box.value.trim()) {
+      await send();
+      if (box.value.trim()) return; // it did not go through; the note in the chat says why
+    }
     const code = B.versions[B.current];
     const prompts = B.turns.filter((t) => t.role === 'you').map((t) => t.text);
     store.set('lastSeries', prompts);

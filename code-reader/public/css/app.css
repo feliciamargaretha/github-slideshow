@@ -769,3 +769,4 @@ html, body { overflow: clip; }
 .ins-corner { border-top: 2px solid var(--ink); border-right: 2px solid var(--ink); border-top-right-radius: 24px; }
 .ins-cap { margin: 0; color: var(--ink-2); text-align: center; min-height: 24px; }
 @media (prefers-reduced-motion: reduce) { .ins-frame, .ins-item { transition: none; } }
+.ins-dim .ins-dim-label { top: 6px; }

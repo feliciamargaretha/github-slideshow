@@ -22,6 +22,42 @@ export const GLOSSARY = {
     text: 'A size value: the box is as wide as its content needs, and never wider than the space it has. Used as width: fit-content.',
     example: '.tag { width: fit-content; }',
   },
+  after: {
+    title: '::after',
+    match: /::after\b/i,
+    text: 'Adds an extra box at the end of an element that only the CSS draws, with no new tag in the HTML. Used for underlines, overlays and small decorations. It needs content: \'\' to show up.',
+    example: ".link::after { content: ''; height: 2px; background: currentColor; }",
+  },
+  before: {
+    title: '::before',
+    match: /::before\b/i,
+    text: 'Like ::after, but the extra box is added at the start of the element, before its content. Often used for icons, dots and quotes.',
+    example: ".item::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }",
+  },
+  inset: {
+    title: 'inset',
+    match: /(?!)/,
+    text: 'A shortcut for top, right, bottom and left in one line. inset: 0 on an absolute box stretches it to every edge of its relative parent, so it covers the parent exactly.',
+    example: '.overlay { position: absolute; inset: 0; }',
+  },
+  'pointer-events': {
+    title: 'pointer-events',
+    match: /\bpointer-events\b/i,
+    text: 'Decides whether a box reacts to the mouse. pointer-events: none makes it ignore clicks and hovers, so they pass through to whatever is underneath.',
+    example: '.btn::after { pointer-events: none; } /* the overlay never blocks the click */',
+  },
+  'flex-shrink': {
+    title: 'flex-shrink',
+    match: /(?!)/,
+    text: 'Decides whether an item inside a flex box gets narrower when there is not enough room. 1 (the default) lets it shrink with the others; 0 keeps its size.',
+    example: '.icon { flex-shrink: 0; } /* the icon never gets squeezed */',
+  },
+  'flex-grow': {
+    title: 'flex-grow',
+    match: /(?!)/,
+    text: 'Decides whether an item inside a flex box gets wider to take up leftover room. 0 (the default) keeps its size; 1 lets it fill the space.',
+    example: '.search { flex-grow: 1; } /* the field fills the rest of the row */',
+  },
   children: {
     title: 'Children',
     match: /\bchild(?:ren)?\b/i,
@@ -97,10 +133,24 @@ export const GLOSSARY = {
     demo: 'align',
   },
   position: {
-    title: 'Positioning',
-    match: /\b(?:pinned|positioned parent)\b/i,
-    text: 'Lifting an element out of the normal flow and pinning it to a spot. position: absolute pins it inside the nearest parent with position: relative.',
+    title: 'position',
+    match: /(?!)/,
+    text: 'Decides how an element is placed. static (the default) follows the normal flow, relative stays in the flow but can be nudged and becomes the anchor for absolute children, absolute is lifted out and pinned to a spot, fixed stays put on screen, sticky sticks while scrolling.',
     example: '.card { position: relative; }\n.badge { position: absolute; top: 8px; right: 8px; }',
+    demo: 'position',
+  },
+  relative: {
+    title: 'relative',
+    match: /(?!)/,
+    text: 'position: relative keeps the element in its normal place, and makes it the anchor that absolute children are pinned to. With top or left it can also be nudged without moving its neighbours.',
+    example: '.card { position: relative; }',
+    demo: 'position',
+  },
+  absolute: {
+    title: 'absolute',
+    match: /\b(?:pinned|positioned parent)\b/i,
+    text: 'position: absolute lifts the element out of the normal flow and pins it to a spot, measured from the nearest parent with position: relative. Other elements act as if it is not there.',
+    example: '.badge { position: absolute; top: 8px; right: 8px; }',
     demo: 'position',
   },
   transition: {
@@ -133,7 +183,7 @@ export const GLOSSARY = {
   },
   'inline-flex': {
     title: 'inline-flex',
-    match: /(?!)/,
+    match: /\binline[- ]flex\b/i,
     text: 'Works like flex for the children, which line up in a row, but the box itself sits inside a line of text like a word, only as wide as its content. Good for buttons and badges with an icon and a label.',
     example: '.btn { display: inline-flex; align-items: center; gap: 8px; }',
     demo: 'inlineflex',
@@ -390,9 +440,9 @@ const DEMOS = {
 const CODE_CONCEPT = {
   display: 'display', 'inline-flex': 'inline-flex', 'inline-grid': 'grid', flex: 'flexbox', grid: 'grid',
   block: 'block', inline: 'inline', 'inline-block': 'inline-block', gap: 'gap', padding: 'padding', margin: 'margin',
-  'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-items', 'place-items': 'alignment', position: 'position', absolute: 'position',
+  'justify-content': 'justify-content', 'align-items': 'align-items', 'align-self': 'align-items', 'place-items': 'alignment', position: 'position', absolute: 'absolute', relative: 'relative',
   transition: 'transition', 'z-index': 'z-index', '@keyframes': 'keyframes', 'border-radius': 'radius', transform: 'transform',
-  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
+  'box-sizing': 'box-sizing', 'border-box': 'box-sizing', 'fit-content': 'fit-content', 'flex-shrink': 'flex-shrink', 'flex-grow': 'flex-grow', after: 'after', before: 'before', inset: 'inset', 'pointer-events': 'pointer-events', shrink: 'flex-shrink', grow: 'flex-grow', 'ease-out': 'easing', 'ease-in-out': 'easing', 'ease-in': 'easing',
 };
 
 /** Code with its known words turned into labels, or null when it has none. `prompt` adds a prompt tip to the first card. */

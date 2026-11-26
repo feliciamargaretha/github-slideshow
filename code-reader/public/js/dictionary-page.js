@@ -22,7 +22,9 @@ export const DETAILS = {
   inline: { design: 'Text that flows', about: 'An inline layer flows inside a line of text like a word. It hugs its content and ignores width and height.', opposite: 'block', related: ['display', 'inline-block', 'inline-flex'] },
   'inline-block': { design: 'Hug contents, inside text', about: 'Sits in a line of text like a word, but still takes a width, a height and padding, like a small frame placed in a sentence.', opposite: 'block', related: ['display', 'inline', 'inline-flex'] },
   'inline-flex': { design: 'Auto layout that hugs, inside text', about: 'An auto layout frame that hugs its content and sits in a line of text. Good for buttons and badges with an icon and a label.', opposite: 'flexbox', related: ['flexbox', 'inline-block', 'gap', 'align-items'] },
-  position: { design: 'Absolute position', about: 'Takes a layer out of auto layout and pins it to a spot inside its parent, like turning on “absolute position” for a layer inside an auto layout frame.', related: ['z-index', 'transform'] },
+  position: { design: 'Layer positioning', about: 'Decides whether a layer follows the layout or is placed on its own. Most layers follow the normal flow (static). relative keeps the layer in place and makes it the frame that absolute layers are measured from. absolute takes a layer out of the flow and pins it, like turning on “absolute position” inside an auto layout frame.', related: ['relative', 'absolute', 'z-index', 'transform'] },
+  relative: { design: 'The frame absolute layers are pinned to', about: 'The layer stays exactly where the layout puts it, but now it is the reference point: any absolute child is measured from its edges, like a frame that an absolute-positioned layer belongs to. Without it, an absolute layer measures from the whole page.', opposite: 'absolute', related: ['position', 'absolute', 'children', 'parent'] },
+  absolute: { design: 'Absolute position', about: 'Takes a layer out of auto layout and pins it to a spot, measured from the nearest relative parent, like turning on “absolute position” for a layer inside an auto layout frame. The other layers close up as if it were not there.', opposite: 'relative', related: ['position', 'relative', 'z-index', 'transform'] },
   'z-index': { design: 'Layer order', about: 'When layers overlap, this decides which one is on top, like moving a layer up or down in the layers panel.', related: ['position'] },
   radius: { design: 'Corner radius', about: 'Rounds the corners of a layer. A bigger number means rounder corners; 50% on a square makes a circle.', related: ['padding'] },
   'box-sizing': { design: 'Size includes padding', about: 'Decides what a width means. With border-box, a 200px frame stays 200px when you add padding, like a fixed-size frame. Without it, padding and border are added on top, so the frame grows.', related: ['padding', 'margin'] },
@@ -31,6 +33,12 @@ export const DETAILS = {
   easing: { design: 'Easing curve', about: 'How speed changes during an animation. Ease out starts fast and settles gently, which feels natural for things arriving. Linear keeps one speed.', related: ['transition', 'keyframes'] },
   keyframes: { design: 'Animation keyframes', about: 'An animation written as moments in time, from 0% to 100%, each saying how the layer looks then. The browser fills in the frames between.', opposite: 'transition', related: ['easing', 'transform'] },
   'fit-content': { design: 'Hug contents', about: 'The layer is only as wide as its content, like setting a frame to hug contents. If the content is longer than the space, it stops at the edge and wraps instead of overflowing.', opposite: 'block', related: ['inline-block', 'inline-flex', 'display', 'padding'] },
+  after: { design: 'An extra layer drawn by CSS', about: 'Adds a layer inside an element, after its content, without adding anything to the HTML. Think of a decoration layer that lives in the style, not in the layers panel: an underline, a hover overlay, a small dot. It only shows up when it has content, usually content: \'\'.', opposite: 'before', related: ['position', 'absolute', 'inset', 'pointer-events', 'element'] },
+  before: { design: 'An extra layer drawn by CSS, at the start', about: 'The same as ::after, but the extra layer comes before the content, so it is drawn first. Good for a leading icon, a bullet or an opening quote.', opposite: 'after', related: ['position', 'absolute', 'element'] },
+  inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
+  'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
+  'flex-shrink': { design: 'Fixed width vs. shrink to fit (auto layout)', about: 'When an auto layout frame gets too narrow, its layers squeeze to fit. flex-shrink: 0 is like setting a layer to a fixed width: it keeps its size while the others squeeze. Useful for icons and avatars that should never get squashed.', opposite: 'flex-grow', related: ['flexbox', 'fit-content', 'gap', 'children'] },
+  'flex-grow': { design: 'Fill container (auto layout)', about: 'A layer with flex-grow: 1 takes up the leftover space in its auto layout frame, like setting it to fill the container, while the others keep hugging their content.', opposite: 'flex-shrink', related: ['flexbox', 'fit-content', 'children'] },
   children: { design: 'Layers inside a frame', about: 'The layers directly inside a frame. When the frame has auto layout (flex) or a grid, it arranges its children: their direction, the gap between them and their alignment. A child can be a parent of its own children too.', opposite: 'parent', related: ['element', 'flexbox', 'grid', 'gap', 'display'] },
   parent: { design: 'The frame that holds layers', about: 'The frame that holds other layers. Its settings, like auto layout, gap and padding, decide how the layers inside it sit.', opposite: 'children', related: ['element', 'flexbox', 'padding', 'gap'] },
   class: { design: 'Style name', about: 'A name you give layers in the HTML, like naming a component. CSS finds every layer with that name and styles them all at once, like a shared style.', related: ['element', 'selector'] },
@@ -133,6 +141,14 @@ const INSPECT = {
       { caption: 'inline-flex: the same auto layout, hugging its content inside the sentence.', frame: F(40, 16, 320, 116), items: [I(52, 56, 60, 20, 'Click'), I(118, 48, 112, 36, 'icon · label'), I(236, 56, 50, 20, 'now')], marks: [{ t: 'chip', x: 118, y: 92, text: 'hugs content' }] },
     ],
   }),
+  relative: () => ({
+    height: 200,
+    frames: [
+      { caption: 'Without relative on the card, the absolute badge measures from the page, so it lands in the page corner.', frame: F(100, 50, 200, 130), items: [I(344, 6, 48, 22, 'New'), I(112, 62, 176, 106, 'Card content')], z: [2, 1], marks: [{ t: 'outline', x: 0, y: 0, w: 400, h: 200 }, { t: 'chip', x: 8, y: 6, text: 'page' }] },
+      { caption: 'position: relative on the card makes it the anchor; the badge now pins to the card corner.', frame: F(100, 50, 200, 130), items: [I(244, 58, 48, 22, 'New'), I(112, 62, 176, 106, 'Card content')], z: [2, 1], marks: [{ t: 'outline', x: 100, y: 50, w: 200, h: 130 }, { t: 'chip', x: 100, y: 24, text: 'position: relative' }] },
+    ],
+  }),
+  absolute: () => INSPECT.position(),
   position: () => ({
     height: 180,
     frames: [
@@ -195,6 +211,50 @@ const INSPECT = {
     frames: [
       { caption: 'Fill container: the button stretches to the full width.', frame: F(40, 30, 320, 90), items: [I(56, 54, 288, 40, 'Get started')], marks: [{ t: 'dim', x: 56, y: 106, w: 288, text: 'full width' }] },
       { caption: 'width: fit-content: the button hugs its label.', frame: F(40, 30, 320, 90), items: [I(56, 54, 112, 40, 'Get started')], marks: [{ t: 'dim', x: 56, y: 106, w: 112, text: 'hugs the content' }] },
+    ],
+  }),
+  after: () => ({
+    height: 150,
+    frames: [
+      { caption: 'In the HTML, the button is a single layer.', frame: null, items: [I(140, 44, 120, 40, 'Search')], marks: [] },
+      { caption: '::after adds a layer inside it that only the CSS draws, here an underline. The HTML stays the same.', frame: null, items: [I(140, 44, 120, 40, 'Search'), I(156, 74, 88, 3, '')], z: [1, 2], marks: [{ t: 'outline', x: 152, y: 70, w: 96, h: 11 }, { t: 'chip', x: 152, y: 100, text: "::after { content: '' }" }] },
+    ],
+  }),
+  before: () => ({
+    height: 150,
+    frames: [
+      { caption: 'In the HTML, the item is a single layer with a label.', frame: null, items: [I(130, 44, 140, 40, 'Item')], marks: [] },
+      { caption: '::before adds a layer at the start, before the label, here a small dot.', frame: null, items: [I(130, 44, 140, 40, 'Item'), I(146, 60, 8, 8, '')], z: [1, 2], r: [undefined, 4], marks: [{ t: 'outline', x: 142, y: 56, w: 16, h: 16 }, { t: 'chip', x: 130, y: 100, text: "::before { content: '' }" }] },
+    ],
+  }),
+  inset: () => ({
+    height: 190,
+    frames: [
+      { caption: 'An absolute overlay with no edges set hugs its content in the corner.', frame: F(100, 20, 200, 140), items: [I(112, 32, 176, 116, 'Card content'), I(100, 20, 72, 24, 'Overlay')], z: [1, 2], marks: [] },
+      { caption: 'inset: 0 pins it to all four edges of the relative parent, so it covers the card exactly.', frame: F(100, 20, 200, 140), items: [I(112, 32, 176, 116, 'Card content'), I(100, 20, 200, 140, 'Overlay')], z: [1, 2], marks: [{ t: 'chip', x: 100, y: 166, text: 'inset: 0  =  top 0 · right 0 · bottom 0 · left 0' }] },
+    ],
+  }),
+  'pointer-events': () => ({
+    height: 170,
+    every: 2400,
+    frames: [
+      { caption: 'An overlay sits on top of the button. The click lands on the overlay, so the button never gets it.', frame: null, items: [I(140, 50, 120, 40, 'Button')], marks: [{ t: 'ghost', x: 110, y: 30, w: 180, h: 80 }, { t: 'outline', x: 110, y: 30, w: 180, h: 80 }, { t: 'chip', x: 110, y: 120, text: 'overlay catches the click' }] },
+      { caption: 'pointer-events: none on the overlay makes it click-through: the click goes to the button underneath.', frame: null, items: [I(140, 50, 120, 40, 'Button')], marks: [{ t: 'ghost', x: 110, y: 30, w: 180, h: 80 }, { t: 'outline', x: 140, y: 50, w: 120, h: 40 }, { t: 'chip', x: 110, y: 120, text: 'pointer-events: none' }] },
+    ],
+  }),
+  'flex-shrink': () => {
+    const fr = (w) => F(200 - w / 2, 40, w, 64);
+    return { height: 150, every: 2000, frames: [
+      { caption: 'Enough room: every item keeps its size.', frame: fr(360), items: [I(32, 52, 96, 40, 'Icon'), I(140, 52, 120, 40, 'Label'), I(272, 52, 96, 40, 'Badge')], marks: [] },
+      { caption: 'Less room, flex-shrink: 1 on all: they squeeze together.', frame: fr(240), items: [I(92, 52, 64, 40, 'Icon'), I(168, 52, 64, 40, 'Label'), I(244, 52, 64, 40, 'Badge')], marks: [{ t: 'chip', x: 92, y: 116, text: 'all shrink' }] },
+      { caption: 'flex-shrink: 0 on the icon: it keeps its size, the others squeeze more.', frame: fr(240), items: [I(92, 52, 96, 40, 'Icon'), I(200, 52, 48, 40, 'Label'), I(260, 52, 48, 40, 'Badge')], marks: [{ t: 'outline', x: 92, y: 52, w: 96, h: 40 }, { t: 'chip', x: 92, y: 116, text: 'flex-shrink: 0' }] },
+    ] };
+  },
+  'flex-grow': () => ({
+    height: 150,
+    frames: [
+      { caption: 'Every item hugs its content; space is left over at the end.', frame: F(20, 40, 360, 64), items: [I(32, 52, 60, 40, 'Icon'), I(104, 52, 80, 40, 'Search'), I(196, 52, 70, 40, 'Go')], marks: [{ t: 'mar', x: 270, y: 52, w: 98, h: 40 }] },
+      { caption: 'flex-grow: 1 on Search: it fills the leftover space.', frame: F(20, 40, 360, 64), items: [I(32, 52, 60, 40, 'Icon'), I(104, 52, 182, 40, 'Search'), I(298, 52, 70, 40, 'Go')], marks: [{ t: 'outline', x: 104, y: 52, w: 182, h: 40 }, { t: 'chip', x: 104, y: 116, text: 'flex-grow: 1' }] },
     ],
   }),
   children: () => {

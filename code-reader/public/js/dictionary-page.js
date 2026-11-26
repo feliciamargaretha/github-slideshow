@@ -396,7 +396,8 @@ export function mountDictionaryPage(app, { onBack }) {
   }
 
   function render() {
-    const mine = learnedKeys().filter((k) => GLOSSARY[k]);
+    const abc = (a, b) => GLOSSARY[a].title.replace(/^\W+/, '').localeCompare(GLOSSARY[b].title.replace(/^\W+/, ''), 'en', { sensitivity: 'base' });
+    const mine = learnedKeys().filter((k) => GLOSSARY[k]).sort(abc);
         const q = D.query.trim().toLowerCase();
     const match = (k) => !q || GLOSSARY[k].title.toLowerCase().includes(q) || (DETAILS[k]?.design || '').toLowerCase().includes(q);
     const item = (k, dim) => h('button', { class: `dict-nav-item ${D.key === k ? 'active' : ''} ${dim ? 'dim' : ''}`, type: 'button', 'aria-current': D.key === k ? 'page' : null, onclick: () => { open(k); } },
@@ -407,7 +408,7 @@ export function mountDictionaryPage(app, { onBack }) {
     const nav = h('nav', { class: 'dict-nav', 'aria-label': 'Words' },
       h('div', { class: 'dict-nav-head' }, h('button', { class: 'btn btn-text', type: 'button', onclick: () => onBack() }, icon('arrowLeft'), 'Back'), search),
       q ? null : h('div', { class: 'dict-nav-group' }, h('span', { class: 't-caption ink-3' }, `Your words (${mine.length})`), ...(mine.filter(match).length ? mine.filter(match).map((k) => item(k)) : [h('p', { class: 't-caption ink-3', style: { margin: 0 } }, 'Click a label in an explanation and it is saved here.')])),
-      ...(q ? [h('div', { class: 'dict-nav-group' }, h('span', { class: 't-caption ink-3' }, 'Matches'), ...Object.keys(GLOSSARY).filter(match).map((k) => item(k, !mine.includes(k))))]
+      ...(q ? [h('div', { class: 'dict-nav-group' }, h('span', { class: 't-caption ink-3' }, 'Matches'), ...Object.keys(GLOSSARY).filter(match).sort(abc).map((k) => item(k, !mine.includes(k))))]
         : TREE.map((t) => h('div', { class: 'dict-nav-group' }, h('span', { class: 'dict-cat' }, t.cat), ...treeItems(t.nodes, 0)))));
     function treeItems(nodes, depth) {
       return nodes.filter(([k]) => GLOSSARY[k]).flatMap(([k, , kids]) => {

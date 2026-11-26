@@ -44,6 +44,7 @@ export const DETAILS = {
   nowrap: { design: 'Auto width text, one line', about: 'The text stays on a single line and never wraps, like an auto-width text layer in Figma. If the box is too narrow, the text spills out, so it is often paired with an ellipsis (…) to cut it off neatly. Handy for labels, buttons and menu items that should never break onto two lines.', related: ['white-space', 'fit-content', 'flex-shrink'] },
   overflow: { design: 'Clip content', about: 'What a frame does with content that is bigger than it. visible lets it spill outside, like Clip content turned off in Figma. hidden cuts it off at the frame edge, like Clip content turned on; it also keeps images inside rounded corners. auto (or scroll) clips it but adds a scrollbar so people can still reach it.', related: ['radius', 'white-space', 'fit-content', 'position'] },
   'margin-auto': { design: 'Push to the end (like a spacer in auto layout)', about: 'An auto margin swallows all the leftover space on its side. In a column, margin-top: auto pushes a layer to the bottom, like the user profile at the bottom of a sidebar, the same as adding a stretchy spacer above it in Figma. margin-left: auto pushes a layer to the right of a row, and margin: 0 auto centers a fixed-width box.', related: ['margin', 'justify-content', 'flex-grow', 'gap'] },
+  bulge: { design: 'Bending a path (dragging a curve handle)', about: 'bulge is a name this code invented, not a CSS word. The sidebar shape is drawn as a vector path whose right edge is one curve, with a single handle in the middle of that edge. bulge is how far that handle is pulled to the right: 0 keeps the edge straight, 56 bends it outward like dragging a bezier handle in Figma, a negative number bends it inward. Animating it from 0 to 56 and back, with a bouncy ease, is what makes the edge wobble.', related: ['easing', 'keyframes', 'transition'] },
   'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
@@ -305,6 +306,15 @@ const INSPECT = {
       { caption: 'In a row, margin-left: auto on the badge pushes it to the right end.', frame: F(40, 70, 320, 60), items: [I(52, 87, 60, 26, 'Icon'), I(120, 87, 80, 26, 'Title'), I(288, 87, 60, 26, 'Badge')], marks: [{ t: 'mar', x: 200, y: 87, w: 88, h: 26 }, { t: 'chip', x: 200, y: 140, text: 'margin-left: auto' }] },
     ],
   }),
+  bulge: () => ({
+    height: 180,
+    every: 1800,
+    frames: [
+      { caption: 'bulge: 0: the curve handle sits on the edge, so the edge is straight.', frame: null, items: [], svg: `<svg viewBox="0 0 400 180"><path d="M110 20 H200 Q200 90 200 160 H110 Z" class="fillshape"/><line x1="200" y1="20" x2="200" y2="90" class="g"/><line x1="200" y1="160" x2="200" y2="90" class="g"/><circle cx="200" cy="90" r="5" class="handle"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'bulge: 0' }] },
+      { caption: 'bulge: 56: the handle is pulled 56px out, so the middle of the edge bows outward.', frame: null, items: [], svg: `<svg viewBox="0 0 400 180"><path d="M110 20 H200 Q256 90 200 160 H110 Z" class="fillshape"/><line x1="200" y1="20" x2="256" y2="90" class="g"/><line x1="200" y1="160" x2="256" y2="90" class="g"/><circle cx="256" cy="90" r="5" class="handle"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'bulge: 56' }] },
+      { caption: 'bulge: -32: a negative number bends the edge inward, as it does while the sidebar closes.', frame: null, items: [], svg: `<svg viewBox="0 0 400 180"><path d="M110 20 H200 Q168 90 200 160 H110 Z" class="fillshape"/><line x1="200" y1="20" x2="168" y2="90" class="g"/><line x1="200" y1="160" x2="168" y2="90" class="g"/><circle cx="168" cy="90" r="5" class="handle"/></svg>`, marks: [{ t: 'chip', x: 8, y: 8, text: 'bulge: -32' }] },
+    ],
+  }),
   'aspect-ratio': () => ({
     height: 200,
     frames: [
@@ -470,7 +480,7 @@ export const TREE = [
     N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
   ] },
   { cat: 'Style', nodes: [N('radius'), N('white-space', null, [N('nowrap', 'value')]), N('stroke-linecap'), N('stroke-linejoin'), N('outline-offset'), N('pointer-events')] },
-  { cat: 'Motion', nodes: [N('transition', null, [N('easing', 'setting')]), N('keyframes'), N('transform')] },
+  { cat: 'Motion', nodes: [N('bulge'), N('transition', null, [N('easing', 'setting')]), N('keyframes'), N('transform')] },
 ];
 const FAMILY = {};
 for (const t of TREE) (function walk(nodes, parent, path) {

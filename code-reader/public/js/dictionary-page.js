@@ -30,6 +30,8 @@ export const DETAILS = {
   transition: { design: 'Smart animate', about: 'Plays a change over time instead of jumping, like smart animate between two variants. You choose what changes, how long it takes and the easing.', related: ['easing', 'transform', 'keyframes'] },
   easing: { design: 'Easing curve', about: 'How speed changes during an animation. Ease out starts fast and settles gently, which feels natural for things arriving. Linear keeps one speed.', related: ['transition', 'keyframes'] },
   keyframes: { design: 'Animation keyframes', about: 'An animation written as moments in time, from 0% to 100%, each saying how the layer looks then. The browser fills in the frames between.', opposite: 'transition', related: ['easing', 'transform'] },
+  children: { design: 'Layers inside a frame', about: 'The layers directly inside a frame. When the frame has auto layout (flex) or a grid, it arranges its children: their direction, the gap between them and their alignment. A child can be a parent of its own children too.', opposite: 'parent', related: ['element', 'flexbox', 'grid', 'gap', 'display'] },
+  parent: { design: 'The frame that holds layers', about: 'The frame that holds other layers. Its settings, like auto layout, gap and padding, decide how the layers inside it sit.', opposite: 'children', related: ['element', 'flexbox', 'padding', 'gap'] },
   class: { design: 'Style name', about: 'A name you give layers in the HTML, like naming a component. CSS finds every layer with that name and styles them all at once, like a shared style.', related: ['element', 'selector'] },
   element: { design: 'Layer', about: 'One building block of the page, written as a tag such as <button> or <p>. Elements sit inside each other like layers inside frames.', related: ['class', 'selector', 'display'] },
   selector: { design: 'Which layers a style applies to', about: 'The part of a CSS rule before the braces. It picks the layers to style: every layer with a class, every button, or a heading inside a card.', related: ['class', 'element'] },
@@ -187,6 +189,14 @@ const INSPECT = {
       { caption: '100%: where it ends. The browser fills in the frames between.', frame: null, items: [I(310, 40, 50, 40, '')], marks: [{ t: 'chip', x: 310, y: 90, text: '100%' }] },
     ],
   }),
+  children: () => {
+    const kids = rowItems(68, 60, 3, 80, 48, 16, ['child', 'child', 'child']);
+    return { height: 170, frames: [
+      { caption: 'The frame is the parent.', frame: F(52, 40, 296, 88), items: kids, marks: [{ t: 'outline', x: 52, y: 40, w: 296, h: 88 }, { t: 'chip', x: 52, y: 14, text: 'parent' }] },
+      { caption: 'The layers directly inside it are its children; the parent arranges them.', frame: F(52, 40, 296, 88), items: kids, marks: [...kids.map((b) => ({ t: 'outline', ...b })), { t: 'chip', x: 68, y: 140, text: 'children' }, ...gapsBetween(kids)] },
+    ] };
+  },
+  parent: () => INSPECT.children(),
   class: () => ({
     height: 160,
     frames: [

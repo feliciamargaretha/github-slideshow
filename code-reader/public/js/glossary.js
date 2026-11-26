@@ -16,6 +16,18 @@ export const GLOSSARY = {
     text: 'One building block of the page, written as a tag in the HTML, such as <button> or <p>. Elements sit inside each other like boxes in boxes.',
     example: '<button>Buy</button>',
   },
+  children: {
+    title: 'Children',
+    match: /\bchild(?:ren)?\b/i,
+    text: 'The elements directly inside another element. In <ul><li>…</li></ul>, each <li> is a child of the <ul>. Layout rules like flex and grid on a box arrange its children.',
+    example: '<div class="row">\n  <span>child</span>\n  <span>child</span>\n</div>',
+  },
+  parent: {
+    title: 'Parent',
+    match: /\bparents?\b/i,
+    text: 'The element that holds other elements inside it. Its layout rules, like display: flex or gap, decide how its children are arranged.',
+    example: '.row { display: flex; } /* the parent arranges its children */',
+  },
   selector: {
     title: 'Selector',
     match: /\bselectors?\b/i,

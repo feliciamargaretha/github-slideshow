@@ -43,6 +43,7 @@ export const DETAILS = {
   'white-space': { design: 'Text wrapping (auto width vs. fixed width text)', about: 'How a text layer behaves when it runs out of room. Normal wraps onto the next line, like a fixed-width text box. nowrap keeps it on one line, like an auto-width text layer that just keeps growing. pre keeps every line break exactly as typed.', related: ['nowrap', 'fit-content', 'flex-shrink'] },
   nowrap: { design: 'Auto width text, one line', about: 'The text stays on a single line and never wraps, like an auto-width text layer in Figma. If the box is too narrow, the text spills out, so it is often paired with an ellipsis (…) to cut it off neatly. Handy for labels, buttons and menu items that should never break onto two lines.', related: ['white-space', 'fit-content', 'flex-shrink'] },
   overflow: { design: 'Clip content', about: 'What a frame does with content that is bigger than it. visible lets it spill outside, like Clip content turned off in Figma. hidden cuts it off at the frame edge, like Clip content turned on; it also keeps images inside rounded corners. auto (or scroll) clips it but adds a scrollbar so people can still reach it.', related: ['radius', 'white-space', 'fit-content', 'position'] },
+  'margin-auto': { design: 'Push to the end (like a spacer in auto layout)', about: 'An auto margin swallows all the leftover space on its side. In a column, margin-top: auto pushes a layer to the bottom, like the user profile at the bottom of a sidebar, the same as adding a stretchy spacer above it in Figma. margin-left: auto pushes a layer to the right of a row, and margin: 0 auto centers a fixed-width box.', related: ['margin', 'justify-content', 'flex-grow', 'gap'] },
   'aspect-ratio': { design: 'Lock aspect ratio', about: 'Like turning on the lock between width and height in Figma: change the width and the height follows, so the shape never stretches. 1 / 1 keeps a square (avatars, icon buttons), 16 / 9 keeps a video shape, 4 / 3 a photo shape.', related: ['fit-content', 'padding', 'box-sizing'] },
   inset: { design: 'Constraints: pin to all edges', about: 'Sets top, right, bottom and left at once. inset: 0 on an absolute layer is like setting its constraints to left & right and top & bottom with 0 offset: it stretches to cover its relative parent exactly. Common for overlays and ::after layers.', related: ['absolute', 'relative', 'position', 'after'] },
   'pointer-events': { design: 'Click-through layer', about: 'Decides whether a layer catches the mouse. pointer-events: none makes it click-through: hovers and clicks go straight to the layer underneath, like a decoration that never gets in the way. Useful for overlays and ::after layers sitting on top of a button.', related: ['after', 'z-index', 'absolute'] },
@@ -296,6 +297,14 @@ const INSPECT = {
       { caption: 'overflow: auto: still clipped, with a scrollbar to reach the rest.', frame: F(120, 30, 160, 84), items: [I(132, 42, 148, 60, 'Content')], marks: [{ t: 'line', x: 126, y: 108, w: 90, h: 3 }, { t: 'chip', x: 120, y: 122, text: 'overflow: auto' }] },
     ],
   }),
+  'margin-auto': () => ({
+    height: 210,
+    frames: [
+      { caption: 'In a column, every layer stacks at the top.', frame: F(140, 10, 120, 190), items: [I(150, 20, 100, 26, 'Home'), I(150, 52, 100, 26, 'Inbox'), I(150, 84, 100, 26, 'Settings'), I(150, 116, 100, 26, 'Profile')], marks: [] },
+      { caption: 'margin-top: auto on Profile takes all the leftover space above it and pushes it to the bottom.', frame: F(140, 10, 120, 190), items: [I(150, 20, 100, 26, 'Home'), I(150, 52, 100, 26, 'Inbox'), I(150, 84, 100, 26, 'Settings'), I(150, 164, 100, 26, 'Profile')], marks: [{ t: 'mar', x: 150, y: 110, w: 100, h: 54 }, { t: 'chip', x: 268, y: 128, text: 'margin-top: auto' }] },
+      { caption: 'In a row, margin-left: auto on the badge pushes it to the right end.', frame: F(40, 70, 320, 60), items: [I(52, 87, 60, 26, 'Icon'), I(120, 87, 80, 26, 'Title'), I(288, 87, 60, 26, 'Badge')], marks: [{ t: 'mar', x: 200, y: 87, w: 88, h: 26 }, { t: 'chip', x: 200, y: 140, text: 'margin-left: auto' }] },
+    ],
+  }),
   'aspect-ratio': () => ({
     height: 200,
     frames: [
@@ -456,7 +465,7 @@ export const TREE = [
       N('grid', 'value', [N('alignment', 'setting')]),
     ]),
   ] },
-  { cat: 'Size and spacing', nodes: [N('padding'), N('margin'), N('box-sizing'), N('fit-content'), N('aspect-ratio'), N('overflow')] },
+  { cat: 'Size and spacing', nodes: [N('padding'), N('margin', null, [N('margin-auto', 'value')]), N('box-sizing'), N('fit-content'), N('aspect-ratio'), N('overflow')] },
   { cat: 'Position', nodes: [
     N('position', null, [N('relative', 'value'), N('absolute', 'value', [N('inset', 'setting')]), N('z-index', 'setting')]),
   ] },

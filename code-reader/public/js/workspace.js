@@ -1,6 +1,6 @@
 // Screen 2: Workspace. The preview on the left shows the part of the UI the step
 // on the right is about. Pointing at either side lights up the other.
-import { h, icon, segmented, popover, closePopover, store, announce, tooltip, reducedMotion } from './ui.js';
+import { h, icon, segmented, popover, closePopover, store, announce, tooltip, reducedMotion, panelIcon } from './ui.js';
 import { buildModel, makeMatcher, ruleTargets, cascadeFor, applyTweaks } from './model.js';
 import { buildSteps, PANELS, PANEL_LABEL, pendingAiItems, assignTermChips, termKey } from './steps.js';
 import { staticIssues, runtimeIssues, attachIssues } from './issues.js';
@@ -233,7 +233,7 @@ export function mountWorkspace(app) {
         class: 'tab', type: 'button', role: 'tab', 'aria-selected': String(cur?.panel === p), 'data-panel': p,
         'aria-label': `${PANEL_LABEL[p]}, ${counts[p]} steps${hasIssue ? ', has an issue' : ''}`,
         onclick: () => jumpPanel(p), title: `Press ${i + 1}`,
-      }, h('span', { class: `dot dot-${p}` }), PANEL_LABEL[p], h('span', { class: 'count' }, String(counts[p])), hasIssue ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
+      }, panelIcon(p), PANEL_LABEL[p], h('span', { class: 'count' }, String(counts[p])), hasIssue ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
       tabsEl.append(t);
       if (cur?.panel === p) active = t;
     });
@@ -242,7 +242,7 @@ export function mountWorkspace(app) {
       if (!active) { underline.style.width = '0px'; return; }
       underline.style.width = active.offsetWidth + 'px';
       underline.style.transform = `translateX(${active.offsetLeft}px)`;
-      underline.style.background = COLOR[cur.panel];
+      underline.style.background = 'var(--ink)';
     });
     // Progress segments
     progress.replaceChildren();
@@ -281,7 +281,7 @@ export function mountWorkspace(app) {
     card.append(h('div', { class: 'meta t-caption' },
       h('span', {}, `Step ${S.cur + 1} of ${S.steps.length}`),
       h('span', { class: 'tag' }, s.concept),
-      s.overview ? h('span', { class: 'ink-2' }, 'Overview') : h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, h('span', { class: `dot dot-${s.panel}` }), PANEL_LABEL[s.panel])));
+      s.overview ? h('span', { class: 'ink-2' }, 'Overview') : h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon(s.panel), PANEL_LABEL[s.panel])));
     // 2. Title
     card.append(h('h2', { class: 't-title', id: 'step-title' }, s.title));
     // Issue blocks sit above the explanation
@@ -645,7 +645,7 @@ export function mountWorkspace(app) {
     const { matched, overridden } = cascadeFor(S.model, S.element, S.match);
     const view = h('div', { class: 'element-view step fade' });
     view.append(h('div', {}, h('button', { class: 'btn btn-text', type: 'button', onclick: () => closeElement() }, icon('arrowLeft'), `Back to step ${S.cur + 1}`)));
-    view.append(h('div', { class: 'meta t-caption' }, h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, h('span', { class: 'dot dot-structure' }), 'Element'), h('span', { class: 'tag' }, `<${el.tag}>`)));
+    view.append(h('div', { class: 'meta t-caption' }, h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon('structure'), 'Element'), h('span', { class: 'tag' }, `<${el.tag}>`)));
     view.append(h('h2', { class: 't-title', id: 'step-title' }, `${cap(elementName(el))}${el.text && el.text.length < 40 ? ` · “${el.text}”` : ''}`));
     view.append(h('div', { class: 'explain' }, h('p', {}, ...richText({ text: explainTag(el), chips: [] }))));
     const htmlLines = new Set(); for (let l = el.startLine; l <= el.openEndLine; l++) htmlLines.add(l);

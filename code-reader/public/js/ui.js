@@ -48,6 +48,25 @@ export function icon(name, { size = 16, cls = '' } = {}) {
   return span.firstElementChild;
 }
 
+// ---- Panel icons: tiny squares, no color ---------------------------------------
+const PANEL_SVG = {
+  // four squares, two rows of two
+  structure: '<rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/>',
+  // three squares stacked
+  layout: '<rect x="5.5" y="1" width="5" height="4"/><rect x="5.5" y="6" width="5" height="4"/><rect x="5.5" y="11" width="5" height="4"/>',
+  // an outlined square behind a filled, rounded one: border, fill and radius, the things style sets
+  style: '<rect x="1.75" y="1.75" width="8.5" height="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="6" width="9" height="9" rx="2.5"/>',
+  // a square with a motion trail; it moves on hover
+  motion: '<rect class="pi-t2" x="1" y="6" width="4" height="4" opacity=".2"/><rect class="pi-t1" x="4.5" y="5.5" width="5" height="5" opacity=".45"/><rect class="pi-head" x="9" y="5" width="6" height="6"/>',
+};
+export function panelIcon(panel) {
+  const span = document.createElement('span');
+  span.className = `panel-icon pi-${panel}`;
+  span.setAttribute('aria-hidden', 'true');
+  span.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">${PANEL_SVG[panel] || ''}</svg>`;
+  return span;
+}
+
 // ---- Popover -------------------------------------------------------------
 let openPop = null;
 export function closePopover() {

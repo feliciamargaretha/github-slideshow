@@ -555,3 +555,16 @@ textarea:focus-visible, input[type="text"]:focus-visible, input:not([type]):focu
 .ask-link:hover { color: var(--ink); }
 .body, .walk-col, .workspace { overflow: clip; }
 html, body { overflow: clip; }
+
+/* Panel icons: tiny squares in the text color, no category color */
+.panel-icon { display: inline-flex; width: 16px; height: 16px; flex: none; color: inherit; }
+.meta .panel-icon { width: 14px; height: 14px; }
+.meta .panel-icon svg { width: 14px; height: 14px; }
+.tab-underline { background: var(--ink); }
+/* Motion: the square slides left to right and leaves a trail, while you hover */
+@keyframes pi-head { 0% { transform: translateX(-8px); } 60%, 100% { transform: none; } }
+@keyframes pi-trail { 0% { transform: translateX(-8px); opacity: 0; } 30% { opacity: .55; } 60%, 100% { transform: none; } }
+.tab:hover .pi-motion .pi-head, .tab:focus-visible .pi-motion .pi-head, .motion-head:hover .pi-motion .pi-head { animation: pi-head 900ms var(--ease) infinite; }
+.tab:hover .pi-motion .pi-t1, .tab:focus-visible .pi-motion .pi-t1, .motion-head:hover .pi-motion .pi-t1 { animation: pi-trail 900ms var(--ease) 60ms infinite; }
+.tab:hover .pi-motion .pi-t2, .tab:focus-visible .pi-motion .pi-t2, .motion-head:hover .pi-motion .pi-t2 { animation: pi-trail 900ms var(--ease) 120ms infinite; }
+@media (prefers-reduced-motion: reduce) { .pi-motion rect { animation: none !important; } }

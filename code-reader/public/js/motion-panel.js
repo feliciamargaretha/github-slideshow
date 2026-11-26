@@ -1,6 +1,6 @@
 // Motion panel: what starts it, what changes, how long it takes, how it accelerates.
 // It exists only when an animation is detected (R8, R9, R10).
-import { h, icon, segmented, tooltip, reducedMotion } from './ui.js';
+import { h, icon, segmented, tooltip, reducedMotion, panelIcon } from './ui.js';
 import { easing } from './motion.js';
 import { valueChip } from './codeblock.js';
 import { DIALECTS } from './detect.js';
@@ -39,7 +39,7 @@ export function mountMotionPanel(app, { host, preview, getModel, getTweaks, onTw
     if (!m) return;
     const kind = controlsFor(m);
     const head = h('div', { class: 'motion-head' },
-      h('div', { class: 'left' }, h('span', { class: 'dot dot-motion' }), h('span', { class: 't-strong' }, 'Motion'), h('span', { class: 'tag' }, m.trigger.text)),
+      h('div', { class: 'left' }, panelIcon('motion'), h('span', { class: 't-strong' }, 'Motion'), h('span', { class: 'tag' }, m.trigger.text)),
       M.list.length > 1 ? h('div', { class: 'left' },
         h('button', { class: 'btn-icon', type: 'button', 'aria-label': 'Previous animation', disabled: M.i === 0 ? true : null, onclick: () => select(M.i - 1) }, icon('arrowLeft')),
         h('span', { class: 't-caption ink-2' }, `${M.i + 1} of ${M.list.length}`),

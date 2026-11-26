@@ -273,14 +273,14 @@ export function mountWorkspace(app) {
           tooltip(btn, st.title);
           inner.append(h('li', {}, btn));
         }
-        progress.append(h('li', { class: 'seg-li open', style: { flex: `${Math.max(3, g.steps.length)} 1 0` } }, inner));
+        progress.append(h('li', { class: 'seg-li open', style: { '--steps': String(Math.max(3, g.steps.length)) } }, inner));
       } else {
         const done = last < S.cur;
         const btn = h('button', {
           class: `seg-btn group ${done ? 'past' : ''}`, type: 'button',
           'aria-label': `${PANEL_LABEL[g.panel]}: ${g.steps.length} steps${done ? ', done' : ''}${hasIssue ? ', has an issue' : ''}`,
           onclick: () => goTo(first),
-        }, panelIcon(g.panel), h('span', { class: 'group-bar' }), hasIssue ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
+        }, h('span', { class: 'group-bar' }), hasIssue ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
         tooltip(btn, `${PANEL_LABEL[g.panel]}, ${g.steps.length} step${g.steps.length === 1 ? '' : 's'}`);
         progress.append(h('li', { class: 'seg-li' }, btn));
       }

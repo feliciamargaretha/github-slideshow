@@ -67,7 +67,7 @@ export function panelIcon(panel) {
   return span;
 }
 
-/** Prompt practice: a speech bubble with a ">_" prompt cut out of it (negative space). */
+/** Prompt practice: a terminal window with a ">_" prompt cut out of it (negative space). */
 let maskSeq = 0;
 export function promptIcon() {
   const id = 'pm' + maskSeq++;
@@ -75,8 +75,8 @@ export function promptIcon() {
   span.className = 'prompt-icon';
   span.setAttribute('aria-hidden', 'true');
   span.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16"><defs><mask id="${id}"><rect width="16" height="16" fill="#fff"/>` +
-    '<path d="M4.5 4.25 7 6.5 4.5 8.75" fill="none" stroke="#000" stroke-width="1.6"/><rect x="8" y="8" width="3.5" height="1.6" fill="#000"/></mask></defs>' +
-    `<path mask="url(#${id})" fill="currentColor" d="M2.5 1h11A1.5 1.5 0 0 1 15 2.5v8a1.5 1.5 0 0 1-1.5 1.5H7l-4 3.25V12h-.5A1.5 1.5 0 0 1 1 10.5v-8A1.5 1.5 0 0 1 2.5 1z"/></svg>`;
+    '<path d="M3.5 5.25 6.25 8 3.5 10.75" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="square"/><rect x="7.75" y="10" width="4.5" height="1.6" fill="#000"/></mask></defs>' +
+    `<rect mask="url(#${id})" fill="currentColor" x="0.5" y="2" width="15" height="12"/></svg>`;
   return span;
 }
 

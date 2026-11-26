@@ -615,3 +615,23 @@ html, body { overflow: clip; }
 .seg-btn.practice.current { color: var(--ink); }
 .seg-btn.practice:hover { color: var(--ink-2); }
 .prompt-icon, .prompt-icon svg { display: block; width: 16px; height: 16px; }
+
+/* Progress, rectangles only, sharp corners, 8px apart.
+   The panel you are in is one rectangle divided into its steps; other panels are one rectangle each. */
+.progress { gap: 8px; align-items: center; }
+.progress > .seg-li.open { display: flex; }
+.seg-group { gap: 0; border: 1px solid var(--line-strong); height: 8px; flex: 1; align-items: stretch; }
+.seg-group li { min-width: 0; display: flex; }
+.seg-group li + li { border-left: 1px solid var(--line-strong); }
+.seg-group .seg-btn { height: 100%; padding: 0; background: var(--surface); }
+.seg-group .seg-btn::before { display: none; }
+.seg-group .seg-btn.past { background: var(--line-strong); }
+.seg-group .seg-btn.current { background: var(--ink); }
+.seg-group .seg-btn:hover:not(.current) { background: var(--line); }
+.seg-group .seg-btn.past:hover { background: var(--ink-3); }
+.seg-btn.group { height: 24px; }
+.group-bar { border-radius: 0; height: 8px; }
+.seg-group .issue-dot { top: -12px; }
+.progress > li.cp-li { flex: 0 0 16px; min-width: 16px; }
+.progress > li.seg-li.open { flex-grow: var(--steps, 3); }
+.seg-group li + li { border-left: 2px solid var(--surface); }

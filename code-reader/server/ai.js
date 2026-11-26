@@ -182,20 +182,25 @@ export async function ask({ code, context, turns }) {
 }
 
 /** Check one part of a prompt (layout, style or motion) against the code. */
-export async function checkPart({ code, part, text }) {
+export async function checkPart({ code, part, text, template }) {
   const schema = obj({
     covered: { type: 'array', items: { type: 'string' } },
     missed: { type: 'array', items: { type: 'string' } },
     terms: { type: 'array', items: obj({ casual: { type: 'string' }, precise: { type: 'string' } }) },
     sharper: { type: 'string' },
+    blanks: { type: 'array', items: { type: 'string' } },
   });
+  const tpl = template
+    ? `The learner filled in this template, so the sharper version must keep it word for word and only change what goes in each [blank]:\n<prompt>\n${template}\n</prompt>\n` +
+      'Return "blanks" with one value per [blank], in order, chosen so the filled template describes the code exactly. Keep each value short (a few words, real values from the code), and make "sharper" exactly the template with those values filled in.'
+    : 'Rewrite only this part so it would get the code right, using precise terms and real values, and return an empty "blanks" list.';
   return call({
     system:
       `You coach a designer who is learning to prompt an AI for UI code, one part at a time. ${READER} ${DATA_RULE} ` +
       'Judge only the part named; ignore anything the other parts would cover. Work only from the code.',
     user: `<code>\n${number(code)}\n</code>\n\nThe learner wrote the ${part} part of a prompt that should rebuild this component:\n<prompt>\n${text}\n</prompt>\n\n` +
       `List up to 4 things about the ${part} the prompt already covers, and up to 4 important ${part} details in the code it does not mention (short phrases, values in backticks). ` +
-      'List up to 4 casual phrases from the prompt with the precise term that says it better. Then rewrite only this part so it would get the code right, using precise terms and real values.',
+      `List up to 4 casual phrases from the prompt with the precise term that says it better. ${tpl}`,
     schema,
     effort: 'low',
   });

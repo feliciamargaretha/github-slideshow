@@ -934,7 +934,9 @@ export function mountWorkspace(app) {
     btn.disabled = true;
     btn.replaceChildren(icon('spinner'), 'Checking');
     out.replaceChildren(...[0, 1, 2].map(() => h('span', { class: 'placeholder-line', 'aria-hidden': 'true' })));
-    const r = await api.checkPart({ code: S.model.source, part: cp.short, text });
+    const easy = store.get('promptMode', 'easy') === 'easy';
+    const r = await api.checkPart({ code: S.model.source, part: cp.short, text, template: easy ? TEMPLATES[cp.key] : '' });
+    if (r.ok) r.data.mode = easy ? 'easy' : 'normal';
     btn.disabled = false;
     btn.replaceChildren('Check my part');
     if (!r.ok) {
@@ -946,14 +948,26 @@ export function mountWorkspace(app) {
     showFeedback(r.data, out, out.parentElement.querySelector('#cp-box'));
   }
 
+  /** The suggestion shown in the same template as Easy: fixed text grey, suggested values in the blanks. */
+  function filledTemplate(d) {
+    if (d.mode !== 'easy' || !d.blanks?.length || !S.cp) return null;
+    let k = 0;
+    return h('p', { class: 'cp-box fill static' }, ...templateParts(S.cp).map((p) => (typeof p === 'string' ? h('span', { class: 'fixed' }, p) : h('span', { class: 'blank done' }, d.blanks[k++] || p.blank))));
+  }
+
   function showFeedback(d, out, box) {
     usedConcepts = new Set();
     const list = (title, items) => (items?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, title), h('ul', {}, ...items.map((x) => h('li', {}, ...richText({ text: x, chips: [] }))))) : null);
     const use = d.sharper ? h('button', { class: 'btn btn-text', type: 'button', onclick: () => {
-      // Use the sharper version as your own text (it moves you to Normal, where you can edit it freely)
       const key = S.cp;
-      S.free[key] = d.sharper;
-      store.set('promptMode', 'normal');
+      if (d.mode === 'easy' && d.blanks?.length) {
+        // Easy: the suggestion is the same template, so it fills your blanks
+        S.blanks[key] = [...d.blanks];
+        store.set('promptMode', 'easy');
+      } else {
+        S.free[key] = d.sharper;
+        store.set('promptMode', 'normal');
+      }
       syncPart(key);
       renderChrome();
       renderStep('none');
@@ -962,7 +976,8 @@ export function mountWorkspace(app) {
       list('You covered', d.covered),
       list('Missing from the code', d.missed),
       d.terms?.length ? h('div', { class: 'cp-list' }, h('span', { class: 't-strong' }, 'Say it more precisely'), ...d.terms.map((t) => h('div', { class: 'pair-row' }, h('span', {}, `“${t.casual}”`), icon('arrowRight'), h('code', { class: 'inline-code t-strong' }, t.precise)))) : null,
-      d.sharper ? h('div', { class: 'sharper' }, h('span', { class: 't-strong' }, 'A sharper version of this part'), h('p', {}, d.sharper), h('div', {}, use)) : null,
+      d.sharper ? h('div', { class: 'sharper' }, h('span', { class: 't-strong' }, 'A sharper version of this part'),
+        filledTemplate(d) || h('p', {}, d.sharper), h('div', {}, use)) : null,
       h('span', { class: 't-caption ink-3' }, 'Written by AI from the code'));
   }
   function jumpPanel(p) {

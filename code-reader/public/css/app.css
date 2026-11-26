@@ -690,3 +690,5 @@ html, body { overflow: clip; }
 .workspace.cp-mode .sheet-tab { display: inline-flex; }
 .workspace.cp-mode.preview-open .sheet-tab { left: 560px; }
 .workspace.cp-mode .walk-col .step.checkpoint { padding-left: calc(var(--space-5) + 24px); }
+.cp-box.fill.static { min-height: 0; margin: 0; border: 0; padding: 0; cursor: default; line-height: 30px; }
+.cp-box.fill .blank.done { font-style: normal; font-weight: 500; }

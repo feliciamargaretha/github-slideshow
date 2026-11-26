@@ -103,7 +103,7 @@ const ROUTES = {
   },
   check: {
     kind: 'check',
-    clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40), text: str(b.text, 2000) }),
+    clean: (b) => ({ code: str(b.code, config.maxChars), part: str(b.part, 40), text: str(b.text, 2000), template: str(b.template, 1000) }),
     run: ai.checkPart,
   },
   compare: {

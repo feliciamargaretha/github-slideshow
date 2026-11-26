@@ -60,7 +60,7 @@ await page.goto(BASE);
 await page.locator('.paste-editor textarea').fill(fs0.readFileSync(new URL('../../samples/pricing-cards.html', import.meta.url), 'utf8'));
 await page.click('.paste-actions .btn-primary');
 await page.waitForSelector('#step-title');
-await page.click('.progress li:nth-child(8) .seg-btn');
+await page.evaluate(() => window.__codeReader.workspace.goTo(7));
 await page.hover('.stack-note >> nth=0');
 await page.click('.stack-note >> nth=0 >> .ask-link');
 await page.waitForSelector('.chat-drawer.open');

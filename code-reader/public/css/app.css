@@ -568,3 +568,17 @@ html, body { overflow: clip; }
 .tab:hover .pi-motion .pi-t1, .tab:focus-visible .pi-motion .pi-t1, .motion-head:hover .pi-motion .pi-t1 { animation: pi-trail 900ms var(--ease) 60ms infinite; }
 .tab:hover .pi-motion .pi-t2, .tab:focus-visible .pi-motion .pi-t2, .motion-head:hover .pi-motion .pi-t2 { animation: pi-trail 900ms var(--ease) 120ms infinite; }
 @media (prefers-reduced-motion: reduce) { .pi-motion rect { animation: none !important; } }
+
+/* Progress: neutral. The open panel shows its steps; other panels are one segment each */
+.progress { gap: 8px; align-items: flex-end; }
+.progress > .seg-li { flex: 1 1 0; min-width: 24px; }
+.seg-group { list-style: none; margin: 0; padding: 0; display: flex; gap: 3px; }
+.seg-group li { flex: 1; min-width: 6px; }
+.seg-btn::before { background: var(--line); }
+.seg-btn.past::before { background: var(--ink-3); }
+.seg-btn.current::before { background: var(--ink); height: 6px; margin-top: -1px; }
+.seg-btn.group::before { border-radius: var(--radius-s); }
+.seg-btn:hover::before { background: var(--ink-2); }
+.seg-btn.current:hover::before { background: var(--ink); }
+.progress { gap: 16px; }
+.seg-group { gap: 2px; }

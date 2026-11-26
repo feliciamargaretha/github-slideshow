@@ -244,19 +244,44 @@ export function mountWorkspace(app) {
       underline.style.transform = `translateX(${active.offsetLeft}px)`;
       underline.style.background = 'var(--ink)';
     });
-    // Progress segments
+    // Progress: the current panel shows one segment per step; every other panel is one segment.
     progress.replaceChildren();
-    S.steps.forEach((s, i) => {
-      const p = panelOfStep(s);
-      const b = h('button', {
-        class: `seg-btn c-${p} ${i < S.cur ? 'past' : ''} ${i === S.cur ? 'current' : ''}`, type: 'button',
-        'aria-label': `Step ${i + 1}: ${s.title}${s.issues.length ? ', has an issue' : ''}`,
-        'aria-current': i === S.cur && S.element === null ? 'step' : null,
-        onclick: () => goTo(i),
-      }, s.issues.length ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
-      tooltip(b, s.title);
-      progress.append(h('li', {}, b));
+    const groupOf = (st) => (st.overview ? 'structure' : st.panel);
+    const curGroup = cur ? groupOf(cur) : null;
+    const groups = [];
+    S.steps.forEach((st, i) => {
+      const g = groupOf(st);
+      if (!groups.length || groups[groups.length - 1].panel !== g) groups.push({ panel: g, steps: [] });
+      groups[groups.length - 1].steps.push(i);
     });
+    for (const g of groups) {
+      const first = g.steps[0], last = g.steps[g.steps.length - 1];
+      const hasIssue = g.steps.some((i) => S.steps[i].issues.length);
+      if (g.panel === curGroup) {
+        const inner = h('ol', { class: 'seg-group open', 'aria-label': `${PANEL_LABEL[g.panel]} steps` });
+        for (const i of g.steps) {
+          const st = S.steps[i];
+          const btn = h('button', {
+            class: `seg-btn ${i < S.cur ? 'past' : ''} ${i === S.cur ? 'current' : ''}`, type: 'button',
+            'aria-label': `Step ${i + 1}: ${st.title}${st.issues.length ? ', has an issue' : ''}`,
+            'aria-current': i === S.cur && S.element === null ? 'step' : null,
+            onclick: () => goTo(i),
+          }, st.issues.length ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
+          tooltip(btn, st.title);
+          inner.append(h('li', {}, btn));
+        }
+        progress.append(h('li', { class: 'seg-li open', style: { flex: `${Math.max(3, g.steps.length)} 1 0` } }, inner));
+      } else {
+        const done = last < S.cur;
+        const btn = h('button', {
+          class: `seg-btn group ${done ? 'past' : ''}`, type: 'button',
+          'aria-label': `${PANEL_LABEL[g.panel]}: ${g.steps.length} steps${done ? ', done' : ''}${hasIssue ? ', has an issue' : ''}`,
+          onclick: () => goTo(first),
+        }, hasIssue ? h('span', { class: 'dot dot-issue issue-dot' }) : null);
+        tooltip(btn, `${PANEL_LABEL[g.panel]}, ${g.steps.length} step${g.steps.length === 1 ? '' : 's'}`);
+        progress.append(h('li', { class: 'seg-li' }, btn));
+      }
+    }
     const prac = h('button', { class: 'seg-btn practice', type: 'button', 'aria-label': 'Practice the prompt', onclick: () => openPractice() });
     tooltip(prac, 'Practice the prompt');
     progress.append(h('li', { style: { flex: '0 0 48px' } }, prac));
@@ -851,6 +876,7 @@ export function mountWorkspace(app) {
     escape() { if (closeChat()) return; if (closeDrawer()) return; closeElement(); },
     back: () => { go('workspace'); },
     key: (e) => keyHandler(e),
+    goTo: (i) => goTo(i),
     get state() { return S; },
   };
 

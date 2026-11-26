@@ -101,7 +101,7 @@ check('R3: Esc returns to the step', await page.evaluate(() => !document.querySe
 await pasteCode(fs.readFileSync(new URL('../../samples/pricing-cards.html', import.meta.url), 'utf8'));
 const gapLine = await page.evaluate(() => window.__codeReader.workspace.state.model.lines.findIndex((l) => /^\s*gap:/.test(l)) + 1);
 const gapStep = await page.evaluate((g) => window.__codeReader.workspace.state.steps.findIndex((s) => !s.overview && s.lines.includes(g)), gapLine);
-await page.click(`.progress li:nth-child(${gapStep + 1}) .seg-btn`);
+await page.evaluate((i) => window.__codeReader.workspace.goTo(i), gapStep);
 await page.waitForTimeout(400);
 await page.hover(`.code-line[data-line="${gapLine}"]`);
 await page.waitForTimeout(300);

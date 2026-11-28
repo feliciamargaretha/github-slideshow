@@ -329,8 +329,7 @@ export function mountWorkspace(app) {
     // 1. Meta row
     card.append(h('div', { class: 'meta t-caption' },
       h('span', {}, `Step ${S.cur + 1} of ${S.steps.length}`),
-      h('span', { class: 'tag' }, s.concept),
-      s.overview ? h('span', { class: 'ink-2' }, 'Overview') : h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '4px' } }, panelIcon(s.panel), PANEL_LABEL[s.panel])));
+      h('span', { class: 'tag' }, s.concept)));
     // 2. Title
     card.append(h('h2', { class: 't-title', id: 'step-title' }, s.title));
     // Issue blocks sit above the explanation

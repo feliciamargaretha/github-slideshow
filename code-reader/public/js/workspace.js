@@ -40,7 +40,7 @@ export function mountWorkspace(app) {
   const resetBtn = h('button', { class: 'btn btn-secondary', type: 'button', disabled: true, onclick: () => resetTweaks() }, icon('reset'), 'Reset');
   tooltip(resetBtn, 'Return every value you changed');
   let inspectMode = store.get('inspect', false);
-  const hintText = () => (inspectMode ? 'Hover to measure. Click a part to see its code.' : '');
+  const hintText = () => '';
   const hint = h('span', { class: 't-caption ink-3', id: 'preview-hint' }, hintText());
   const modeSeg = segmented([{ value: 'try', label: 'Try it' }, { value: 'inspect', label: 'Inspect' }], inspectMode ? 'inspect' : 'try', (v) => {
     inspectMode = v === 'inspect';

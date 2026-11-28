@@ -52,16 +52,17 @@ export function icon(name, { size = 16, cls = '' } = {}) {
 
 // ---- Panel icons: tiny squares, no color ---------------------------------------
 const PANEL_SVG = {
+  // Every icon is built from the same 4 x 4 square, 2 apart.
   // four squares, two rows of two
-  structure: '<rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/>',
+  structure: '<rect x="3" y="3" width="4" height="4"/><rect x="9" y="3" width="4" height="4"/><rect x="3" y="9" width="4" height="4"/><rect x="9" y="9" width="4" height="4"/>',
   // three squares stacked
-  layout: '<rect x="5.5" y="1" width="5" height="4"/><rect x="5.5" y="6" width="5" height="4"/><rect x="5.5" y="11" width="5" height="4"/>',
-  // an outlined square behind a filled, rounded one: border, fill and radius, the things style sets
-  style: '<rect x="1.75" y="1.75" width="8.5" height="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="6" width="9" height="9" rx="2.5"/>',
-  // a square with a pointer tapping it: something the visitor does
-  interaction: '<rect x="1.75" y="1.75" width="8.5" height="8.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 7.5 15 10.5 11.6 11.6 10.5 15z"/>',
+  layout: '<rect x="6" y="0" width="4" height="4"/><rect x="6" y="6" width="4" height="4"/><rect x="6" y="12" width="4" height="4"/>',
+  // three squares in a row: an outline (border), a fill, and rounded corners
+  style: '<rect x="0.75" y="6.75" width="2.5" height="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="6" width="4" height="4"/><rect x="12" y="6" width="4" height="4" rx="2"/>',
+  // a square with a pointer tapping it
+  interaction: '<rect x="3" y="3" width="4" height="4"/><path d="M8 8 15 10.8 11.8 11.8 10.8 15z"/>',
   // a square with a motion trail; it moves on hover
-  motion: '<rect class="pi-t2" x="1" y="6" width="4" height="4" opacity=".2"/><rect class="pi-t1" x="4.5" y="5.5" width="5" height="5" opacity=".45"/><rect class="pi-head" x="9" y="5" width="6" height="6"/>',
+  motion: '<rect class="pi-t2" x="1" y="6" width="4" height="4" opacity=".2"/><rect class="pi-t1" x="6" y="6" width="4" height="4" opacity=".45"/><rect class="pi-head" x="11" y="6" width="4" height="4"/>',
 };
 export function panelIcon(panel) {
   const span = document.createElement('span');

@@ -187,7 +187,7 @@ function buildPaste() {
   paste.shortcut = h('span', { class: 't-caption ink-3' }, navigator.platform.includes('Mac') ? '⌘ Enter' : 'Ctrl Enter');
   paste.copyBtn = h('button', { class: 'btn btn-text', type: 'button', onclick: () => copyWithFeedback(paste.copyBtn, AI_PROMPT, () => [icon('copy'), 'Copy a prompt for my AI']) }, icon('copy'), 'Copy a prompt for my AI');
   paste.rate = h('div', { class: 't-body', hidden: true });
-  col.append(h('div', { class: 'paste-actions' }, h('div', { class: 'left' }, paste.primary, paste.shortcut, paste.rate), paste.copyBtn));
+  col.append(h('div', { class: 'paste-actions' }, h('div', { class: 'left' }, paste.primary, paste.shortcut, paste.rate)));
 
   // Samples to try (the 5 working components the PRD asks for)
   const sampleRow = h('div', { class: 'samples' }, h('span', { class: 't-caption ink-3' }, 'Or try one:'));

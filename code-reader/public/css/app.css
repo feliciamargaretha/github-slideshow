@@ -906,3 +906,5 @@ html, body { overflow: clip; }
 .tabrow .seg button { padding-left: 10px; padding-right: 10px; }
 .tab .count { display: none; } /* the step count stays in each tab's label for screen readers */
 .tabs { gap: 14px; }
+/* Tab row: 2px breathing room top and bottom */
+.tabrow { padding-top: 2px; padding-bottom: 2px; height: calc(var(--tab-row) + 4px); box-sizing: border-box; }

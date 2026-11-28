@@ -908,3 +908,6 @@ html, body { overflow: clip; }
 .tabs { gap: 14px; }
 /* Tab row: 2px breathing room top and bottom */
 .tabrow { padding-top: 2px; padding-bottom: 2px; height: calc(var(--tab-row) + 4px); box-sizing: border-box; }
+/* Shape it: a plain light grey line between the result and the prompts, no shadow */
+.build-preview::after { content: none; }
+.build .build-preview { border-bottom: 1.5px solid var(--line); }
